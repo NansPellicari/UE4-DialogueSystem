@@ -4,6 +4,13 @@
 
 #include "BTDialogueTypes.generated.h"
 
+UENUM(BlueprintType)
+enum class EResponseDirection : uint8
+{
+	UP,
+	DOWN,
+};
+
 /**
  * Dialogue Reponse Struct
  */
@@ -18,11 +25,9 @@ public:
 	FText Text;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	int32 Level = 0;
-	UPROPERTY(BlueprintReadOnly, Category = "Response")
-	int32 DisplayOrder = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	float WhenReach = 0;
-	UPROPERTY(BlueprintReadWrite, Category = "Response")
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	EAlignment Alignment = EAlignment::Neutral;
 
 	static FBTDialogueResponse CreateNullObject()

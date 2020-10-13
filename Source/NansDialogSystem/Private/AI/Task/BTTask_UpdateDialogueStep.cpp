@@ -34,7 +34,7 @@ EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeCompone
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 		Point.Point = Response.Level;
 		Point.Alignment = Response.Alignment;
-		Position = Response.DisplayOrder;
+		Position = ResponseContainer->DisplayOrder;
 		ResponseContainer->MarkPendingKill();
 	}
 

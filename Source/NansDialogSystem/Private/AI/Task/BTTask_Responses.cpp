@@ -93,7 +93,7 @@ void UBTTask_Responses::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
-	if (ReponsesCNV.Num() <= 0 && ReponsesCSV.Num() <= 0 && NeutralResponse.IsEmpty())
+	if (ReponsesUP.Num() <= 0 && ReponsesDOWN.Num() <= 0 && NeutralResponse.IsEmpty())
 	{
 		// I don't know why someone can create this settings, but it shouldn't stop the process
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
@@ -168,15 +168,13 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 void UBTTask_Responses::CreateButtons()
 {
 	int8 Index = 0;
-	int32 Position = -ReponsesCNV.Num() - 1;
-	if (ReponsesCNV.Num() > 0)
+	int32 Position = -ReponsesUP.Num() - 1;
+	if (ReponsesUP.Num() > 0)
 	{
 		// reverse loop to set the right display order
-		for (int8 i = ReponsesCNV.Num() - 1; i >= 0; --i)
+		for (int8 i = ReponsesUP.Num() - 1; i >= 0; --i)
 		{
-			ReponsesCNV[i].DisplayOrder = ++Position;
-			ReponsesCNV[i].Alignment = EAlignment::CNV;
-			CreateButton(ReponsesCNV[i], Index++, ReponsesCNV.Last().Level);
+			CreateButton(ReponsesUP[i], Index++, ++Position, ReponsesUP.Last().Level);
 		}
 	}
 
@@ -185,22 +183,19 @@ void UBTTask_Responses::CreateButtons()
 	NeutralDialogueResponse.Alignment = EAlignment::Neutral;
 	NeutralDialogueResponse.Level = NeutralResponsePoint;
 	NeutralDialogueResponse.Text = NeutralResponse;
-	NeutralDialogueResponse.DisplayOrder = Position;
 	NeutralResponseIndex = Index++;
-	CreateButton(NeutralDialogueResponse, NeutralResponseIndex, 0);
+	CreateButton(NeutralDialogueResponse, NeutralResponseIndex, Position, 0);
 
-	if (ReponsesCSV.Num() > 0)
+	if (ReponsesDOWN.Num() > 0)
 	{
-		for (int8 i = 0; i < ReponsesCSV.Num(); ++i)
+		for (int8 i = 0; i < ReponsesDOWN.Num(); ++i)
 		{
-			ReponsesCSV[i].DisplayOrder = ++Position;
-			ReponsesCSV[i].Alignment = EAlignment::CSV;
-			CreateButton(ReponsesCSV[i], Index++, ReponsesCSV.Last().Level);
+			CreateButton(ReponsesDOWN[i], Index++, ++Position, ReponsesDOWN.Last().Level);
 		}
 	}
 }
 
-void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, int32 MaxLevel)
+void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel)
 {
 	FString UniqName = UNTextLibrary::UniqueString(Response.Text);
 
@@ -215,6 +210,8 @@ void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, i
 	UBTDialogueResponseContainer* ResponseContainer =
 		NewObject<UBTDialogueResponseContainer>((UObject*) OwnerComponent, UBTDialogueResponseContainer::StaticClass());
 	ResponseContainer->SetResponse(Response);
+	ResponseContainer->DisplayOrder = Position;
+	ResponseContainer->InfluencedBy = Position > 0 ? EResponseDirection::DOWN : EResponseDirection::UP;
 	ButtonWidget->SetResponse(ResponseContainer);
 
 	ButtonWidget->OnBTClicked.AddDynamic(this, &UBTTask_Responses::OnButtonClicked);
@@ -271,10 +268,10 @@ void UBTTask_Responses::OnEndDisplayResponse()
 
 FString UBTTask_Responses::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 	int32 Position = 0;
 	ReturnDesc +=
-		DisplayStaticResponses(ReponsesCNV, Position, LOCTEXT("CNVNodeResponsesTitle", "[ CNV Responses ]\n").ToString(), true);
+		DisplayStaticResponses(ReponsesUP, Position, LOCTEXT("CNVNodeResponsesTitle", "[ UP Responses ]\n").ToString(), true);
 	if (NeutralResponse.IsEmpty() == false)
 	{
 		Position = 0;
@@ -290,7 +287,7 @@ FString UBTTask_Responses::GetStaticDescription() const
 		ReturnDesc += "\n----------------------\n";
 	}
 	ReturnDesc +=
-		DisplayStaticResponses(ReponsesCSV, Position, LOCTEXT("CNVNodeResponsesTitle", "[ CSV Responses ]\n").ToString(), false);
+		DisplayStaticResponses(ReponsesDOWN, Position, LOCTEXT("CNVNodeResponsesTitle", "[ DOWN Responses ]\n").ToString(), false);
 
 	ReturnDesc += "\nHUD: " + HUD.ToString();
 	ReturnDesc += "\nResponse Container: " + ResponseContainerName.ToString();
@@ -329,9 +326,12 @@ FString UBTTask_Responses::DisplayStaticResponses(
 			Arguments.Add(TEXT("response"), FText::FromString(Text));
 			Arguments.Add(TEXT("level"), Response.Level);
 			Arguments.Add(TEXT("reach"), Response.WhenReach);
+			Arguments.Add(TEXT("alignment"), FText::FromString(EnumToString(EAlignment, Response.Alignment)));
 			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
 			ReturnDesc += FText::Format(
-				LOCTEXT("CNVNodeResponses", "{response}\n\tPosition: {position}, wheel reaches: {reach}, lvl: {level}"), Arguments)
+				LOCTEXT("NodeResponsesDetails",
+					"{response}\n\tPosition: {position}, wheel reaches: {reach}, lvl: {level}, alignment: {alignment}"),
+				Arguments)
 							  .ToString();
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";
 		}

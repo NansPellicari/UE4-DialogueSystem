@@ -173,8 +173,8 @@ void UBTTask_ButtonsSequence::CreateButtons()
 
 	for (FBTButtonSequence Sequence : Sequences)
 	{
-		FString StringSequence = SequenceToText.FindRef(Sequence.ButtonSequence).ToString();
-		EAlignment Alignment = SequenceAlignment.FindRef(Sequence.ButtonSequence);
+		FString StringSequence = Sequence.ButtonSequence.ToString();
+		EAlignment Alignment = Sequence.Alignment;
 		bool ColorIsComputed = false;
 		FLinearColor FinalColor;
 		for (TCHAR Char : StringSequence)
@@ -241,7 +241,7 @@ int32 UBTTask_ButtonsSequence::GetEarnedPoint()
 
 const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tries, const FBTButtonSequence& Sequence) const
 {
-	FString StringSequence = SequenceToText.FindRef(Sequence.ButtonSequence).ToString();
+	FString StringSequence = Sequence.ButtonSequence.ToString();
 
 	if (StringSequence == Tries)
 	{
@@ -280,16 +280,19 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 	int32 i = 0;
 	for (FBTButtonSequence Sequence : Sequences)
 	{
+		FString AlignmentStr = EnumToString(EAlignment, Sequence.Alignment);
+		FFormatNamedArguments Arguments;
+		Arguments.Add(TEXT("sequence"), Sequence.ButtonSequence);
+		Arguments.Add(TEXT("alignment"), FText::FromString(AlignmentStr));
 		Desc += "\n\n----------------------\n";
-		Desc += FText::Format(
-			LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {0} ]"), SequenceToText.FindRef(Sequence.ButtonSequence))
+		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {sequence} :: {alignment} ]"), Arguments)
 					.ToString();
 		Desc += "\n";
-		Desc +=
-			FText::Format(LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}\n"), Sequence.LevelCoefficient, i)
-				.ToString();
-		Desc += LOCTEXT("TaskButtonSequenceSequenceResponseTitle", "\nResponses for points:").ToString();
-		FFormatNamedArguments Arguments;
+		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}"), Sequence.LevelCoefficient, i)
+					.ToString();
+		Desc += "\n\n";
+		Desc += LOCTEXT("TaskButtonSequenceSequenceResponseTitle", "Responses for points:").ToString();
+		Arguments.Empty();
 		Arguments.Add(TEXT("default"), Sequence.DefaultResponse);
 		FString Text =
 			FText::Format(LOCTEXT("TaskButtonSequenceSequenceDefaultResponse", "[-1] \"{default}\""), Arguments).ToString();
@@ -340,7 +343,7 @@ FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence&
 	FString StaticDesc = StaticButtonSequenceDescriptions::GetDescription(Sequence);
 	if (!StaticDesc.IsEmpty()) return StaticDesc;
 
-	const FString SequenceStr = SequenceToText.FindRef(Sequence.ButtonSequence).ToString();
+	const FString SequenceStr = Sequence.ButtonSequence.ToString();
 	TArray<FPermutationValue<TCHAR>> CharArr = UNansArrayUtils::StringToPermutationArray(SequenceStr);
 	TMap<int32, FPermutationChances> Chances;
 
@@ -383,7 +386,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 	for (int32 Index = 0; Index != Sequences.Num(); ++Index)
 	{
 		FBTButtonSequence Seq = Sequences[Index];
-		FString StringSequence = SequenceToText.FindRef(Seq.ButtonSequence).ToString();
+		FString StringSequence = Seq.ButtonSequence.ToString();
 		if (StringSequence.Len() == PlayerTries.Len() && UNTextLibrary::ArePermutations(StringSequence, PlayerTries))
 		{
 			Button->SetVisibility(ESlateVisibility::Collapsed);
@@ -411,14 +414,14 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 		int32 TotalPoint = GetEarnedPoint();
 		FBTButtonSequence Sequence = Sequences[SequenceIndex];
 		FBTDialogueResponse Response;
-		Response.Alignment = SequenceAlignment.FindRef(Sequence.ButtonSequence);
-		Response.DisplayOrder = SequenceIndex;
+		Response.Alignment = Sequence.Alignment;
 		Response.Level = TotalPoint;
 		Response.Text = Sequence.GetResponseForPoints(TotalPoint);
 
 		UBTDialogueResponseContainer* ResponseContainer =
 			NewObject<UBTDialogueResponseContainer>(OwnerComponent, UBTDialogueResponseContainer::StaticClass());
 		ResponseContainer->SetResponse(Response);
+		ResponseContainer->DisplayOrder = SequenceIndex;
 		Blackboard->SetValueAsObject(ResponseContainerKey, ResponseContainer);
 
 		DialogHUD->OnResponse.Broadcast(Response.Text);

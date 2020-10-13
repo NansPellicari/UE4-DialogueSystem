@@ -45,8 +45,9 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 
 	WheelButton->GetWheelDistRatio(WheelRatioClockwise, WheelRatioAntiClockwise);
 
-	float CNVWheelReach = FMath::Clamp<float>(WheelRatioClockwise - WheelRatioAntiClockwise, ResponsesTypeTolerance, 100);
-	float CSVWheelReach = FMath::Clamp<float>(WheelRatioAntiClockwise - WheelRatioClockwise, ResponsesTypeTolerance, 100);
+	float ClockwiseWheelReach = FMath::Clamp<float>(WheelRatioClockwise - WheelRatioAntiClockwise, ResponsesTypeTolerance, 100);
+	float CounterClockwiseWheelReach =
+		FMath::Clamp<float>(WheelRatioAntiClockwise - WheelRatioClockwise, ResponsesTypeTolerance, 100);
 
 	for (TPair<FString, int32> ResponseIndex : ListButtonIndexes)
 	{
@@ -61,10 +62,11 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		UBTDialogueResponseContainer* ResponseContainer = Button->GetResponse();
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 
-		bool CNV = (Response.Alignment == EAlignment::CNV && Response.WhenReach <= CNVWheelReach);
-		bool CSV = (Response.Alignment == EAlignment::CSV && Response.WhenReach <= CSVWheelReach);
+		bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP && Response.WhenReach <= ClockwiseWheelReach);
+		bool DOWN =
+			(ResponseContainer->InfluencedBy == EResponseDirection::DOWN && Response.WhenReach <= CounterClockwiseWheelReach);
 
-		if (CNV || CSV || Response.Alignment == EAlignment::Neutral)
+		if (UP || DOWN || Response.Alignment == EAlignment::Neutral)
 		{
 			Button->SetVisibility(ESlateVisibility::Visible);
 		}

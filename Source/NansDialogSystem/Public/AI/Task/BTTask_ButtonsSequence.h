@@ -57,8 +57,21 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	FText DefaultResponse;
 
+	/**
+	 * Can be OSBD for ex:
+	 *      fr: Observation Sentiment Besoin Demande
+	 *      en: Observation Feeling Need Request
+	 *      = 24 combinations
+	 * Or IAJA:
+	 *      fr: Interpretation Analyse Jugement Agression
+	 *      en: Interpretation Analysis Judgment Agression
+	 *      Easyer = only 12 combinations
+	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	EButtonsSequence ButtonSequence;
+	FText ButtonSequence;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
+	EAlignment Alignment;
 
 	// This allow to divid the number of found letters in order
 	// with this coefficient to compute earned points.
@@ -109,7 +122,7 @@ struct StaticButtonSequenceDescriptions
 public:
 	static void SetDescription(const FBTButtonSequence& Sequence, FString Desc)
 	{
-		FString SequenceStr = EnumToString(EButtonsSequence, Sequence.ButtonSequence);
+		FString SequenceStr = Sequence.ButtonSequence.ToString();
 		TMap<int32, FString>& DescMap = StaticButtonSequenceDescs.FindOrAdd(SequenceStr);
 		DescMap.Add(Sequence.LevelCoefficient, Desc);
 	}
@@ -117,7 +130,7 @@ public:
 	static FString GetDescription(const FBTButtonSequence& Sequence)
 	{
 		FString* StaticDesc = nullptr;
-		FString SequenceStr = EnumToString(EButtonsSequence, Sequence.ButtonSequence);
+		FString SequenceStr = Sequence.ButtonSequence.ToString();
 		TMap<int32, FString>* StaticLevelDesc = StaticButtonSequenceDescs.Find(SequenceStr);
 
 		if (StaticLevelDesc == nullptr)

@@ -20,6 +20,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Response")
 	FBTDialogueResponse GetResponse();
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
+	EResponseDirection InfluencedBy;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Response")
+	int32 DisplayOrder = 0;
+
 	void SetResponse(FBTDialogueResponse _Response);
 
 	static UBTDialogueResponseContainer* CreateNullObject(UObject* Outer);

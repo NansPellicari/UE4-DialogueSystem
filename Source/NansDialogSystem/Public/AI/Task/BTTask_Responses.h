@@ -64,10 +64,10 @@ protected:
 	FName ResponseContainerName = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	TArray<FBTDialogueResponse> ReponsesCNV;
+	TArray<FBTDialogueResponse> ReponsesUP;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	TArray<FBTDialogueResponse> ReponsesCSV;
+	TArray<FBTDialogueResponse> ReponsesDOWN;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	FText NeutralResponse;
@@ -97,7 +97,7 @@ private:
 	int32 NeutralResponseIndex = -1;
 	EBTNodeResult::Type ResponseStatus = EBTNodeResult::InProgress;
 	void CreateButtons();
-	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 MaxLevel);
+	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);
 	FString DisplayStaticResponses(
 		const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const;
 
