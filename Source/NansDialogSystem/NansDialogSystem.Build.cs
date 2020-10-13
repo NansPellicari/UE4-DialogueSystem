@@ -6,39 +6,45 @@ namespace UnrealBuildTool.Rules
 	{
 		public NansDialogSystem(ReadOnlyTargetRules Target) : base(Target)
 		{
-			PublicIncludePaths.AddRange(
-				new string[] {
-					// ... add public include paths required here ...
-				}
-				);
-
-			PrivateIncludePaths.AddRange(
-				new string[] {
-					// ... add other private include paths required here ...
-				}
-				);
+			// This to allow dynamic_cast
+			// https://answers.unrealengine.com/questions/477792/how-do-i-cast-between-polymorphic-classes-that-don.html?sort=oldest
+			bUseRTTI = true;
 
 			PublicDependencyModuleNames.AddRange(
 				new string[]
 				{
 					"Core",
-					// ... add other public dependencies that you statically link with here ...
 				}
 				);
 
 			PrivateDependencyModuleNames.AddRange(
 				new string[]
 				{
-					// ... add private dependencies that you statically link with here ...
+					"CoreUObject",
+					"Engine",
+					"AIModule",
+					"GameplayTasks",
+					"UMG",
+					"Slate",
+					"SlateCore",
+					"InputCore",
+					"NansCoreHelpers",
+					"NansUE4Utilities",
+					"NansFactorsFactoryCore",
+					"NansFactorsFactoryUE4",
+					"NansBehaviorSteps",
+					"NansExtension",
+					"NansCommon",
+					"Interactive",
 				}
 				);
 
-			DynamicallyLoadedModuleNames.AddRange(
+			PrivateIncludePathModuleNames.AddRange(
 				new string[]
 				{
-					// ... add any modules that your module loads dynamically here ...
+					"MessageLog",
 				}
-				);
+			);
 		}
 	}
 }
