@@ -27,6 +27,8 @@ public:
 #endif	  // WITH_EDITOR
 
 protected:
+	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
+	FName DifficultyHandlerKeyName = FName("DifficultyHandler");
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	float ResponsesTypeTolerance;
 

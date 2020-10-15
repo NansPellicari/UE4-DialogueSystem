@@ -3,13 +3,13 @@
 #include "AI/Service/BTService_AddPointsAndResponses.h"
 
 #include "BTDialogueResponseContainer.h"
-#include "BTStepsWithPoints.h"
+#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "UI/ResponseButtonWidget.h"
 
-#define LOCTEXT_NAMESPACE "MyBTServices"
+#define LOCTEXT_NAMESPACE "DialogSystem"
 
 UBTService_AddPointsAndResponses::UBTService_AddPointsAndResponses(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -26,7 +26,7 @@ void UBTService_AddPointsAndResponses::OnBecomeRelevant(UBehaviorTreeComponent& 
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	BTSteps = Cast<UBTStepsWithPoints>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
 
 	if (BTSteps == nullptr)
 	{

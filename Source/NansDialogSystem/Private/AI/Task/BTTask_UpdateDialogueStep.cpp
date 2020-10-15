@@ -3,7 +3,7 @@
 #include "AI/Task/BTTask_UpdateDialogueStep.h"
 
 #include "BTDialogueResponseContainer.h"
-#include "BTStepsWithPoints.h"
+#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
@@ -14,7 +14,7 @@
 EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	BTSteps = Cast<UBTStepsWithPoints>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
 
 	if (BTSteps == nullptr)
 	{

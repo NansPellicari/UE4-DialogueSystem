@@ -1,10 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BTStepsWithPoints.h"
-
+#include "BTStepsForDialog.h"
 #include "NansBehaviorSteps/Public/BTSteps.h"
 
-UBTStepsWithPoints::UBTStepsWithPoints()
+UBTStepsForDialog::UBTStepsForDialog()
 {
 	StepsHandler = CreateDefaultSubobject<UBTSteps>(FName(TEXT("Sub_BTSteps")));
 
@@ -12,19 +11,19 @@ UBTStepsWithPoints::UBTStepsWithPoints()
 	HeapResponses = TArray<FBTPointInStep>();
 }
 
-void UBTStepsWithPoints::BeginDestroy()
+void UBTStepsForDialog::BeginDestroy()
 {
 	EarnedPoints.Empty();
 	HeapResponses.Empty();
 	Super::BeginDestroy();
 }
 
-int32 UBTStepsWithPoints::GetCurrentStep_Implementation()
+int32 UBTStepsForDialog::GetCurrentStep_Implementation()
 {
 	return Execute_GetCurrentStep(StepsHandler);
 }
 
-void UBTStepsWithPoints::AddPoints(FPoint Point, int32 Position)
+void UBTStepsForDialog::AddPoints(FPoint Point, int32 Position)
 {
 	int32 Step = Execute_GetCurrentStep(StepsHandler);
 	HeapResponses.Emplace(FBTPointInStep(Step, Point, Position));
@@ -32,16 +31,16 @@ void UBTStepsWithPoints::AddPoints(FPoint Point, int32 Position)
 	PointNumber += Point.Point;
 }
 
-bool UBTStepsWithPoints::StepIsAlreadyDone_Implementation(const int32 Step) const
+bool UBTStepsForDialog::StepIsAlreadyDone_Implementation(const int32 Step) const
 {
 	return Execute_StepIsAlreadyDone(StepsHandler, Step);
 }
 
-void UBTStepsWithPoints::getLastResponse(FBTPointInStep& PointInStep)
+void UBTStepsForDialog::getLastResponse(FBTPointInStep& PointInStep)
 {
 	PointInStep = HeapResponses.Last();
 }
-int32 UBTStepsWithPoints::GetPoints(EAlignment Alignment) const
+int32 UBTStepsForDialog::GetPoints(EAlignment Alignment) const
 {
 	int32 TotalPoints = 0;
 	for (FBTPointInStep Point : HeapResponses)
@@ -52,12 +51,12 @@ int32 UBTStepsWithPoints::GetPoints(EAlignment Alignment) const
 	return TotalPoints;
 }
 
-void UBTStepsWithPoints::ConcludeAllSteps_Implementation()
+void UBTStepsForDialog::ConcludeAllSteps_Implementation()
 {
 	Execute_ConcludeAllSteps(StepsHandler);
 }
 
-void UBTStepsWithPoints::getLastResponseFromStep(const int32 SearchStep, FBTPointInStep& PointInStep)
+void UBTStepsForDialog::getLastResponseFromStep(const int32 SearchStep, FBTPointInStep& PointInStep)
 {
 	for (int32 i = HeapResponses.Num() - 1; i >= 0; --i)
 	{
@@ -69,19 +68,19 @@ void UBTStepsWithPoints::getLastResponseFromStep(const int32 SearchStep, FBTPoin
 	}
 }
 
-void UBTStepsWithPoints::Clear_Implementation()
+void UBTStepsForDialog::Clear_Implementation()
 {
 	EarnedPoints.Empty();
 	HeapResponses.Empty();
 	Execute_Clear(StepsHandler);
 }
 
-int32 UBTStepsWithPoints::GetStepToGo_Implementation()
+int32 UBTStepsForDialog::GetStepToGo_Implementation()
 {
 	return Execute_GetStepToGo(StepsHandler);
 }
 
-void UBTStepsWithPoints::AddFinishedStepWithPoint(int32 Step, FPoint Point, int32 Position)
+void UBTStepsForDialog::AddFinishedStepWithPoint(int32 Step, FPoint Point, int32 Position)
 {
 	if (Execute_StepIsAlreadyDone(StepsHandler, Step))
 	{
@@ -96,43 +95,43 @@ void UBTStepsWithPoints::AddFinishedStepWithPoint(int32 Step, FPoint Point, int3
 	PointNumber += Point.Point;
 }
 
-void UBTStepsWithPoints::FinishedCurrentStep_Implementation()
+void UBTStepsForDialog::FinishedCurrentStep_Implementation()
 {
 	Execute_FinishedCurrentStep(StepsHandler);
 }
 
 // A RedoStep keep the count of all earned points
-void UBTStepsWithPoints::RedoStep_Implementation(int32 Step, bool FromLastPlay)
+void UBTStepsForDialog::RedoStep_Implementation(int32 Step, bool FromLastPlay)
 {
 	Execute_RedoStep(StepsHandler, Step, FromLastPlay);
 }
 
-void UBTStepsWithPoints::JumpTo_Implementation(int32 Step)
+void UBTStepsForDialog::JumpTo_Implementation(int32 Step)
 {
 	Execute_JumpTo(StepsHandler, Step);
 }
 
-bool UBTStepsWithPoints::StepIsPlayable_Implementation(const int32& Step, bool ResetStepToGoIfPlay)
+bool UBTStepsForDialog::StepIsPlayable_Implementation(const int32& Step, bool ResetStepToGoIfPlay)
 {
 	return Execute_StepIsPlayable(StepsHandler, Step, ResetStepToGoIfPlay);
 }
 
-bool UBTStepsWithPoints::PlayStepAndMoveForward_Implementation(const int32& Step)
+bool UBTStepsForDialog::PlayStepAndMoveForward_Implementation(const int32& Step)
 {
 	return Execute_PlayStepAndMoveForward(StepsHandler, Step);
 }
 
-bool UBTStepsWithPoints::StepCanPlayAndReset_Implementation(const int32& Step)
+bool UBTStepsForDialog::StepCanPlayAndReset_Implementation(const int32& Step)
 {
 	return Execute_StepCanPlayAndReset(StepsHandler, Step);
 }
 
-bool UBTStepsWithPoints::StepCanPlay_Implementation(const int32& Step)
+bool UBTStepsForDialog::StepCanPlay_Implementation(const int32& Step)
 {
 	return Execute_StepCanPlay(StepsHandler, Step);
 }
 
-void UBTStepsWithPoints::OnUserLeave_Implementation()
+void UBTStepsForDialog::OnUserLeave_Implementation()
 {
 	if (bDebug) UE_LOG(LogTemp, Warning, TEXT("%s: I've been cleared"), *GetName());
 	Execute_Clear(this);

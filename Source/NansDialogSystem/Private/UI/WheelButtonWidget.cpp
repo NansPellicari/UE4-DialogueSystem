@@ -57,8 +57,8 @@ void UWheelButtonWidget::ComputeBaseMetrics(const FGeometry& MyGeometry)
 
 void UWheelButtonWidget::GetWheelDistRatio(float& WheelRatioClockwise, float& WheelRatioAntiClockwise)
 {
-	WheelRatioClockwise = (DragDistanceClockwise / RoundDistance) / MouseVelocityHandicapRatio;
-	WheelRatioAntiClockwise = (DragDistanceAntiClockwise / RoundDistance) / MouseVelocityHandicapRatio;
+	WheelRatioClockwise = (DragDistanceClockwise / RoundDistance) * MouseVelocityInfluenceRatio;
+	WheelRatioAntiClockwise = (DragDistanceAntiClockwise / RoundDistance) * MouseVelocityInfluenceRatio;
 }
 
 float UWheelButtonWidget::GetRoundDistance()

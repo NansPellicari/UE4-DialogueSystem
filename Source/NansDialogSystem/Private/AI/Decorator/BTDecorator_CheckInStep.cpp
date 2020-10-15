@@ -2,7 +2,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 
-#include "BTStepsWithPoints.h"
+#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Logging/MessageLog.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -47,7 +47,7 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsWithPoints* BTSteps = Cast<UBTStepsWithPoints>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
 
 	if (BTSteps == nullptr)
 	{
@@ -59,7 +59,7 @@ bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent
 	return EvaluateArray(BTSteps);
 }
 
-bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsWithPoints* StepsContext) const
+bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsForDialog* StepsContext) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -91,7 +91,7 @@ bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsWithPoints* StepsContext) c
 	return Comparator->EvaluateOperators(ConditionsOperators, ConditionsResults);
 }
 
-bool UBTDecorator_CheckInStep::EvaluateCondition(UBTStepsWithPoints* StepsContext, FBTStepCondition Condition) const
+bool UBTDecorator_CheckInStep::EvaluateCondition(UBTStepsForDialog* StepsContext, FBTStepCondition Condition) const
 {
 	if (Condition.Step == 0)
 	{

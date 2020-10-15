@@ -8,7 +8,7 @@
 #include "PointSystemHelpers.h"
 #include "UObject/NoExportTypes.h"
 
-#include "BTStepsWithPoints.generated.h"
+#include "BTStepsForDialog.generated.h"
 
 class UBTSteps;
 
@@ -31,12 +31,12 @@ struct NANSDIALOGSYSTEM_API FBTPointInStep
  * TODO try to remove the IInteractiveBlackboardObjectInterface dependency
  */
 UCLASS(BlueprintType)
-class NANSDIALOGSYSTEM_API UBTStepsWithPoints : public UObject, public IBTStepsHandler, public IInteractiveBlackboardObjectInterface
+class NANSDIALOGSYSTEM_API UBTStepsForDialog : public UObject, public IBTStepsHandler, public IInteractiveBlackboardObjectInterface
 {
 	GENERATED_BODY()
 
 public:
-	UBTStepsWithPoints();
+	UBTStepsForDialog();
 	virtual void BeginDestroy() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Step")

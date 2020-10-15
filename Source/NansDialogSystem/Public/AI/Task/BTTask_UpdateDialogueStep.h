@@ -7,7 +7,7 @@
 
 #include "BTTask_UpdateDialogueStep.generated.h"
 
-class UBTStepsWithPoints;
+class UBTStepsForDialog;
 class UBTDialogueResponseContainer;
 
 /**
@@ -33,7 +33,7 @@ class NANSDIALOGSYSTEM_API UBTTask_UpdateDialogueStep : public UBTTask_Base
 
 private:
 	UPROPERTY()
-	UBTStepsWithPoints* BTSteps;
+	UBTStepsForDialog* BTSteps;
 	UPROPERTY()
 	UBTDialogueResponseContainer* ResponseContainer;
 };

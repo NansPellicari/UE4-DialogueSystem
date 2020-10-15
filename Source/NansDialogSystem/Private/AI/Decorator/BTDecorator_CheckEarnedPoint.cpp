@@ -2,7 +2,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
-#include "BTStepsWithPoints.h"
+#include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -20,18 +20,19 @@ UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitia
 bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsWithPoints* BTSteps = Cast<UBTStepsWithPoints>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
 
 	if (BTSteps == nullptr)
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "), (UObject*) OwnerComp.GetCurrentTree());
+		EDITOR_ERROR(
+			"DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "), (UObject*) OwnerComp.GetCurrentTree());
 		return false;
 	}
 
 	return EvaluateArray(BTSteps);
 }
 
-bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTStepsWithPoints* StepsContext) const
+bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTStepsForDialog* StepsContext) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;

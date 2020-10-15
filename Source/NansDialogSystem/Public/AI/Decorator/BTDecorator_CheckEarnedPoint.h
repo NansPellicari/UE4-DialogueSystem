@@ -9,7 +9,7 @@
 #include "BTDecorator_CheckEarnedPoint.generated.h"
 
 class UNansComparator;
-class UBTStepsWithPoints;
+class UBTStepsForDialog;
 
 /**
  *
@@ -32,7 +32,7 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
 	FName StepsKeyName = FName("Steps");
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	bool EvaluateArray(UBTStepsWithPoints* StepsContext) const;
+	bool EvaluateArray(UBTStepsForDialog* StepsContext) const;
 	virtual FString GetStaticDescription() const override;
 
 private:

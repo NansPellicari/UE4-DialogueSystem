@@ -26,7 +26,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	int32 Level = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	float WhenReach = 0;
+	float DifficultyLevel = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	EAlignment Alignment = EAlignment::Neutral;
 

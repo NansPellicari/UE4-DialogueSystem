@@ -7,7 +7,7 @@
 
 #include "BTService_AddPointsAndResponses.generated.h"
 
-class UBTStepsWithPoints;
+class UBTStepsForDialog;
 class UBTDialogueResponseContainer;
 
 /**
@@ -34,7 +34,7 @@ class NANSDIALOGSYSTEM_API UBTService_AddPointsAndResponses : public UBTService
 
 private:
 	UPROPERTY()
-	UBTStepsWithPoints* BTSteps;
+	UBTStepsForDialog* BTSteps;
 	UPROPERTY()
 	UBTDialogueResponseContainer* ResponseContainer;
 };

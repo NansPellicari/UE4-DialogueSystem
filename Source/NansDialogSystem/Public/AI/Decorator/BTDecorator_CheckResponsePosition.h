@@ -10,7 +10,7 @@
 #include "BTDecorator_CheckResponsePosition.generated.h"
 
 class UNansComparator;
-class UBTStepsWithPoints;
+class UBTStepsForDialog;
 
 /**
  * This is a structure to create a condition to check what was the response position
@@ -51,7 +51,7 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckResponsePosition : public UBTDecora
 	FName StepsKeyName = FName("Steps");
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	bool EvaluateArray(UBTStepsWithPoints* StepsContext) const;
+	bool EvaluateArray(UBTStepsForDialog* StepsContext) const;
 	virtual FString GetStaticDescription() const override;
 
 private:

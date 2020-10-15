@@ -6,6 +6,7 @@
 #include "MessageLog/Public/MessageLogModule.h"
 #include "Modules/ModuleManager.h"
 #include "NansDialogSystemLog.h"
+#include "Pin/DialogSettingsPinFactory.h"
 
 class FNansDialogSystem : public INansDialogSystem
 {
@@ -25,6 +26,11 @@ void FNansDialogSystem::StartupModule()
 	InitOptions.bShowFilters = true;
 	MessageLogModule.RegisterLogListing(
 		"DialogSystem", NSLOCTEXT("DialogSystem", "DialogSystemLogLabel", "Dialog System"), InitOptions);
+
+	// create a pin factory and shared pointer to it.
+	TSharedPtr<FNDialogSettingsPinFactory> Factory = MakeShareable(new FNDialogSettingsPinFactory());
+	// and now register it.
+	FEdGraphUtilities::RegisterVisualPinFactory(Factory);
 }
 
 void FNansDialogSystem::ShutdownModule()

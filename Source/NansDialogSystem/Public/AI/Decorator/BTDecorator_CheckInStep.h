@@ -10,7 +10,7 @@
 #include "BTDecorator_CheckInStep.generated.h"
 
 class UNansComparator;
-class UBTStepsWithPoints;
+class UBTStepsForDialog;
 class UBlackboardComponent;
 
 /**
@@ -62,6 +62,6 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 
 private:
 	UNansComparator* Comparator;
-	bool EvaluateArray(UBTStepsWithPoints* StepsContext) const;
-	bool EvaluateCondition(UBTStepsWithPoints* StepsContext, FBTStepCondition Condition) const;
+	bool EvaluateArray(UBTStepsForDialog* StepsContext) const;
+	bool EvaluateCondition(UBTStepsForDialog* StepsContext, FBTStepCondition Condition) const;
 };

@@ -2,7 +2,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
-#include "BTStepsWithPoints.h"
+#include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -20,7 +20,7 @@ UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FOb
 bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsWithPoints* BTSteps = Cast<UBTStepsWithPoints>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
 
 	if (BTSteps == nullptr)
 	{
@@ -32,7 +32,7 @@ bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTre
 	return EvaluateArray(BTSteps);
 }
 
-bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTStepsWithPoints* StepsContext) const
+bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTStepsForDialog* StepsContext) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;

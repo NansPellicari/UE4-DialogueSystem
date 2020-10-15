@@ -50,9 +50,9 @@ public:
 	{
 		return ResetDistanceOnDrop;
 	};
-	float GetMouseVelocityHandicapRatio()
+	float GetMouseVelocityInfluenceRatio()
 	{
-		return MouseVelocityHandicapRatio;
+		return MouseVelocityInfluenceRatio;
 	};
 	EWheelDirection GetDirection();
 
@@ -93,7 +93,7 @@ protected:
 	float RingThicknessRatio = 0.1f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Widget")
-	float MouseVelocityHandicapRatio = 1.f;
+	float MouseVelocityInfluenceRatio = 1.f;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Movement")
 	FVector2D DragOffset;

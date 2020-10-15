@@ -8,6 +8,7 @@
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
+#include "Service/BTDialogDifficultyHandler.h"
 #include "UI/DialogHUD.h"
 #include "UI/ResponseButtonWidget.h"
 #include "UI/WheelButtonWidget.h"
@@ -49,6 +50,19 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 	float CounterClockwiseWheelReach =
 		FMath::Clamp<float>(WheelRatioAntiClockwise - WheelRatioClockwise, ResponsesTypeTolerance, 100);
 
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	UBTDialogDifficultyHandler* DifficultyHandler =
+		Cast<UBTDialogDifficultyHandler>(BlackboardComp->GetValueAsObject(DifficultyHandlerKeyName));
+
+	if (!ensure(DifficultyHandler != nullptr))
+	{
+		EDITOR_ERROR("DialogSystem",
+			LOCTEXT("DifficultyHandlerMissingOnWheelResponses", "The difficulty handler is missing on WheelResponses"),
+			this);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
+		return;
+	}
+
 	for (TPair<FString, int32> ResponseIndex : ListButtonIndexes)
 	{
 		UResponseButtonWidget* Button = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(ResponseIndex.Value));
@@ -62,9 +76,10 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		UBTDialogueResponseContainer* ResponseContainer = Button->GetResponse();
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 
-		bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP && Response.WhenReach <= ClockwiseWheelReach);
-		bool DOWN =
-			(ResponseContainer->InfluencedBy == EResponseDirection::DOWN && Response.WhenReach <= CounterClockwiseWheelReach);
+		bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP &&
+				   DifficultyHandler->GetDifficultyLevel(Response) <= ClockwiseWheelReach);
+		bool DOWN = (ResponseContainer->InfluencedBy == EResponseDirection::DOWN &&
+					 DifficultyHandler->GetDifficultyLevel(Response) <= CounterClockwiseWheelReach);
 
 		if (UP || DOWN || Response.Alignment == EAlignment::Neutral)
 		{

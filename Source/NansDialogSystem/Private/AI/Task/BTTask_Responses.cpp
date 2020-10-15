@@ -325,12 +325,12 @@ FString UBTTask_Responses::DisplayStaticResponses(
 			FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
 			Arguments.Add(TEXT("response"), FText::FromString(Text));
 			Arguments.Add(TEXT("level"), Response.Level);
-			Arguments.Add(TEXT("reach"), Response.WhenReach);
+			Arguments.Add(TEXT("difficulty"), Response.DifficultyLevel);
 			Arguments.Add(TEXT("alignment"), FText::FromString(EnumToString(EAlignment, Response.Alignment)));
 			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
 			ReturnDesc += FText::Format(
 				LOCTEXT("NodeResponsesDetails",
-					"{response}\n\tPosition: {position}, wheel reaches: {reach}, lvl: {level}, alignment: {alignment}"),
+					"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, alignment: {alignment}"),
 				Arguments)
 							  .ToString();
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";
