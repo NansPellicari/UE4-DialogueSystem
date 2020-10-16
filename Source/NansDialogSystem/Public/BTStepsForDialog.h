@@ -52,7 +52,7 @@ public:
 	void getLastResponseFromStep(const int32 SearchStep, FBTPointInStep& PointInStep);
 
 	UFUNCTION(BlueprintCallable, Category = "Step")
-	int32 GetPoints(EAlignment Alignment) const;
+	int32 GetPoints(FNResponseCategory Category) const;
 
 	virtual int32 GetCurrentStep_Implementation() override;
 	virtual void ConcludeAllSteps_Implementation() override;
@@ -80,7 +80,7 @@ protected:
 	TArray<FBTPointInStep> HeapResponses;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Step")
-	TMap<EAlignment, int32> EarnedPoints;
+	TMap<FName, int32> EarnedPoints;
 
 private:
 	UPROPERTY()

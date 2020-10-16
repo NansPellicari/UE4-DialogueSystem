@@ -31,7 +31,7 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 			Index,
 			Condition.Step,
 			Condition.isDone ? "x" : "",
-			*EnumToString(EAlignment, Condition.AlignmentPoint),
+			*Condition.CategoryPoint.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.CompareTo);
 	}
@@ -108,7 +108,7 @@ bool UBTDecorator_CheckInStep::EvaluateCondition(UBTStepsForDialog* StepsContext
 		return Condition.isDone ? false : true;
 	}
 
-	if (PointInStep.Point.Alignment != Condition.AlignmentPoint)
+	if (PointInStep.Point.Category.Name != Condition.CategoryPoint.Name)
 	{
 		return false;
 	}

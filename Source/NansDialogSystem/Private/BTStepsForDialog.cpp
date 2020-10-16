@@ -1,13 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BTStepsForDialog.h"
+
+#include "Attribute/ResponseCategory.h"
 #include "NansBehaviorSteps/Public/BTSteps.h"
 
 UBTStepsForDialog::UBTStepsForDialog()
 {
 	StepsHandler = CreateDefaultSubobject<UBTSteps>(FName(TEXT("Sub_BTSteps")));
 
-	EarnedPoints = TMap<EAlignment, int32>();
+	EarnedPoints = TMap<FName, int32>();
 	HeapResponses = TArray<FBTPointInStep>();
 }
 
@@ -27,7 +29,7 @@ void UBTStepsForDialog::AddPoints(FPoint Point, int32 Position)
 {
 	int32 Step = Execute_GetCurrentStep(StepsHandler);
 	HeapResponses.Emplace(FBTPointInStep(Step, Point, Position));
-	int32& PointNumber = EarnedPoints.FindOrAdd(Point.Alignment);
+	int32& PointNumber = EarnedPoints.FindOrAdd(Point.Category.Name);
 	PointNumber += Point.Point;
 }
 
@@ -40,12 +42,12 @@ void UBTStepsForDialog::getLastResponse(FBTPointInStep& PointInStep)
 {
 	PointInStep = HeapResponses.Last();
 }
-int32 UBTStepsForDialog::GetPoints(EAlignment Alignment) const
+int32 UBTStepsForDialog::GetPoints(FNResponseCategory Category) const
 {
 	int32 TotalPoints = 0;
 	for (FBTPointInStep Point : HeapResponses)
 	{
-		TotalPoints += Point.Point.Alignment == Alignment ? Point.Point.Point : 0;
+		TotalPoints += Point.Point.Category.Name == Category.Name ? Point.Point.Point : 0;
 	}
 
 	return TotalPoints;
@@ -91,7 +93,7 @@ void UBTStepsForDialog::AddFinishedStepWithPoint(int32 Step, FPoint Point, int32
 	StepsHandler->AddFinishedStep(Step);
 
 	HeapResponses.Emplace(FBTPointInStep(Step, Point, Position));
-	int32& PointNumber = EarnedPoints.FindOrAdd(Point.Alignment);
+	int32& PointNumber = EarnedPoints.FindOrAdd(Point.Category.Name);
 	PointNumber += Point.Point;
 }
 

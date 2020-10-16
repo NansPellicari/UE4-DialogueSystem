@@ -28,20 +28,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
 	FVector2D ButtonDisplaySize = FVector2D(100.f, 100.f);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
-	FLinearColor ColorCNV;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
-	FLinearColor ColorNeutral;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
-	FLinearColor ColorCSV;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Display")
 	FLinearColor FinalColor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Display")
-	EAlignment Alignment = EAlignment::None;
+	EResponseDirection Direction;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widget")

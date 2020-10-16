@@ -15,21 +15,6 @@ class UButtonSequenceWidget;
 class NButtonSequenceMovementManager;
 class UBTTask_Countdown;
 
-UENUM(BlueprintType)
-enum class EButtonsSequence : uint8
-{
-	// fr: Observation Sentiment Besoin Demande
-	// en: Observation Feeling Need Request
-	// 24 combinations
-	OSBD UMETA(DisplayName = "CNV: OSBD"),
-	// fr: Interpretation Analyse Jugement Agression
-	// en: Interpretation Analysis Judgment Agression
-	// Easyer: only 12 combinations
-	IAJA UMETA(DisplayName = "CSV: IAJA"),
-	// Just to out
-	Neutral UMETA(DisplayName = "Neutral: N")
-};
-
 /**
  * Dialogue Reponse Struct
  */
@@ -71,7 +56,10 @@ public:
 	FText ButtonSequence;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	EAlignment Alignment;
+	FNResponseCategory Category;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
+	EResponseDirection Direction = EResponseDirection::NONE;
 
 	// This allow to divid the number of found letters in order
 	// with this coefficient to compute earned points.
@@ -225,9 +213,6 @@ protected:
 
 private:
 	TSharedPtr<NButtonSequenceMovementManager> BTSequenceManager;
-	// This to allow translations
-	TMap<EButtonsSequence, FText> SequenceToText;
-	TMap<EButtonsSequence, EAlignment> SequenceAlignment;
 	FString PlayerTries;
 	int32 SequenceIndex = -1;
 	EBTNodeResult::Type TriesStatus = EBTNodeResult::InProgress;

@@ -81,7 +81,7 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		bool DOWN = (ResponseContainer->InfluencedBy == EResponseDirection::DOWN &&
 					 DifficultyHandler->GetDifficultyLevel(Response) <= CounterClockwiseWheelReach);
 
-		if (UP || DOWN || Response.Alignment == EAlignment::Neutral)
+		if (UP || DOWN || ResponseContainer->InfluencedBy == EResponseDirection::NONE)
 		{
 			Button->SetVisibility(ESlateVisibility::Visible);
 		}

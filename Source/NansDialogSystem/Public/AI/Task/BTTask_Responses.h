@@ -67,13 +67,16 @@ protected:
 	TArray<FBTDialogueResponse> ReponsesUP;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
+	FNResponseCategory MiddleResponseCategory;
+
+	UPROPERTY(EditInstanceOnly, Category = "Responses")
+	FText MiddleResponse;
+
+	UPROPERTY(EditInstanceOnly, Category = "Responses")
+	int32 MiddleResponsePoint = 1;
+
+	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	TArray<FBTDialogueResponse> ReponsesDOWN;
-
-	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	FText NeutralResponse;
-
-	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	int32 NeutralResponsePoint = 1;
 
 	UPROPERTY(EditInstanceOnly, Category = "Countdown")
 	int32 TimeToResponse = 0;
@@ -94,7 +97,7 @@ protected:
 	TMap<FString, int32> ListButtonIndexes;
 
 private:
-	int32 NeutralResponseIndex = -1;
+	int32 MiddleResponseIndex = -1;
 	EBTNodeResult::Type ResponseStatus = EBTNodeResult::InProgress;
 	void CreateButtons();
 	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);

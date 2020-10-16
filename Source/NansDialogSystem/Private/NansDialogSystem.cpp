@@ -1,12 +1,13 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "CoreMinimal.h"
+#include "Editor/Pin/DialogSettingsPinFactory.h"
 #include "INansDialogSystem.h"
 #include "MessageLog/Public/MessageLogInitializationOptions.h"
 #include "MessageLog/Public/MessageLogModule.h"
 #include "Modules/ModuleManager.h"
 #include "NansDialogSystemLog.h"
-#include "Pin/DialogSettingsPinFactory.h"
+#include "PropertyEditor/Public/PropertyEditorModule.h"
 
 class FNansDialogSystem : public INansDialogSystem
 {
@@ -31,6 +32,12 @@ void FNansDialogSystem::StartupModule()
 	TSharedPtr<FNDialogSettingsPinFactory> Factory = MakeShareable(new FNDialogSettingsPinFactory());
 	// and now register it.
 	FEdGraphUtilities::RegisterVisualPinFactory(Factory);
+
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	// Custom properties
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		"NResponseCategory", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNResponseCategoryCustomization::MakeInstance));
 }
 
 void FNansDialogSystem::ShutdownModule()
@@ -40,5 +47,12 @@ void FNansDialogSystem::ShutdownModule()
 		// unregister message log
 		FMessageLogModule& MessageLogModule = FModuleManager::GetModuleChecked<FMessageLogModule>("MessageLog");
 		MessageLogModule.UnregisterLogListing("DialogSystem");
+	}
+
+	if (FModuleManager::Get().IsModuleLoaded("PropertyEditor"))
+	{
+		// unregister properties
+		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		PropertyModule.UnregisterCustomPropertyTypeLayout("NResponseCategory");
 	}
 }

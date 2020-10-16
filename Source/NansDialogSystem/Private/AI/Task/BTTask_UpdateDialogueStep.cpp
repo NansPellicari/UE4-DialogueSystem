@@ -27,13 +27,12 @@ EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeCompone
 	FPoint Point;
 	int32 Position = 0;
 	Point.Point = 0;
-	Point.Alignment = EAlignment::None;
 
 	if (ResponseContainer != nullptr)
 	{
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 		Point.Point = Response.Level;
-		Point.Alignment = Response.Alignment;
+		Point.Category = Response.Category;
 		Position = ResponseContainer->DisplayOrder;
 		ResponseContainer->MarkPendingKill();
 	}

@@ -18,15 +18,18 @@
 
 #include "ResponseCategory.generated.h"
 
+struct FNDialogResponseCategorySettings;
+
 USTRUCT(BlueprintType)
-struct FNResponseCategory
+struct NANSDIALOGSYSTEM_API FNResponseCategory
 {
 	GENERATED_BODY()
 
 public:
-	FNResponseCategory() {}
-	FNResponseCategory(FName _Name) : Name(_Name) {}
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ResponseCategory")
 	FName Name;
+
+	FLinearColor GetColor() const;
+	FName GetFactorName() const;
+	static FNDialogResponseCategorySettings* GetConfig(const FName& Name);
 };

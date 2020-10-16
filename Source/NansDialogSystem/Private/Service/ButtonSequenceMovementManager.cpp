@@ -2,6 +2,7 @@
 
 #include "Service/ButtonSequenceMovementManager.h"
 
+#include "BTDialogueTypes.h"
 #include "Components/CanvasPanelSlot.h"
 #include "NansCoreHelpers/Public/Math/MathUtilities.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -25,8 +26,8 @@ void NButtonSequenceMovementManager::Initialize(UPanelWidget* _ButtonsSlot, floa
 	WheelButton = _WheelButton;
 	ButtonsSlot = _ButtonsSlot;
 	InitialVelocity = _Velocity;
-	VelocityCNV = InitialVelocity;
-	VelocityCSV = InitialVelocity;
+	VelocityClock = InitialVelocity;
+	VelocityAntiClock = InitialVelocity;
 
 	if (WheelButton != nullptr)
 	{
@@ -39,8 +40,8 @@ void NButtonSequenceMovementManager::Reset()
 {
 	ButtonsSlot = nullptr;
 	InitialVelocity = 0;
-	VelocityCNV = 0;
-	VelocityCSV = 0;
+	VelocityClock = 0;
+	VelocityAntiClock = 0;
 	ButtonsPositions.Empty();
 	ForbiddenZone.Empty();
 	if (WheelButton != nullptr)
@@ -56,8 +57,8 @@ void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 	FGeometry CachedGeometry = ButtonsSlot->GetCachedGeometry();
 	FVector2D CanvasSize = CachedGeometry.GetLocalSize();
 	float MaxDistPerSec = 1000.f;
-	float MultiplierCNV = (DeltaSeconds * VelocityCNV * MaxDistPerSec);
-	float MultiplierCSV = (DeltaSeconds * VelocityCSV * MaxDistPerSec);
+	float MultiplierClock = (DeltaSeconds * VelocityClock * MaxDistPerSec);
+	float MultiplierAntiClock = (DeltaSeconds * VelocityAntiClock * MaxDistPerSec);
 	float MultiplierNeutral = (DeltaSeconds * 0.2f * MaxDistPerSec);
 
 	ComputeForbiddenZone();
@@ -107,8 +108,8 @@ void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 		}
 
 		FVector2D Distance = *AimPos - BtPos;
-		float Multiplier = Button->Alignment == EAlignment::CNV ? MultiplierCNV : MultiplierCSV;
-		Multiplier = Button->Alignment == EAlignment::Neutral ? MultiplierNeutral : Multiplier;
+		float Multiplier = Button->Direction == EResponseDirection::UP ? MultiplierClock : MultiplierAntiClock;
+		Multiplier = Button->Direction == EResponseDirection::NONE ? MultiplierNeutral : Multiplier;
 		FVector2D NewTrajectory = Distance.GetSafeNormal() * Multiplier;
 
 		ButtonSlot->SetPosition(BtPos + NewTrajectory);
@@ -286,16 +287,16 @@ void NButtonSequenceMovementManager::ChangeVelocity(UWheelButtonWidget* _WheelBu
 	float Anti = 0;
 	_WheelButton->GetWheelDistRatio(Clock, Anti);
 	/// float Divider = Direction == EWheelDirection::Clockwise ? Clock : Anti;
-	VelocityCNV = FMath::Clamp(InitialVelocity / Clock, 0.f, InitialVelocity);
-	VelocityCSV = FMath::Clamp(InitialVelocity / Anti, 0.f, InitialVelocity);
+	VelocityClock = FMath::Clamp(InitialVelocity / Clock, 0.f, InitialVelocity);
+	VelocityAntiClock = FMath::Clamp(InitialVelocity / Anti, 0.f, InitialVelocity);
 }
 
 void NButtonSequenceMovementManager::ResetVelocity()
 {
 	if (WheelButton->GetResetDistanceOnDrop())
 	{
-		VelocityCNV = InitialVelocity;
-		VelocityCSV = InitialVelocity;
+		VelocityClock = InitialVelocity;
+		VelocityAntiClock = InitialVelocity;
 	}
 }
 

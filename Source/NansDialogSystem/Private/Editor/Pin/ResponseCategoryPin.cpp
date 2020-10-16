@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Pin/ResponseCategoryPin.h"
+#include "Editor/Pin/ResponseCategoryPin.h"
 
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraph/EdGraphSchema.h"

@@ -2,6 +2,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
+#include "Attribute/ResponseCategory.h"
 #include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -40,7 +41,7 @@ bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTStepsForDialog* StepsContex
 	for (int32 Index = 0; Index < EarnedPointsConditions.Num(); ++Index)
 	{
 		FPointCondition PointCondition = EarnedPointsConditions[Index];
-		if (PointCondition.PointType == EAlignment::None)
+		if (PointCondition.PointType.Name == NAME_None)
 		{
 			ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(false));
 			continue;
@@ -76,7 +77,7 @@ FString UBTDecorator_CheckEarnedPoint::GetStaticDescription() const
 
 		ReturnDesc += FString::Printf(TEXT("\nC%d %s %s %d"),
 			Index,
-			*EnumToString(EAlignment, Condition.PointType),
+			*Condition.PointType.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.CompareTo);
 	}

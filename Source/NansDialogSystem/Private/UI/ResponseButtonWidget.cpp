@@ -12,32 +12,16 @@ void UResponseButtonWidget::SetResponse(UBTDialogueResponseContainer* DialogueRe
 
 void UResponseButtonWidget::ComputeColor(int32 MaxLevel)
 {
-	FLinearColor* AlignmentColor = nullptr;
+	FLinearColor BtColor = Response->GetResponse().Category.GetColor();
 
-	if (Response->GetResponse().Alignment == EAlignment::CNV)
-	{
-		AlignmentColor = &ColorCNV;
-	}
-	else if (Response->GetResponse().Alignment == EAlignment::CSV)
-	{
-		AlignmentColor = &ColorCSV;
-	}
-	else
-	{
-		FinalColor = ColorNeutral;
-	}
-
-	if (AlignmentColor != nullptr)
-	{
-		FVector vNeutralColor = FVector(ColorNeutral.R, ColorNeutral.G, ColorNeutral.B);
-		FVector vAlignmentColor = FVector(AlignmentColor->R, AlignmentColor->G, AlignmentColor->B);
-		FVector DiffColor = vAlignmentColor - vNeutralColor * ((float) Response->GetResponse().Level / (float) MaxLevel);
-		vNeutralColor += DiffColor;
-		FinalColor.R = vNeutralColor.X;
-		FinalColor.G = vNeutralColor.Y;
-		FinalColor.B = vNeutralColor.Z;
-		FinalColor.A = AlignmentColor->A;
-	}
+	FVector vBaseColor = FVector(BaseColor.R, BaseColor.G, BaseColor.B);
+	FVector vBtColor = FVector(BtColor.R, BtColor.G, BtColor.B);
+	FVector DiffColor = vBtColor - vBaseColor * ((float) Response->GetResponse().Level / (float) MaxLevel);
+	vBaseColor += DiffColor;
+	FinalColor.R = vBaseColor.X;
+	FinalColor.G = vBaseColor.Y;
+	FinalColor.B = vBaseColor.Z;
+	FinalColor.A = BtColor.A;
 }
 
 UBTDialogueResponseContainer* UResponseButtonWidget::GetResponse()

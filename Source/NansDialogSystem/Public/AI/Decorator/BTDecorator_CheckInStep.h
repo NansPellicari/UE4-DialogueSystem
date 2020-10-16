@@ -28,7 +28,7 @@ struct NANSDIALOGSYSTEM_API FBTStepCondition
 	int32 Step;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
-	EAlignment AlignmentPoint;
+	FNResponseCategory CategoryPoint;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	ENansConditionComparator Operator;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "Attribute/ResponseCategory.h"
 #include "CoreMinimal.h"
 
 #include "BTDialogDifficultyHandler.generated.h"
 
 struct FNDialogDifficultySettings;
 
-UCLASS() class NANSDIALOGSYSTEM_API UBTDialogDifficultyHandler : public UObject
+UCLASS()
+class NANSDIALOGSYSTEM_API UBTDialogDifficultyHandler : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -15,6 +17,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetFactor(FName Name, float Factor);
+	UFUNCTION(BlueprintCallable)
+	FNResponseCategory Test(FNResponseCategory Category)
+	{
+		// UE_LOG(LogTemp, Warning, TEXT("%s - Color: %s"), ANSI_TO_TCHAR(__FUNCTION__), *Category.GetColor().ToString());
+		return Category;
+	}
 
 protected:
 	/** Should change depending on the Character player has chosen */

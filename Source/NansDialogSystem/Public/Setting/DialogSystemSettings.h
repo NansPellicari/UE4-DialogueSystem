@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Attribute/ResponseCategory.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 #include "PointSystemHelpers.h"
@@ -14,7 +15,7 @@ struct FNDialogDifficultySettings
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
-	EAlignment Alignment;
+	FNResponseCategory Category;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
 	float Multiplier;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
@@ -23,7 +24,8 @@ struct FNDialogDifficultySettings
 	float RangeTo;
 };
 
-USTRUCT(BlueprintType) struct FNDialogResponseCategorySettings
+USTRUCT(BlueprintType)
+struct FNDialogResponseCategorySettings
 {
 	GENERATED_USTRUCT_BODY()
 

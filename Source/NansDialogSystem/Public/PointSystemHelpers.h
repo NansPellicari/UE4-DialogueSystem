@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Attribute/ResponseCategory.h"
 #include "NansCommon/Public/Service/NansComparatorHelpers.h"
 
 #include "PointSystemHelpers.generated.h"
@@ -25,7 +26,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point")
 	int32 Point = 0;
 	UPROPERTY(BlueprintReadWrite, Category = "Point")
-	EAlignment Alignment = EAlignment::Neutral;
+	FNResponseCategory Category;
 };
 
 /**
@@ -37,7 +38,7 @@ struct NANSDIALOGSYSTEM_API FPointCondition
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	EAlignment PointType;
+	FNResponseCategory PointType;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
 	ENansConditionComparator Operator;

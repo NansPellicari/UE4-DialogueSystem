@@ -34,6 +34,7 @@ namespace UnrealBuildTool.Rules
 					"InputCore",
 					"Kismet",
 					"KismetCompiler",
+					"EditorStyle",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansFactorsFactoryCore",

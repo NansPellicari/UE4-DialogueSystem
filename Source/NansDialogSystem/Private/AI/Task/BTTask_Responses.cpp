@@ -93,7 +93,7 @@ void UBTTask_Responses::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
-	if (ReponsesUP.Num() <= 0 && ReponsesDOWN.Num() <= 0 && NeutralResponse.IsEmpty())
+	if (ReponsesUP.Num() <= 0 && ReponsesDOWN.Num() <= 0 && MiddleResponse.IsEmpty())
 	{
 		// I don't know why someone can create this settings, but it shouldn't stop the process
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
@@ -126,7 +126,7 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 	ResponseStatus = EBTNodeResult::InProgress;
 	CountDownTask->OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
-	NeutralResponseIndex = -1;
+	MiddleResponseIndex = -1;
 
 	if (ResponsesSlot == nullptr)
 	{
@@ -179,12 +179,12 @@ void UBTTask_Responses::CreateButtons()
 	}
 
 	Position = 0;
-	FBTDialogueResponse NeutralDialogueResponse;
-	NeutralDialogueResponse.Alignment = EAlignment::Neutral;
-	NeutralDialogueResponse.Level = NeutralResponsePoint;
-	NeutralDialogueResponse.Text = NeutralResponse;
-	NeutralResponseIndex = Index++;
-	CreateButton(NeutralDialogueResponse, NeutralResponseIndex, Position, 0);
+	FBTDialogueResponse MiddleDialogueResponse;
+	MiddleDialogueResponse.Category = MiddleResponseCategory;
+	MiddleDialogueResponse.Level = MiddleResponsePoint;
+	MiddleDialogueResponse.Text = MiddleResponse;
+	MiddleResponseIndex = Index++;
+	CreateButton(MiddleDialogueResponse, MiddleResponseIndex, Position, 1);
 
 	if (ReponsesDOWN.Num() > 0)
 	{
@@ -238,7 +238,7 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 
 void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 {
-	UResponseButtonWidget* ButtonWidget = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(NeutralResponseIndex));
+	UResponseButtonWidget* ButtonWidget = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(MiddleResponseIndex));
 	UBTDialogueResponseContainer* DialogueResponse = UBTDialogueResponseContainer::CreateNullObject(OwnerComp);
 
 	// TODO set a random value depending on the response setting + weighting with player class level
@@ -250,7 +250,7 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 	else
 	{
 		FBTDialogueResponse Response = DialogueResponse->GetResponse();
-		Response.Alignment = EAlignment::Neutral;
+		Response.Category = MiddleResponseCategory;
 		Response.Level = 0;
 		DialogueResponse->SetResponse(Response);
 	}
@@ -272,18 +272,20 @@ FString UBTTask_Responses::GetStaticDescription() const
 	int32 Position = 0;
 	ReturnDesc +=
 		DisplayStaticResponses(ReponsesUP, Position, LOCTEXT("CNVNodeResponsesTitle", "[ UP Responses ]\n").ToString(), true);
-	if (NeutralResponse.IsEmpty() == false)
+	if (MiddleResponse.IsEmpty() == false)
 	{
 		Position = 0;
 		ReturnDesc += "\n----------------------\n";
-		ReturnDesc += LOCTEXT("CNVNodeResponsesTitle", "[ Neutral Response ]\n").ToString();
+		ReturnDesc += LOCTEXT("CNVNodeResponsesTitle", "[ Middle Response ]\n").ToString();
 		FFormatNamedArguments Arguments;
-		Arguments.Add(TEXT("response"), NeutralResponse);
-		Arguments.Add(TEXT("level"), NeutralResponsePoint);
+		Arguments.Add(TEXT("category"), FText::FromString(MiddleResponseCategory.Name.ToString()));
+		Arguments.Add(TEXT("response"), MiddleResponse);
+		Arguments.Add(TEXT("level"), MiddleResponsePoint);
 		Arguments.Add(TEXT("position"), Position++);
-		ReturnDesc +=
-			FText::Format(LOCTEXT("CNVNodeNeutralResponse", "\t- \"{response}\"\n\tPosition: {position}, lvl: {level}"), Arguments)
-				.ToString();
+		ReturnDesc += FText::Format(
+			LOCTEXT("CNVNodeMiddleResponse", "\t- \"{response}\"\n\tPosition: {position}, lvl: {level}, category: {category}"),
+			Arguments)
+						  .ToString();
 		ReturnDesc += "\n----------------------\n";
 	}
 	ReturnDesc +=
@@ -326,11 +328,11 @@ FString UBTTask_Responses::DisplayStaticResponses(
 			Arguments.Add(TEXT("response"), FText::FromString(Text));
 			Arguments.Add(TEXT("level"), Response.Level);
 			Arguments.Add(TEXT("difficulty"), Response.DifficultyLevel);
-			Arguments.Add(TEXT("alignment"), FText::FromString(EnumToString(EAlignment, Response.Alignment)));
+			Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
 			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
 			ReturnDesc += FText::Format(
 				LOCTEXT("NodeResponsesDetails",
-					"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, alignment: {alignment}"),
+					"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, category: {category}"),
 				Arguments)
 							  .ToString();
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";

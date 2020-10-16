@@ -26,8 +26,8 @@ private:
 	TArray<FVector2D, TFixedAllocator<2>> ForbiddenZone;
 
 	float InitialVelocity = 0;
-	float VelocityCNV = 0;
-	float VelocityCSV = 0;
+	float VelocityClock = 0;
+	float VelocityAntiClock = 0;
 
 	bool InZone(const TArray<FVector2D, TFixedAllocator<2>>& Zone, const FVector2D& Pos, const FVector2D& Size) const;
 	bool InButtonsZone(const int32 Position,

@@ -26,13 +26,6 @@ UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& Objec
 	BTSequenceManager = MakeShareable(new NButtonSequenceMovementManager());
 	CountDownTask = ObjectInitializer.CreateDefaultSubobject<UBTTask_Countdown>(this, TEXT("Countdown"));
 	CountDownTask->OnCountdownEnds().AddUObject(this, &UBTTask_ButtonsSequence::OnCountdownEnds);
-
-	SequenceToText.Add(EButtonsSequence::OSBD, LOCTEXT("CNVSequenceOSBD", "OSBD"));
-	SequenceToText.Add(EButtonsSequence::IAJA, LOCTEXT("CSVSequenceIAJA", "IAJA"));
-	SequenceToText.Add(EButtonsSequence::Neutral, LOCTEXT("CSVSequenceNEUTRAL", "N"));
-	SequenceAlignment.Add(EButtonsSequence::OSBD, EAlignment::CNV);
-	SequenceAlignment.Add(EButtonsSequence::IAJA, EAlignment::CSV);
-	SequenceAlignment.Add(EButtonsSequence::Neutral, EAlignment::Neutral);
 }
 
 void UBTTask_ButtonsSequence::BeginDestroy()
@@ -174,7 +167,6 @@ void UBTTask_ButtonsSequence::CreateButtons()
 	for (FBTButtonSequence Sequence : Sequences)
 	{
 		FString StringSequence = Sequence.ButtonSequence.ToString();
-		EAlignment Alignment = Sequence.Alignment;
 		bool ColorIsComputed = false;
 		FLinearColor FinalColor;
 		for (TCHAR Char : StringSequence)
@@ -183,22 +175,11 @@ void UBTTask_ButtonsSequence::CreateButtons()
 				CreateWidget<UButtonSequenceWidget>(GetWorld(), ButtonWidget->GetDefaultObject()->GetClass());
 			Button->SetText(FString("") + Char);
 			Button->OnBTClicked.AddDynamic(this, &UBTTask_ButtonsSequence::OnButtonClick);
-			Button->Alignment = Alignment;
+			Button->Direction = Sequence.Direction;
 
 			if (ColorIsComputed == false)
 			{
-				if (Alignment == EAlignment::CNV)
-				{
-					FinalColor = Button->ColorCNV;
-				}
-				else if (Alignment == EAlignment::CSV)
-				{
-					FinalColor = Button->ColorCSV;
-				}
-				else
-				{
-					FinalColor = Button->ColorNeutral;
-				}
+				FinalColor = Sequence.Category.GetColor();
 				ColorIsComputed = true;
 			}
 
@@ -280,12 +261,12 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 	int32 i = 0;
 	for (FBTButtonSequence Sequence : Sequences)
 	{
-		FString AlignmentStr = EnumToString(EAlignment, Sequence.Alignment);
+		FString CategoryStr = Sequence.Category.Name.ToString();
 		FFormatNamedArguments Arguments;
 		Arguments.Add(TEXT("sequence"), Sequence.ButtonSequence);
-		Arguments.Add(TEXT("alignment"), FText::FromString(AlignmentStr));
+		Arguments.Add(TEXT("category"), FText::FromString(CategoryStr));
 		Desc += "\n\n----------------------\n";
-		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {sequence} :: {alignment} ]"), Arguments)
+		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {sequence} :: {category} ]"), Arguments)
 					.ToString();
 		Desc += "\n";
 		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}"), Sequence.LevelCoefficient, i)
@@ -414,7 +395,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 		int32 TotalPoint = GetEarnedPoint();
 		FBTButtonSequence Sequence = Sequences[SequenceIndex];
 		FBTDialogueResponse Response;
-		Response.Alignment = Sequence.Alignment;
+		Response.Category = Sequence.Category;
 		Response.Level = TotalPoint;
 		Response.Text = Sequence.GetResponseForPoints(TotalPoint);
 

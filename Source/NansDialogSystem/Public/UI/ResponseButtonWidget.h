@@ -34,13 +34,7 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Color")
-	FLinearColor ColorCNV;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Color")
-	FLinearColor ColorNeutral;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Color")
-	FLinearColor ColorCSV;
+	FLinearColor BaseColor;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Color")
 	FLinearColor FinalColor;

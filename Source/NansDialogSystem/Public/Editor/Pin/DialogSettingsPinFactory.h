@@ -19,7 +19,7 @@
 #include "EdGraph/EdGraphSchema.h"
 #include "EdGraphSchema_K2.h"
 #include "EdGraphUtilities.h"
-#include "Pin/ResponseCategoryPin.h"
+#include "Editor/Pin/ResponseCategoryPin.h"
 #include "SlateBasics.h"
 
 class FNDialogSettingsPinFactory : public FGraphPanelPinFactory

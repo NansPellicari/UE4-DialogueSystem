@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Attribute/ResponseCategory.h"
 #include "NansDialogSystem/Public/PointSystemHelpers.h"
 
 #include "BTDialogueTypes.generated.h"
@@ -9,6 +10,7 @@ enum class EResponseDirection : uint8
 {
 	UP,
 	DOWN,
+	NONE,
 };
 
 /**
@@ -28,12 +30,11 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	float DifficultyLevel = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	EAlignment Alignment = EAlignment::Neutral;
+	FNResponseCategory Category;
 
 	static FBTDialogueResponse CreateNullObject()
 	{
 		FBTDialogueResponse Response = FBTDialogueResponse();
-		Response.Alignment = EAlignment::None;
 		Response.Text = NSLOCTEXT("DialogSystem", "DefaultDialogueResponseText", "Euh...");
 		return Response;
 	}
