@@ -21,27 +21,20 @@ namespace UnrealBuildTool.Rules
 				new string[]
 				{
 					"CoreUObject",
-					"Engine",
-					"UnrealEd",
-					"BlueprintGraph",
-					"GraphEditor",
-					"PropertyEditor",
+					"Engine", // This one should be removed when NansCommon be removed too
 					"AIModule",
 					"GameplayTasks",
 					"UMG",
 					"Slate",
 					"SlateCore",
 					"InputCore",
-					"Kismet",
-					"KismetCompiler",
-					"EditorStyle",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansFactorsFactoryCore",
 					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
 					"NansExtension",
-					"NansCommon",
+					"NansCommon", // should remove this dependencies
 					"Interactive",
 				}
 				);

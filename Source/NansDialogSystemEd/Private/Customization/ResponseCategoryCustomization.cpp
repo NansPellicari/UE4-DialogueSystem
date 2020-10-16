@@ -1,5 +1,5 @@
 
-#include "Editor/Customization/ResponseCategoryCustomization.h"
+#include "Customization/ResponseCategoryCustomization.h"
 
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "PropertyEditor/Public/DetailLayoutBuilder.h"
