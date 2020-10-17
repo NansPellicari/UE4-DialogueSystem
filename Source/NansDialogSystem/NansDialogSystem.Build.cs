@@ -21,7 +21,7 @@ namespace UnrealBuildTool.Rules
 				new string[]
 				{
 					"CoreUObject",
-					"Engine", // This one should be removed when NansCommon be removed too
+					"Engine", // TODO This one should be removed when NansCommon be removed too
 					"AIModule",
 					"GameplayTasks",
 					"UMG",
@@ -34,7 +34,7 @@ namespace UnrealBuildTool.Rules
 					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
 					"NansExtension",
-					"NansCommon", // should remove this dependencies
+					"NansCommon", // TODO should remove this dependencies
 					"Interactive",
 				}
 				);

@@ -1,18 +1,9 @@
 #pragma once
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "NansCommon/Public/Service/NansComparatorHelpers.h"
 
 #include "PointSystemHelpers.generated.h"
-
-UENUM(BlueprintType)
-enum class EAlignment : uint8
-{
-	None,
-	CNV,
-	Neutral,
-	CSV
-};
 
 /**
  * Points Structure

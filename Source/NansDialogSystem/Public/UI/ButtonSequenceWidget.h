@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
 #include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
-#include "PointSystemHelpers.h"
 
 #include "ButtonSequenceWidget.generated.h"
 

@@ -31,7 +31,7 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 	FName NameSelected = FName(*Val);
 
 	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::GetResponseCategoryConfigs(Settings);
+	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
 	int32 Index = 0;
 	CategoryList.Empty();
 	TSharedPtr<FName> InitialSelectedName;

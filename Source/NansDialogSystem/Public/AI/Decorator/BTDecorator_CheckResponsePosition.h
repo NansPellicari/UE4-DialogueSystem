@@ -4,7 +4,6 @@
 
 #include "BehaviorTree/BTDecorator.h"
 #include "CoreMinimal.h"
-#include "PointSystemHelpers.h"
 #include "Service/NansComparatorHelpers.h"
 
 #include "BTDecorator_CheckResponsePosition.generated.h"

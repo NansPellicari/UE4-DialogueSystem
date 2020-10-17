@@ -28,7 +28,7 @@ void SNResponseCategoryPin::Construct(const FArguments& InArgs, UEdGraphPin* InG
 TSharedRef<SWidget> SNResponseCategoryPin::GetDefaultValueWidget()
 {
 	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::GetResponseCategoryConfigs(Settings);
+	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
 	for (const auto& Setting : Settings)
 	{
 		CategoryList.Add(MakeShareable(new FName(Setting.Name)));

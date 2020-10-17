@@ -1,17 +1,20 @@
 #pragma once
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
 
 #include "BTDialogDifficultyHandler.generated.h"
 
-struct FNDialogDifficultySettings;
+struct FNDialogFactorSettings;
 
 UCLASS()
 class NANSDIALOGSYSTEM_API UBTDialogDifficultyHandler : public UObject
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditAnywhere)
+	bool bDebug = false;
+
 	UBTDialogDifficultyHandler();
 	float GetDifficultyLevel(const FBTDialogueResponse& Response);
 
@@ -28,5 +31,5 @@ protected:
 	/** Should change depending on the Character player has chosen */
 	float GeneralDifficultyLevel = 1.f;
 	TMap<FName, float> Factors;
-	TArray<FNDialogDifficultySettings> Settings;
+	TArray<FNDialogFactorSettings> Settings;
 };

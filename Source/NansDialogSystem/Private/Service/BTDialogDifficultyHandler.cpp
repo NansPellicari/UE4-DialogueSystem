@@ -5,31 +5,44 @@
 
 UBTDialogDifficultyHandler::UBTDialogDifficultyHandler()
 {
-	UDialogSystemSettings::GetDifficultyConfigs(Settings);
+	UDialogSystemSettings::Get()->GetDifficultyConfigs(Settings);
 }
 
 float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& Response)
 {
-	// for (auto& Factor : Factors)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("%s - factor %s: %f"), ANSI_TO_TCHAR(__FUNCTION__), *Factor.Key.ToString(), Factor.Value);
-	// }
+#if WITH_EDITOR
+	if (bDebug)
+	{
+		for (auto& Factor : Factors)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s - factor %s: %f"), ANSI_TO_TCHAR(__FUNCTION__), *Factor.Key.ToString(), Factor.Value);
+		}
+	}
+#endif
 
-	if (!Factors.Contains(Response.Category.GetFactorName()))
+	TArray<FNDialogFactorTypeSettings> RespFactors = Response.Category.GetFactors((int32) EFactorType::Difficulty);
+
+	if (RespFactors.Num() <= 0)
 	{
 		return Response.DifficultyLevel;
 	}
+	const float BaseLevel = Response.DifficultyLevel;
+	float DifficultyLevel = BaseLevel;
 
-	float Factor = Factors.Contains(Response.Category.GetFactorName()) ? *Factors.Find(Response.Category.GetFactorName()) : 1.f;
-	float DifficultyLevel = Response.DifficultyLevel;
-
-	for (const FNDialogDifficultySettings& Setting : Settings)
+	for (const auto& RespFactor : RespFactors)
 	{
-		if (Setting.Category.Name == Response.Category.Name && Setting.RangeFrom < Factor && Setting.RangeTo > Factor)
+		if (((int32) EFactorType::Difficulty & RespFactor.Type) == 0) continue;
+		if (!Factors.Contains(RespFactor.FactorName)) continue;
+
+		float Factor = *Factors.Find(RespFactor.FactorName);
+
+		for (const FNDialogFactorSettings& Setting : Settings)
 		{
-			// UE_LOG(LogTemp, Warning, TEXT("%s Setting.Multiplier: %f"), ANSI_TO_TCHAR(__FUNCTION__), Setting.Multiplier);
-			DifficultyLevel *= Setting.Multiplier;
-			break;
+			if (Setting.Category.Name == Response.Category.Name && Setting.RangeFrom <= Factor && Setting.RangeTo >= Factor)
+			{
+				// TODO should be great to set rules like: Multiply with base difficulty, mutiply with last computed diff, etc...
+				DifficultyLevel *= Setting.Multiplier;
+			}
 		}
 	}
 	return DifficultyLevel;

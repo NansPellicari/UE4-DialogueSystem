@@ -14,7 +14,7 @@
 
 #pragma once
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "EdGraphSchema_K2.h"

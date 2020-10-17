@@ -2,7 +2,7 @@
 
 #include "BTStepsForDialog.h"
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "NansBehaviorSteps/Public/BTSteps.h"
 
 UBTStepsForDialog::UBTStepsForDialog()

@@ -2,7 +2,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"

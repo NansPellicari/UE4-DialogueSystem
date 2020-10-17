@@ -2,40 +2,61 @@
 
 #pragma once
 
-#include "Attribute/ResponseCategory.h"
+#include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
 #include "PointSystemHelpers.h"
 
 #include "DialogSystemSettings.generated.h"
 
-USTRUCT(BlueprintType)
-struct FNDialogDifficultySettings
+USTRUCT()
+struct NANSDIALOGSYSTEM_API FNDialogFactorSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
+	UPROPERTY(EditAnywhere, Category = Difficulty)
 	FNResponseCategory Category;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
+	UPROPERTY(EditAnywhere, Category = Difficulty)
 	float Multiplier;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
+	UPROPERTY(EditAnywhere, Category = Difficulty, Meta = (ClampMin = "0", ClampMax = "1"))
 	float RangeFrom;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Difficulty)
+	UPROPERTY(EditAnywhere, Category = Difficulty, Meta = (ClampMin = "0", ClampMax = "1"))
 	float RangeTo;
 };
 
-USTRUCT(BlueprintType)
-struct FNDialogResponseCategorySettings
+USTRUCT()
+struct NANSDIALOGSYSTEM_API FNDialogFactorTypeSettings
 {
 	GENERATED_USTRUCT_BODY()
 
 	// TODO change this to get a FactorFactory
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ResponseCategory)
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FName FactorName;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ResponseCategory)
+	UPROPERTY(EditAnywhere, Category = ResponseCategory, Meta = (Bitmask, BitmaskEnum = "EFactorType"))
+	int32 Type;
+};
+
+USTRUCT()
+struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
+{
+	GENERATED_USTRUCT_BODY()
+
+	// TODO change this to get a FactorFactory
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
+	TArray<FNDialogFactorTypeSettings> Factors;
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FName Name;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ResponseCategory)
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FLinearColor Color;
+
+	static FNDialogResponseCategorySettings* CreateNullInstance()
+	{
+		FNDialogResponseCategorySettings* NullInst = new FNDialogResponseCategorySettings();
+		NullInst->Name = NAME_None;
+		NullInst->Color = FLinearColor::Black;
+		NullInst->Factors.Empty();
+		return NullInst;
+	}
 };
 
 /**
@@ -46,25 +67,49 @@ class NANSDIALOGSYSTEM_API UDialogSystemSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(config, EditAnywhere)
+	UPROPERTY(GlobalConfig, EditAnywhere)
 	TArray<FNDialogResponseCategorySettings> ResponseCategorySettings;
-	UPROPERTY(config, EditAnywhere)
-	TArray<FNDialogDifficultySettings> DifficultySettings;
+	UPROPERTY(GlobalConfig, EditAnywhere)
+	TArray<FNDialogFactorSettings> DifficultySettings;
 
-	static void GetDifficultyConfigs(TArray<FNDialogDifficultySettings>& ShareableNames)
+	/** Accessor and initializer **/
+	static const UDialogSystemSettings* Get()
 	{
-		static const UDialogSystemSettings* StaticObject = GetDefault<UDialogSystemSettings>();
-		for (FNDialogDifficultySettings Settings : StaticObject->DifficultySettings)
+		const UDialogSystemSettings* StaticObject = GetDefault<UDialogSystemSettings>();
+		return StaticObject;
+	}
+
+	void GetDifficultyConfigs(TArray<FNDialogFactorSettings>& ShareableNames) const
+	{
+		for (FNDialogFactorSettings Settings : DifficultySettings)
 		{
 			ShareableNames.Add(Settings);
 		}
-	};
-	static void GetResponseCategoryConfigs(TArray<FNDialogResponseCategorySettings>& ShareableNames)
+	}
+
+	void GetPointsEarnerConfigs(TMap<FName, TArray<FNDialogFactorTypeSettings>>& Confs) const
 	{
-		static const UDialogSystemSettings* StaticObject = GetDefault<UDialogSystemSettings>();
-		for (auto& Settings : StaticObject->ResponseCategorySettings)
+		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
+		{
+			for (auto& Factor : Settings.Factors)
+			{
+				if (Factor.Type & (int32) EFactorType::PointsEarner)
+				{
+					if (!Confs.Contains(Settings.Name))
+					{
+						Confs.Add(Settings.Name, {});
+					}
+					Confs.Find(Settings.Name)->Add(Factor);
+				}
+			}
+		}
+	}
+
+	void GetResponseCategoryConfigs(TArray<FNDialogResponseCategorySettings>& ShareableNames) const
+	{
+		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
 		{
 			ShareableNames.Add(Settings);
 		}
-	};
+	}
 };

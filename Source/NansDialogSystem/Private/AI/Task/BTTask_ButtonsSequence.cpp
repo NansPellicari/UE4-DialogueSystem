@@ -9,6 +9,7 @@
 #include "Components/CanvasPanelSlot.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "PointSystemHelpers.h"
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/NansArrayUtils.h"
 #include "UI/ButtonSequenceWidget.h"
