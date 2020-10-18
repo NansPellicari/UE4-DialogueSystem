@@ -20,15 +20,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetFactor(FName Name, float Factor);
-	UFUNCTION(BlueprintCallable)
-	FNResponseCategory Test(FNResponseCategory Category)
-	{
-		// UE_LOG(LogTemp, Warning, TEXT("%s - Color: %s"), ANSI_TO_TCHAR(__FUNCTION__), *Category.GetColor().ToString());
-		return Category;
-	}
 
 protected:
-	/** Should change depending on the Character player has chosen */
+	/** Should change depending on the Character the player will choose */
 	float GeneralDifficultyLevel = 1.f;
 	TMap<FName, float> Factors;
 	TArray<FNDialogFactorSettings> Settings;

@@ -37,7 +37,7 @@ void UBTTask_TalkToPlayer::OnQuestionEnd()
 
 FString UBTTask_TalkToPlayer::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 	if (Message.IsEmptyOrWhitespace())
 	{
 		ReturnDesc += "\n\nNo Message\n";

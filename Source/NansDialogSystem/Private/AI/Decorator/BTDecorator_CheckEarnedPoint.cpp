@@ -3,11 +3,11 @@
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
 #include "BTDialogueTypes.h"
-#include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
@@ -21,19 +21,20 @@ UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitia
 bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
 
-	if (BTSteps == nullptr)
+	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR(
-			"DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "), (UObject*) OwnerComp.GetCurrentTree());
+		EDITOR_ERROR("DialogSystem",
+			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
+			(UObject*) OwnerComp.GetCurrentTree());
 		return false;
 	}
 
-	return EvaluateArray(BTSteps);
+	return EvaluateArray(PointsHandler);
 }
 
-bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTStepsForDialog* StepsContext) const
+bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTDialogPointsHandler* PointsHandler) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -47,7 +48,7 @@ bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTStepsForDialog* StepsContex
 			continue;
 		}
 
-		int32 Points = StepsContext->GetPoints(PointCondition.PointType);
+		int32 Points = PointsHandler->GetPoints(PointCondition.PointType);
 		bool Results = Comparator->EvaluateComparator<int32>(PointCondition.Operator, Points, PointCondition.CompareTo);
 		ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(Results));
 

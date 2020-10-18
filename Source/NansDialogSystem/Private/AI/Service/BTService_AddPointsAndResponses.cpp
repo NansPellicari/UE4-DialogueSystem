@@ -3,10 +3,10 @@
 #include "AI/Service/BTService_AddPointsAndResponses.h"
 
 #include "BTDialogueResponseContainer.h"
-#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "UI/ResponseButtonWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
@@ -26,11 +26,11 @@ void UBTService_AddPointsAndResponses::OnBecomeRelevant(UBehaviorTreeComponent& 
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
 
-	if (BTSteps == nullptr)
+	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("InvalidStepsHandlerKey", "Invalid key for Steps handler in "));
+		EDITOR_ERROR("DialogSystem", LOCTEXT("InvalidPointsHandlerKey", "Invalid key for points handler in "));
 		return;
 	}
 
@@ -49,7 +49,7 @@ void UBTService_AddPointsAndResponses::OnBecomeRelevant(UBehaviorTreeComponent& 
 		ResponseContainer->MarkPendingKill();
 	}
 
-	BTSteps->AddPoints(Point, Position);
+	PointsHandler->AddPoints(Point, Position);
 
 	BlackboardComp->ClearValue(ResponseContainerName);
 }
@@ -65,8 +65,8 @@ FName UBTService_AddPointsAndResponses::GetNodeIconName() const
 FString UBTService_AddPointsAndResponses::GetStaticDescription() const
 {
 	FString ReturnDesc;
-	ReturnDesc += "Steps: " + StepsKeyName.ToString();
-	ReturnDesc += "\nResponseContainer Key: " + ResponseContainerName.ToString();
+	ReturnDesc += "PointsHandler key: " + PointsHandlerKeyName.ToString();
+	ReturnDesc += "\nResponseContainer ey: " + ResponseContainerName.ToString();
 
 	return ReturnDesc;
 }

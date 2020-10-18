@@ -2,19 +2,19 @@
 
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 
-#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Logging/MessageLog.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/CoreUObject/Public/Misc/UObjectToken.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
 UBTDecorator_CheckInStep::UBTDecorator_CheckInStep(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	NodeName = "Conditions in step";
+	NodeName = "Conditions with points in step";
 	Comparator = ObjectInitializer.CreateDefaultSubobject<UNansComparator>(this, TEXT("Comparator"));
 }
 
@@ -30,7 +30,7 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 		ReturnDesc += FString::Printf(TEXT("\nC%d: Step %d is Done [%s] - %s %s %d"),
 			Index,
 			Condition.Step,
-			Condition.isDone ? "x" : "",
+			Condition.isDone ? "x" : " ",
 			*Condition.CategoryPoint.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.CompareTo);
@@ -47,19 +47,20 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
 
-	if (BTSteps == nullptr)
+	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR(
-			"DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "), (UObject*) OwnerComp.GetCurrentTree());
+		EDITOR_ERROR("DialogSystem",
+			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
+			(UObject*) OwnerComp.GetCurrentTree());
 		return false;
 	}
 
-	return EvaluateArray(BTSteps);
+	return EvaluateArray(PointsHandler);
 }
 
-bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsForDialog* StepsContext) const
+bool UBTDecorator_CheckInStep::EvaluateArray(UBTDialogPointsHandler* PointsHandler) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -68,7 +69,7 @@ bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsForDialog* StepsContext) co
 	{
 		FBTStepCondition Condition = StepConditions[Index];
 		FString SIndex = Comparator->BuildKeyFromIndex(Index);
-		ConditionsResults.Add(SIndex, new BoolStruct(EvaluateCondition(StepsContext, Condition)));
+		ConditionsResults.Add(SIndex, new BoolStruct(EvaluateCondition(PointsHandler, Condition)));
 
 		if (ConditionsResults.FindRef(SIndex)->value == false)
 		{
@@ -91,7 +92,7 @@ bool UBTDecorator_CheckInStep::EvaluateArray(UBTStepsForDialog* StepsContext) co
 	return Comparator->EvaluateOperators(ConditionsOperators, ConditionsResults);
 }
 
-bool UBTDecorator_CheckInStep::EvaluateCondition(UBTStepsForDialog* StepsContext, FBTStepCondition Condition) const
+bool UBTDecorator_CheckInStep::EvaluateCondition(UBTDialogPointsHandler* PointsHandler, FBTStepCondition Condition) const
 {
 	if (Condition.Step == 0)
 	{
@@ -101,7 +102,7 @@ bool UBTDecorator_CheckInStep::EvaluateCondition(UBTStepsForDialog* StepsContext
 	}
 
 	FBTPointInStep PointInStep;
-	StepsContext->getLastResponseFromStep(Condition.Step, PointInStep);
+	PointsHandler->getLastResponseFromStep(Condition.Step, PointInStep);
 
 	if (PointInStep.Step <= 0)
 	{

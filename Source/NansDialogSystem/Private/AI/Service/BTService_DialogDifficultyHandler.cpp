@@ -45,7 +45,7 @@ FName UBTService_DialogDifficultyHandler::GetNodeIconName() const
 
 FString UBTService_DialogDifficultyHandler::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 	ReturnDesc += "Difficulty Handler Key: " + DifficultyHandlerKeyName.ToString();
 
 	return ReturnDesc;

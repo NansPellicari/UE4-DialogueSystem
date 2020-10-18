@@ -5,23 +5,26 @@
 #include "AIModule\Classes\BehaviorTree\Services\BTService_BlueprintBase.h"
 #include "CoreMinimal.h"
 
-#include "BTService_DialogDifficultyHandler.generated.h"
+#include "BTService_DialogPointsHandler.generated.h"
 
-class UBTDialogDifficultyHandler;
+class UBTDialogPointsHandler;
 
 /**
  *
  */
-UCLASS(Abstract, BlueprintType)
-class NANSDIALOGSYSTEM_API UBTService_DialogDifficultyHandler : public UBTService_BlueprintBase
+UCLASS(BlueprintType)
+class NANSDIALOGSYSTEM_API UBTService_DialogPointsHandler : public UBTService_BlueprintBase
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName DifficultyHandlerKeyName = FName("DifficultyHandler");
+	FName PointsHandlerKeyName = FName("PointsHandler");
 
-	UBTService_DialogDifficultyHandler(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
+	FName StepsKeyName = FName("Steps");
+
+	UBTService_DialogPointsHandler(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual FString GetStaticDescription() const override;
 
@@ -31,5 +34,5 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
-	UBTDialogDifficultyHandler* BTDialogDifficultyHandler;
+	UBTDialogPointsHandler* BTDialogPointsHandler;
 };

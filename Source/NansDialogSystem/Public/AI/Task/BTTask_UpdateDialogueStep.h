@@ -7,7 +7,6 @@
 
 #include "BTTask_UpdateDialogueStep.generated.h"
 
-class UBTStepsForDialog;
 class UBTDialogueResponseContainer;
 
 /**
@@ -22,6 +21,9 @@ class NANSDIALOGSYSTEM_API UBTTask_UpdateDialogueStep : public UBTTask_Base
 	FName ResponseContainerName = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
+	FName PointsHandlerKeyName = FName("PointsHandler");
+
+	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
 	FName StepsKeyName = FName("Steps");
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
@@ -32,8 +34,6 @@ class NANSDIALOGSYSTEM_API UBTTask_UpdateDialogueStep : public UBTTask_Base
 #endif	  // WITH_EDITOR
 
 private:
-	UPROPERTY()
-	UBTStepsForDialog* BTSteps;
 	UPROPERTY()
 	UBTDialogueResponseContainer* ResponseContainer;
 };

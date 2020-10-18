@@ -3,10 +3,11 @@
 #include "AI/Task/BTTask_UpdateDialogueStep.h"
 
 #include "BTDialogueResponseContainer.h"
-#include "BTStepsForDialog.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "NansBehaviorSteps/Public/BTStepsHandler.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "UI/ResponseButtonWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
@@ -14,11 +15,19 @@
 EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UObject* BTSteps = BlackboardComp->GetValueAsObject(StepsKeyName);
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
 
 	if (BTSteps == nullptr)
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "));
+		return EBTNodeResult::Aborted;
+	}
+
+	if (!BTSteps->Implements<UBTStepsHandler>())
+	{
+		EDITOR_ERROR(
+			"DialogSystem", LOCTEXT("InvalidStepsHandlerClass", "Invalid class for Steps, should implements IBTStepsHandler"));
 		return EBTNodeResult::Aborted;
 	}
 
@@ -37,7 +46,7 @@ EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeCompone
 		ResponseContainer->MarkPendingKill();
 	}
 
-	BTSteps->AddPoints(Point, Position);
+	PointsHandler->AddPoints(Point, Position);
 	IBTStepsHandler::Execute_FinishedCurrentStep(BTSteps);
 
 	BlackboardComp->ClearValue(ResponseContainerName);
@@ -55,11 +64,10 @@ FName UBTTask_UpdateDialogueStep::GetNodeIconName() const
 
 FString UBTTask_UpdateDialogueStep::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
-	ReturnDesc += ":\n\n";
-
-	ReturnDesc += "Steps: " + StepsKeyName.ToString();
-	ReturnDesc += ":\nResponseContainer Key: " + ResponseContainerName.ToString();
+	FString ReturnDesc;
+	ReturnDesc += "PointsHandler key: " + PointsHandlerKeyName.ToString();
+	ReturnDesc += "\nSteps key: " + StepsKeyName.ToString();
+	ReturnDesc += "\nResponseContainer Key: " + ResponseContainerName.ToString();
 
 	return ReturnDesc;
 }

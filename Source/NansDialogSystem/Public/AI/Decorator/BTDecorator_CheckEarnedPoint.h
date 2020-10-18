@@ -9,7 +9,7 @@
 #include "BTDecorator_CheckEarnedPoint.generated.h"
 
 class UNansComparator;
-class UBTStepsForDialog;
+class UBTDialogPointsHandler;
 
 /**
  *
@@ -29,10 +29,10 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
 	TArray<FNansConditionOperator> ConditionsOperators;
 
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName StepsKeyName = FName("Steps");
+	FName PointsHandlerKeyName = FName("PointsHandler");
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	bool EvaluateArray(UBTStepsForDialog* StepsContext) const;
+	bool EvaluateArray(UBTDialogPointsHandler* PointsHandler) const;
 	virtual FString GetStaticDescription() const override;
 
 private:

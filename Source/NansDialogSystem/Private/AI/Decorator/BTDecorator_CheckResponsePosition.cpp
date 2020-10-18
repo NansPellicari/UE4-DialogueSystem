@@ -2,10 +2,10 @@
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
-#include "BTStepsForDialog.h"
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
@@ -20,19 +20,20 @@ UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FOb
 bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTStepsForDialog* BTSteps = Cast<UBTStepsForDialog>(BlackboardComp->GetValueAsObject(StepsKeyName));
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
 
-	if (BTSteps == nullptr)
+	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR(
-			"DialogSystem", LOCTEXT("InvalidStepsKey", "Invalid key for Steps in "), (UObject*) OwnerComp.GetCurrentTree());
+		EDITOR_ERROR("DialogSystem",
+			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
+			(UObject*) OwnerComp.GetCurrentTree());
 		return false;
 	}
 
-	return EvaluateArray(BTSteps);
+	return EvaluateArray(PointsHandler);
 }
 
-bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTStepsForDialog* StepsContext) const
+bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTDialogPointsHandler* PointsHandler) const
 {
 	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -42,7 +43,7 @@ bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTStepsForDialog* StepsC
 		FResponsePositionCondition ResponseCondition = ResponsePositionConditions[Index];
 
 		FBTPointInStep PointInStep;
-		StepsContext->getLastResponseFromStep(ResponseCondition.Step, PointInStep);
+		PointsHandler->getLastResponseFromStep(ResponseCondition.Step, PointInStep);
 
 		if (PointInStep.Step <= 0)
 		{

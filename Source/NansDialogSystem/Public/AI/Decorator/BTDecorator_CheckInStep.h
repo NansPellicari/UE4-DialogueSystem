@@ -10,7 +10,7 @@
 #include "BTDecorator_CheckInStep.generated.h"
 
 class UNansComparator;
-class UBTStepsForDialog;
+class UBTDialogPointsHandler;
 class UBlackboardComponent;
 
 /**
@@ -54,7 +54,7 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 	TArray<FNansConditionOperator> ConditionsOperators;
 
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName StepsKeyName = FName("Steps");
+	FName PointsHandlerKeyName = FName("PointsHandler");
 
 	virtual FString GetStaticDescription() const override;
 
@@ -62,6 +62,6 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 
 private:
 	UNansComparator* Comparator;
-	bool EvaluateArray(UBTStepsForDialog* StepsContext) const;
-	bool EvaluateCondition(UBTStepsForDialog* StepsContext, FBTStepCondition Condition) const;
+	bool EvaluateArray(UBTDialogPointsHandler* PointsHandler) const;
+	bool EvaluateCondition(UBTDialogPointsHandler* PointsHandler, FBTStepCondition Condition) const;
 };

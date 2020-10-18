@@ -7,7 +7,7 @@
 
 #include "BTService_AddPointsAndResponses.generated.h"
 
-class UBTStepsForDialog;
+class UBTDialogPointsHandler;
 class UBTDialogueResponseContainer;
 
 /**
@@ -22,7 +22,7 @@ class NANSDIALOGSYSTEM_API UBTService_AddPointsAndResponses : public UBTService
 	FName ResponseContainerName = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName StepsKeyName = FName("Steps");
+	FName PointsHandlerKeyName = FName("PointsHandler");
 
 	UBTService_AddPointsAndResponses(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
@@ -34,7 +34,7 @@ class NANSDIALOGSYSTEM_API UBTService_AddPointsAndResponses : public UBTService
 
 private:
 	UPROPERTY()
-	UBTStepsForDialog* BTSteps;
+	UBTDialogPointsHandler* PointsHandler;
 	UPROPERTY()
 	UBTDialogueResponseContainer* ResponseContainer;
 };
