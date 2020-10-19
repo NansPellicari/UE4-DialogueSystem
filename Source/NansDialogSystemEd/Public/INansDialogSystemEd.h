@@ -21,7 +21,7 @@ public:
 	 */
 	static inline INansDialogSystemEd& Get()
 	{
-		return FModuleManager::LoadModuleChecked<INansDialogSystemEd>("NansDialogSystem");
+		return FModuleManager::LoadModuleChecked<INansDialogSystemEd>("NansDialogSystemEd");
 	}
 
 	/**
@@ -31,6 +31,6 @@ public:
 	 */
 	static inline bool IsAvailable()
 	{
-		return FModuleManager::Get().IsModuleLoaded("NansDialogSystem");
+		return FModuleManager::Get().IsModuleLoaded("NansDialogSystemEd");
 	}
 };

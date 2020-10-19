@@ -100,10 +100,8 @@ public:
 	};
 };
 
-// TODO Place this later in the GameInstance
 static TMap<FString, TMap<int32, FString>> StaticButtonSequenceDescs;
 
-// TODO Place this later in the GameInstance
 struct StaticButtonSequenceDescriptions
 {
 public:

@@ -17,7 +17,7 @@ UBTService_DialogPointsHandler::UBTService_DialogPointsHandler(const FObjectInit
 {
 	NodeName = "Dialog Points Handler";
 
-	bNotifyTick = true;
+	bNotifyTick = false;
 	bTickIntervals = true;
 	bNotifyBecomeRelevant = true;
 	bNotifyCeaseRelevant = false;
@@ -47,7 +47,7 @@ void UBTService_DialogPointsHandler::OnBecomeRelevant(UBehaviorTreeComponent& Ow
 		TScriptInterface<IBTStepsHandler> BTStepsHandler;
 		BTStepsHandler.SetObject(BTSteps);
 		BTStepsHandler.SetInterface(Cast<IBTStepsHandler>(BTSteps));
-		BTDialogPointsHandler->Initialize(BTStepsHandler);
+		BTDialogPointsHandler->Initialize(BTStepsHandler, OwnerComp.GetPathName(), ActorOwner->GetPathName());
 	}
 }
 

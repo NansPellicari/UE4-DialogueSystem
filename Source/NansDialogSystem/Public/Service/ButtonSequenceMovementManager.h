@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UI/WheelButtonWidget.h"	 // TODO remove this dependency
+#include "UI/WheelButtonWidget.h"	 // TODO remove this dependency, EWheelDirection should be in a light files dedicated for types
 
 class UPanelWidget;
 class UCanvasPanelSlot;
 class UButtonSequenceWidget;
+class UWheelButtonWidget;
 
 class NANSDIALOGSYSTEM_API NButtonSequenceMovementManager
 {

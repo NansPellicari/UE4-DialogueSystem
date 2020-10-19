@@ -28,7 +28,7 @@ TArray<FNDialogFactorTypeSettings> FNResponseCategory::GetFactors(const int32 Ty
 
 const FNDialogResponseCategorySettings& FNResponseCategory::GetConfig() const
 {
-	myensureMsgf(Name != NAME_None, TEXT("You should set a name before getting the config of a FNResponseCategory."));
+	ensureMsgf(Name != NAME_None, TEXT("You should set a name before getting the config of a FNResponseCategory."));
 	static TMap<FName, FNDialogResponseCategorySettings> SettingsByName;
 	FNDialogResponseCategorySettings& OutSetting = *FNDialogResponseCategorySettings::CreateNullInstance();
 	if (SettingsByName.Contains(Name))

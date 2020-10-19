@@ -1,15 +1,35 @@
 #include "Service/BTDialogDifficultyHandler.h"
 
 #include "BTDialogueTypes.h"
+#include "Engine/GameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "NansFactorsFactoryCore/Public/FactorStateInRange.h"
+#include "NansFactorsFactoryUE4/Public/FactorsFactoryClientAdapter.h"
+#include "NansFactorsFactoryUE4/Public/FactorsFactoryGameInstance.h"
+#include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Setting/DialogSystemSettings.h"
+
+#define LOCTEXT_NAMESPACE "DialogSystem"
 
 UBTDialogDifficultyHandler::UBTDialogDifficultyHandler()
 {
 	UDialogSystemSettings::Get()->GetDifficultyConfigs(Settings);
 }
 
+void UBTDialogDifficultyHandler::Initialize()
+{
+	check(GetWorld());
+
+	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+	checkf(GI->Implements<UNFactorsFactoryGameInstance>(), TEXT("The GameInstance should implements INFactorsFactoryGameInstance"));
+
+	FactorsClient = INFactorsFactoryGameInstance::Execute_GetFactorsFactoryClient(GI);
+}
+
 float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& Response)
 {
+	checkf(FactorsClient != nullptr, TEXT("You should call initialize() before using %s"), ANSI_TO_TCHAR(__FUNCTION__));
+
 #if WITH_EDITOR
 	if (bDebug)
 	{
@@ -32,9 +52,21 @@ float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& 
 	for (const auto& RespFactor : RespFactors)
 	{
 		if (((int32) EFactorType::Difficulty & RespFactor.Type) == 0) continue;
-		if (!Factors.Contains(RespFactor.FactorName)) continue;
+		if (!FactorsClient->HasFactor(RespFactor.Factor.Name))
+		{
+			EDITOR_WARN("DialogSystem",
+				FText::Format(LOCTEXT("FactorInexistant", "You should create the factor {0} to use it here"),
+					FText::FromName(RespFactor.Factor.Name)));
+			continue;
+		}
 
-		float Factor = *Factors.Find(RespFactor.FactorName);
+		checkf(RespFactor.bHasRange,
+			TEXT("When a factor (%s) is a difficulty, it has to be a configured with a range lh & rh"),
+			*RespFactor.Factor.Name.ToString());
+
+		NFactorStateInRange* State = new NFactorStateInRange(RespFactor.Range.Lh, RespFactor.Range.Rh);
+		FactorsClient->GetState(RespFactor.Factor.Name, *State);
+		float Factor = State->GetDecimalPercent();
 
 		for (const FNDialogFactorSettings& Setting : Settings)
 		{
@@ -44,11 +76,9 @@ float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& 
 				DifficultyLevel *= Setting.Multiplier;
 			}
 		}
+		delete State;
 	}
 	return DifficultyLevel;
 }
 
-void UBTDialogDifficultyHandler::SetFactor(FName Name, float Factor)
-{
-	Factors.Add(Name, Factor);
-}
+#undef LOCTEXT_NAMESPACE

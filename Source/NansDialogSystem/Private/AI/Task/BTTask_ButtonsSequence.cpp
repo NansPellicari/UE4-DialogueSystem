@@ -290,7 +290,6 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
 		}
 
-		// TODO show possible permutations to test points.
 		Desc += "\n\nPossibilities:";
 		Desc += ShowPermutationsPoints(Sequence);
 		Desc += "\n----------------------";

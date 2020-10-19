@@ -48,7 +48,7 @@ bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTDialogPointsHandler* Points
 			continue;
 		}
 
-		int32 Points = PointsHandler->GetPoints(PointCondition.PointType);
+		int32 Points = PointsHandler->GetDialogPoints(PointCondition.PointType);
 		bool Results = Comparator->EvaluateComparator<int32>(PointCondition.Operator, Points, PointCondition.CompareTo);
 		ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(Results));
 

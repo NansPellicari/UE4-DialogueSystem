@@ -33,8 +33,6 @@ protected:
 
 private:
 	TSharedPtr<IPropertyHandle> NameProperty;
-	TSharedPtr<IPropertyHandle> FactorNameProperty;
-	TSharedPtr<IPropertyHandle> ColorProperty;
 	TArray<TSharedPtr<FName>> CategoryList;
 	TMap<TSharedPtr<FName>, FNDialogResponseCategorySettings> SettingsList;
 	TSharedPtr<SNameComboBox> NameComboBox;

@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include "Attribute/FactorAttribute.h"
 #include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
 #include "Engine/DeveloperSettings.h"
+#include "NansCoreHelpers/Public/Math/MathTypes.h"
 #include "PointSystemHelpers.h"
 
 #include "DialogSystemSettings.generated.h"
@@ -29,11 +31,22 @@ struct NANSDIALOGSYSTEM_API FNDialogFactorTypeSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	// TODO change this to get a FactorFactory
-	UPROPERTY(EditAnywhere, Category = ResponseCategory)
-	FName FactorName;
-	UPROPERTY(EditAnywhere, Category = ResponseCategory, Meta = (Bitmask, BitmaskEnum = "EFactorType"))
+	UPROPERTY(EditAnywhere, Category = FactorType)
+	FFactorAttribute Factor;
+
+	UPROPERTY(EditAnywhere, Category = FactorType, Meta = (Bitmask, BitmaskEnum = "EFactorType"))
 	int32 Type;
+
+	/**
+	 * /!\ A range is mandatory for a difficulty factor.
+	 * TODO create a Property Customization to create a field dependency:
+	 * when (Type & EFactorType::Difficulty != 0) it should be forced to true.
+	 */
+	UPROPERTY(EditAnywhere, Category = FactorType)
+	bool bHasRange = false;
+
+	UPROPERTY(EditAnywhere, Category = FactorType, Meta = (EditCondition = "bHasRange"))
+	FRange Range = FRange(0, 100);
 };
 
 USTRUCT()
@@ -41,13 +54,14 @@ struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	// TODO change this to get a FactorFactory
-	UPROPERTY(EditAnywhere, Category = ResponseCategory)
-	TArray<FNDialogFactorTypeSettings> Factors;
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FName Name;
+
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FLinearColor Color;
+
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
+	TArray<FNDialogFactorTypeSettings> Factors;
 
 	static FNDialogResponseCategorySettings* CreateNullInstance()
 	{
@@ -68,6 +82,8 @@ class NANSDIALOGSYSTEM_API UDialogSystemSettings : public UDeveloperSettings
 	GENERATED_BODY()
 public:
 	UPROPERTY(GlobalConfig, EditAnywhere)
+	FFactorAttribute PointsCollector;
+	UPROPERTY(GlobalConfig, EditAnywhere)
 	TArray<FNDialogResponseCategorySettings> ResponseCategorySettings;
 	UPROPERTY(GlobalConfig, EditAnywhere)
 	TArray<FNDialogFactorSettings> DifficultySettings;
@@ -87,13 +103,13 @@ public:
 		}
 	}
 
-	void GetPointsEarnerConfigs(TMap<FName, TArray<FNDialogFactorTypeSettings>>& Confs) const
+	void GetPointsMultipliersConfigs(TMap<FName, TArray<FNDialogFactorTypeSettings>>& Confs) const
 	{
 		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
 		{
 			for (auto& Factor : Settings.Factors)
 			{
-				if (Factor.Type & (int32) EFactorType::PointsEarner)
+				if (Factor.Type & (int32) EFactorType::PointsMultiplier)
 				{
 					if (!Confs.Contains(Settings.Name))
 					{

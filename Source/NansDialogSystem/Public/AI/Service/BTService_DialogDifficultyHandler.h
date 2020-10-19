@@ -12,7 +12,7 @@ class UBTDialogDifficultyHandler;
 /**
  *
  */
-UCLASS(Abstract, BlueprintType)
+UCLASS(BlueprintType)
 class NANSDIALOGSYSTEM_API UBTService_DialogDifficultyHandler : public UBTService_BlueprintBase
 {
 	GENERATED_BODY()

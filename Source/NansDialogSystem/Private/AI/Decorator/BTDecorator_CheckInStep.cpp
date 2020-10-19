@@ -3,6 +3,7 @@
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Factor/DialogFactorUnit.h"
 #include "Logging/MessageLog.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
@@ -101,20 +102,19 @@ bool UBTDecorator_CheckInStep::EvaluateCondition(UBTDialogPointsHandler* PointsH
 		return false;
 	}
 
-	FBTPointInStep PointInStep;
-	PointsHandler->getLastResponseFromStep(Condition.Step, PointInStep);
+	UNDialogFactorUnit* FactorUnit = PointsHandler->GetLastResponseFromStep(Condition.Step);
 
-	if (PointInStep.Step <= 0)
+	if (FactorUnit->Step <= 0)
 	{
 		return Condition.isDone ? false : true;
 	}
 
-	if (PointInStep.Point.Category.Name != Condition.CategoryPoint.Name)
+	if (FactorUnit->CategoryName != Condition.CategoryPoint.Name)
 	{
 		return false;
 	}
 
-	return Comparator->EvaluateComparator<int32>(Condition.Operator, PointInStep.Point.Point, Condition.CompareTo);
+	return Comparator->EvaluateComparator<int32>(Condition.Operator, FactorUnit->InitialPoint, Condition.CompareTo);
 }
 
 #undef LOCTEXT_NAMESPACE

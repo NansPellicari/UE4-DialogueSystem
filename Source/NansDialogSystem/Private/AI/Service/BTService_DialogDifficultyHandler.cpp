@@ -31,6 +31,7 @@ void UBTService_DialogDifficultyHandler::OnBecomeRelevant(UBehaviorTreeComponent
 	if (BTDialogDifficultyHandler == nullptr)
 	{
 		BTDialogDifficultyHandler = NewObject<UBTDialogDifficultyHandler>(&OwnerComp);
+		BTDialogDifficultyHandler->Initialize();
 		BlackboardComp->SetValueAsObject(DifficultyHandlerKeyName, BTDialogDifficultyHandler);
 	}
 }

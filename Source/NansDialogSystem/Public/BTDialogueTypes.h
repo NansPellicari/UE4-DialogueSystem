@@ -19,7 +19,7 @@ enum class EFactorType : uint8
 {
 	None = 0 UMETA(Hidden),
 	Difficulty = 0x00000001,
-	PointsEarner = 0x00000002,
+	PointsMultiplier = 0x00000002,
 };
 
 ENUM_CLASS_FLAGS(EFactorType)

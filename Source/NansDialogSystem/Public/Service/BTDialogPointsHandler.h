@@ -6,6 +6,7 @@
 #include "BTDialogPointsHandler.generated.h"
 
 struct FNDialogFactorSettings;
+class UNFactorsFactoryClientAdapter;
 class IBTStepsHandler;
 
 /**
@@ -33,7 +34,7 @@ public:
 	bool bDebug = false;
 
 	UBTDialogPointsHandler();
-	void Initialize(TScriptInterface<IBTStepsHandler> _StepsHandler);
+	void Initialize(TScriptInterface<IBTStepsHandler> _StepsHandler, FString _BehaviorTreePathName, FString _AIPawnPathName);
 
 	virtual void BeginDestroy() override;
 
@@ -41,22 +42,31 @@ public:
 	void AddPoints(FPoint Point, int32 Position);
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	void getLastResponse(FBTPointInStep& PointInStep);
+	UNDialogFactorUnit* GetLastResponse();
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	void getLastResponseFromStep(const int32 SearchStep, FBTPointInStep& PointInStep);
+	UNDialogFactorUnit* GetLastResponseFromStep(const int32 SearchStep);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
+	int32 GetDialogPoints(FNResponseCategory Category) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
+	float GetPoints() const;
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	int32 GetPoints(FNResponseCategory Category) const;
+	void Clear();
 
 protected:
 	UPROPERTY()
 	TScriptInterface<IBTStepsHandler> StepsHandler;
-	TMap<FName, TArray<FNDialogFactorTypeSettings>> Settings;
+	TMap<FName, TArray<FNDialogFactorTypeSettings>> PointsMultipliers;
+	FName PointsCollector;
 
 	/** A HEAP on point by step, the HEAP allow to keep trace of action's chronologicaly */
 	TArray<FBTPointInStep> HeapResponses;
+	TArray<int32> FactorUnitKeys;
+	FString BehaviorTreePathName;
+	FString AIPawnPathName;
 
-	UPROPERTY(BlueprintReadOnly, Category = "PointsHandler")
-	TMap<FName, int32> EarnedPoints;
+	UPROPERTY()
+	UNFactorsFactoryClientAdapter* FactorsClient;
+	float FactorsPointsAtStart;
 };

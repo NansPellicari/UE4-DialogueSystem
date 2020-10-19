@@ -4,6 +4,7 @@
 
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Factor/DialogFactorUnit.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
@@ -42,16 +43,15 @@ bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTDialogPointsHandler* P
 	{
 		FResponsePositionCondition ResponseCondition = ResponsePositionConditions[Index];
 
-		FBTPointInStep PointInStep;
-		PointsHandler->getLastResponseFromStep(ResponseCondition.Step, PointInStep);
+		UNDialogFactorUnit* FactorUnit = PointsHandler->GetLastResponseFromStep(ResponseCondition.Step);
 
-		if (PointInStep.Step <= 0)
+		if (FactorUnit->Step <= 0)
 		{
 			return false;
 		}
 
 		bool Results =
-			Comparator->EvaluateComparator<int32>(ResponseCondition.Operator, PointInStep.Position, ResponseCondition.Position);
+			Comparator->EvaluateComparator<int32>(ResponseCondition.Operator, FactorUnit->Position, ResponseCondition.Position);
 		ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(Results));
 
 		if (HasConditionsOperator == false && Results == false)
@@ -66,7 +66,7 @@ bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTDialogPointsHandler* P
 		return ConditionsResults.FindRef(Key)->value;
 	}
 
-	// DEBUG to remove
+	// TODO DEBUG to remove
 	/*for (TPair<FString, BoolStruct*> Result : ConditionsResults) {
 		UE_LOG(LogTemp, Warning, TEXT("Result: %s %i"), *Result.Key, Result.Value->value);
 	}*/
