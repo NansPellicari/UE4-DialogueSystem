@@ -16,7 +16,7 @@ class SNameComboBox;
  * https://discordapp.com/channels/679064182297198622/679064182297198625/766620770855419915
  * All slate Widgets API doc @see https://docs.unrealengine.com/en-US/API/Runtime/Slate/Widgets/index.html
  */
-class FNResponseCategoryCustomization : public IPropertyTypeCustomization
+class FNDialogFactorSettingsCustomization : public IPropertyTypeCustomization
 {
 public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
@@ -30,11 +30,21 @@ public:
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
 protected:
-	void OnAttributeSelected(TSharedPtr<FName> Selection, ESelectInfo::Type SelectInfo);
+	TSharedRef<SWidget> MakeUpButton(
+		FSimpleDelegate OnClicked, TAttribute<FText> OptionalToolTipText = FText(), TAttribute<bool> IsEnabled = true);
+	TSharedRef<SWidget> MakeDownButton(
+		FSimpleDelegate OnClicked, TAttribute<FText> OptionalToolTipText = FText(), TAttribute<bool> IsEnabled = true);
+	void RemoveButton_OnClick();
+	void AddButton_OnClick();
+	void UpButton_OnClick();
+	void DownButton_OnClick();
+	FLinearColor GetColor(TSharedPtr<IPropertyHandle> CategoryHandle) const;
+	void OnCategoryChanged(TSharedPtr<IPropertyHandle> CategoryHandle);
 
 private:
-	TSharedPtr<IPropertyHandle> NameProperty;
+	TSharedPtr<IPropertyHandle> StructHandle;
 	TArray<TSharedPtr<FName>> CategoryList;
 	TMap<TSharedPtr<FName>, FNDialogResponseCategorySettings> SettingsList;
 	TSharedPtr<SNameComboBox> NameComboBox;
+	FLinearColor BgColor;
 };

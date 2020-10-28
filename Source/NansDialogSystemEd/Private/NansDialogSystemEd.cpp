@@ -28,6 +28,12 @@ void FNansDialogSystemEd::StartupModule()
 	// Custom properties
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		"NResponseCategory", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNResponseCategoryCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout("NDialogFactorTypeSettings",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogFactorTypeSettingsCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout("NDialogFactorSettings",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogFactorSettingsCustomization::MakeInstance));
+
+	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
 void FNansDialogSystemEd::ShutdownModule()
@@ -38,5 +44,9 @@ void FNansDialogSystemEd::ShutdownModule()
 		// unregister properties
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NResponseCategory");
+		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorTypeSettings");
+		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorSettings");
+
+		PropertyModule.NotifyCustomizationModuleChanged();
 	}
 }

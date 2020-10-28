@@ -16,7 +16,7 @@ class SNameComboBox;
  * https://discordapp.com/channels/679064182297198622/679064182297198625/766620770855419915
  * All slate Widgets API doc @see https://docs.unrealengine.com/en-US/API/Runtime/Slate/Widgets/index.html
  */
-class FNResponseCategoryCustomization : public IPropertyTypeCustomization
+class FNDialogFactorTypeSettingsCustomization : public IPropertyTypeCustomization
 {
 public:
 	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
@@ -30,10 +30,14 @@ public:
 		IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 
 protected:
-	void OnAttributeSelected(TSharedPtr<FName> Selection, ESelectInfo::Type SelectInfo);
+	void RemoveButton_OnClick();
+	void AddButton_OnClick();
+	void OnCheckStateChanged(ECheckBoxState InNewState, TSharedPtr<IPropertyHandle> PropertyHandle);
+	ECheckBoxState OnGetCheckState(
+		TSharedPtr<IPropertyHandle> PropertyHandle, TSharedPtr<IPropertyHandle> TypePropertyHandle) const;
 
 private:
-	TSharedPtr<IPropertyHandle> NameProperty;
+	TSharedPtr<IPropertyHandle> StructHandle;
 	TArray<TSharedPtr<FName>> CategoryList;
 	TMap<TSharedPtr<FName>, FNDialogResponseCategorySettings> SettingsList;
 	TSharedPtr<SNameComboBox> NameComboBox;

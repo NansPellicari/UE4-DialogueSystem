@@ -39,13 +39,11 @@ struct NANSDIALOGSYSTEM_API FNDialogFactorTypeSettings
 
 	/**
 	 * /!\ A range is mandatory for a difficulty factor.
-	 * TODO create a Property Customization to create a field dependency:
-	 * when (Type & EFactorType::Difficulty != 0) it should be forced to true.
 	 */
 	UPROPERTY(EditAnywhere, Category = FactorType)
 	bool bHasRange = false;
 
-	UPROPERTY(EditAnywhere, Category = FactorType, Meta = (EditCondition = "bHasRange"))
+	UPROPERTY(EditAnywhere, Category = FactorType)
 	FRange Range = FRange(0, 100);
 };
 
