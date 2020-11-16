@@ -5,10 +5,8 @@
 #include "Factor/DialogFactorUnit.h"
 #include "Kismet/GameplayStatics.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
-#include "NansCoreHelpers/Public/Misc/NansAssertionMacros.h"
 #include "NansFactorsFactoryCore/Public/FactorState.h"
-#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitAdapter.h"
-#include "NansFactorsFactoryUE4/Public/FactorUnit/UnrealFactorUnitProxy.h"
+#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
 #include "NansFactorsFactoryUE4/Public/FactorsFactoryClientAdapter.h"
 #include "NansFactorsFactoryUE4/Public/FactorsFactoryGameInstance.h"
 #include "NansFactorsFactoryUE4/Public/Operator/OperatorProviders.h"
@@ -46,7 +44,11 @@ void UBTDialogPointsHandler::Initialize(
 	check(GetWorld());
 
 	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
-	checkf(GI->Implements<UNFactorsFactoryGameInstance>(), TEXT("The GameInstance should implements INFactorsFactoryGameInstance"));
+	checkf
+	(
+		GI->Implements<UNFactorsFactoryGameInstance>(),
+		TEXT("The GameInstance should implements INFactorsFactoryGameInstance")
+	);
 
 	FactorsClient = INFactorsFactoryGameInstance::Execute_GetFactorsFactoryClient(GI);
 
@@ -55,19 +57,27 @@ void UBTDialogPointsHandler::Initialize(
 	FactorsPointsAtStart = State->Compute();
 }
 
-void UBTDialogPointsHandler::AddPoints(FPoint Point, int32 Position)
+void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 {
 	int32 Step = IBTStepsHandler::Execute_GetCurrentStep(StepsHandler.GetObject());
 	if (!PointsMultipliers.Contains(Point.Category.Name))
 	{
 		FFormatNamedArguments RespArguments;
 		RespArguments.Add(TEXT("category"), FText::FromName(Point.Category.Name));
-		EDITOR_WARN("DialogSystem",
+		EDITOR_WARN
+		(
+			"DialogSystem",
 			FText::Format(
-				LOCTEXT("CanNotAddPointsForACategory", "You must defined a points multiplier for {category} "), RespArguments));
+				LOCTEXT("CanNotAddPointsForACategory", "You must defined a points multiplier for {category} "),
+				RespArguments)
+		);
 		return;
 	}
+
+
 	TArray<FNDialogFactorTypeSettings> FactorTypes = PointsMultipliers.FindChecked(Point.Category.Name);
+	// TODO refacto: Rather than creates a child factor, creates a data field FArchive to pass what ever you want... ? test
+	// + add possibility to  tag a Factor Unit: this way easier to find by tag (identified by family)
 	UNDialogFactorUnit* FactorUnit =
 		Cast<UNDialogFactorUnit>(FactorsClient->CreateFactorUnit(PointsCollector, UNDialogFactorUnit::StaticClass()));
 	FString BaseReason = TEXT("Dialog");
@@ -80,8 +90,10 @@ void UBTDialogPointsHandler::AddPoints(FPoint Point, int32 Position)
 	FactorUnit->InitialPoint = Point.Point;
 	FactorUnit->BehaviorTreePathName = BehaviorTreePathName;
 	FactorUnit->AIPawnPathName = AIPawnPathName;
-	UNOperatorSimpleOperations* Provider = Cast<UNOperatorSimpleOperations>(
-		FactorsClient->CreateOperatorProvider(PointsCollector, UNOperatorSimpleOperations::StaticClass()));
+	UNOperatorSimpleOperations* Provider = Cast<UNOperatorSimpleOperations>
+	(
+		FactorsClient->CreateOperatorProvider(PointsCollector, UNOperatorSimpleOperations::StaticClass())
+	);
 	Provider->Type = ENFactorSimpleOperation::Add;
 	FactorUnit->SetOperatorProvider(Provider);
 
@@ -92,13 +104,17 @@ void UBTDialogPointsHandler::AddPoints(FPoint Point, int32 Position)
 		FactorUnit->FactorUnitValue += Point.Point * State->Compute();
 	}
 
-	int32 Key = FactorsClient->AddFactorUnit(PointsCollector, MakeShareable(new NUnrealFactorUnitProxy(FactorUnit)));
+	int32 Key = FactorsClient->AddFactorUnit(PointsCollector, FactorUnit);
 	if (Key < 0)
 	{
-		EDITOR_ERROR("DialogSystem",
+		EDITOR_ERROR
+		(
+			"DialogSystem",
 			FText::Format(
-				LOCTEXT("FactorUnitCanNotBeAdded", "the factor unit (reason: {0}) can not be added to the point collector"),
-				FText::FromString(BaseReason)));
+				LOCTEXT("FactorUnitCanNotBeAdded",
+					"the factor unit (reason: {0}) can not be added to the point collector"),
+				FText::FromString(BaseReason))
+		);
 		return;
 	}
 	FactorUnitKeys.Add(Key);
@@ -106,9 +122,8 @@ void UBTDialogPointsHandler::AddPoints(FPoint Point, int32 Position)
 
 UNDialogFactorUnit* UBTDialogPointsHandler::GetLastResponse()
 {
-	NUnrealFactorUnitProxy* FactorUnitProxy =
-		dynamic_cast<NUnrealFactorUnitProxy*>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys.Last()).Get());
-	return Cast<UNDialogFactorUnit>(FactorUnitProxy->GetUnrealObject());
+	// TODO change this with new ExtraData
+	return Cast<UNDialogFactorUnit>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys.Last()));
 }
 
 float UBTDialogPointsHandler::GetPoints() const
@@ -120,6 +135,7 @@ float UBTDialogPointsHandler::GetPoints() const
 
 	return FMath::RoundToInt(State->Compute() - FactorsPointsAtStart);
 }
+
 int32 UBTDialogPointsHandler::GetDialogPoints(FNResponseCategory Category) const
 {
 	int32 TotalPoints = 0;
@@ -128,9 +144,9 @@ int32 UBTDialogPointsHandler::GetDialogPoints(FNResponseCategory Category) const
 
 	for (const int32& PointsKey : FactorUnitKeys)
 	{
-		NUnrealFactorUnitProxy* FactorUnitProxy =
-			dynamic_cast<NUnrealFactorUnitProxy*>(FactorsClient->GetFactorUnit(PointsCollector, PointsKey).Get());
-		UNDialogFactorUnit* FactorUnit = FactorUnit = Cast<UNDialogFactorUnit>(FactorUnitProxy->GetUnrealObject());
+		// TODO change this with new ExtraData
+		UNDialogFactorUnit* FactorUnit = Cast<UNDialogFactorUnit>
+			(FactorsClient->GetFactorUnit(PointsCollector, PointsKey));
 
 		if (FactorUnit->CategoryName == Category.Name)
 		{
@@ -145,9 +161,8 @@ UNDialogFactorUnit* UBTDialogPointsHandler::GetLastResponseFromStep(const int32 
 	UNDialogFactorUnit* FactorUnit = nullptr;
 	for (int32 Index = FactorUnitKeys.Num() - 1; Index >= 0; --Index)
 	{
-		NUnrealFactorUnitProxy* FactorUnitProxy =
-			dynamic_cast<NUnrealFactorUnitProxy*>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys[Index]).Get());
-		FactorUnit = Cast<UNDialogFactorUnit>(FactorUnitProxy->GetUnrealObject());
+		// TODO change this with new ExtraData
+		FactorUnit = Cast<UNDialogFactorUnit>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys[Index]));
 
 		if (FactorUnit->Step == SearchStep)
 		{

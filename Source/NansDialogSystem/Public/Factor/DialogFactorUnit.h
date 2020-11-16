@@ -1,12 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitAdapter.h"
+#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
 
 #include "DialogFactorUnit.generated.h"
 
 UCLASS()
-class NANSDIALOGSYSTEM_API UNDialogFactorUnit : public UNFactorUnitAdapter
+class NANSDIALOGSYSTEM_API UNDialogFactorUnit : public UNFactorUnitView
 {
 	GENERATED_BODY()
 public:

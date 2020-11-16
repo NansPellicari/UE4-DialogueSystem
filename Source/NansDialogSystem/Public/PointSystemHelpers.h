@@ -9,7 +9,7 @@
  * Points Structure
  */
 USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FPoint
+struct NANSDIALOGSYSTEM_API FNPoint
 {
 	GENERATED_USTRUCT_BODY()
 

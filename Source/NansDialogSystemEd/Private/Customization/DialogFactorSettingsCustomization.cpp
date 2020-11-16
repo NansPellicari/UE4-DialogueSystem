@@ -89,7 +89,7 @@ void FNDialogFactorSettingsCustomization::CustomizeChildren(TSharedRef<IProperty
 
 	BgColor = GetColor(CategoryProperty);
 
-	// clang-format off
+	// @formatter:off
 	StructBuilder.AddCustomRow( LOCTEXT("DialogFactorRow", "DialogFactor") )
 	[
 		SNew(SHorizontalBox)
@@ -215,7 +215,7 @@ void FNDialogFactorSettingsCustomization::CustomizeChildren(TSharedRef<IProperty
 			]
 		]
 	];
-	// clang-format on
+	// @formatter:on
 }
 
 void FNDialogFactorSettingsCustomization::OnCategoryChanged(TSharedPtr<IPropertyHandle> CategoryHandle)

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
-
+#include "BTDialogueTypes.h"
+#include "PointSystemHelpers.h"
+#include "Factor/DialogFactorUnit.h"
 #include "BTDialogPointsHandler.generated.h"
 
 struct FNDialogFactorSettings;
@@ -18,10 +19,10 @@ struct NANSDIALOGSYSTEM_API FBTPointInStep
 {
 	GENERATED_USTRUCT_BODY()
 
-	FBTPointInStep(int32 _Step = 0, FPoint _Point = FPoint(), int32 _Position = 0)
+	FBTPointInStep(int32 _Step = 0, FNPoint _Point = FNPoint(), int32 _Position = 0)
 		: Step(_Step), Point(_Point), Position(_Position){};
 	int32 Step;
-	FPoint Point;
+	FNPoint Point;
 	int32 Position;
 };
 
@@ -39,7 +40,7 @@ public:
 	virtual void BeginDestroy() override;
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	void AddPoints(FPoint Point, int32 Position);
+	void AddPoints(FNPoint Point, int32 Position);
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
 	UNDialogFactorUnit* GetLastResponse();

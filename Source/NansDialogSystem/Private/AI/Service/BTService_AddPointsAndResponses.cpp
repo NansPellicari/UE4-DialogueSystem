@@ -36,7 +36,7 @@ void UBTService_AddPointsAndResponses::OnBecomeRelevant(UBehaviorTreeComponent& 
 
 	ResponseContainer = Cast<UBTDialogueResponseContainer>(BlackboardComp->GetValueAsObject(ResponseContainerName));
 
-	FPoint Point;
+	FNPoint Point;
 	int32 Position = 0;
 	Point.Point = 0;
 

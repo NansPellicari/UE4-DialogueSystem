@@ -64,7 +64,7 @@ void FNDialogFactorTypeSettingsCustomization::CustomizeChildren(TSharedRef<IProp
 					  LOCTEXT("AddToolTip", "Add a Factor Type"))
 				: SNullWidget::NullWidget);
 
-	// clang-format off
+	// @formatter:off
 	StructBuilder.AddCustomRow( LOCTEXT("FactorRow", "Factor") )
 	[
 		SNew(SHorizontalBox)
@@ -193,7 +193,7 @@ void FNDialogFactorTypeSettingsCustomization::CustomizeChildren(TSharedRef<IProp
 			]
 		]
 	];
-	// clang-format on
+	// @formatter:on
 }
 
 void FNDialogFactorTypeSettingsCustomization::RemoveButton_OnClick()

@@ -6,7 +6,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "UI/ResponseButtonWidget.h"
 
@@ -33,7 +32,7 @@ EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeCompone
 
 	ResponseContainer = Cast<UBTDialogueResponseContainer>(BlackboardComp->GetValueAsObject(ResponseContainerName));
 
-	FPoint Point;
+	FNPoint Point;
 	int32 Position = 0;
 	Point.Point = 0;
 

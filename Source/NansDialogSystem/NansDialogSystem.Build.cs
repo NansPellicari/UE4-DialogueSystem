@@ -6,9 +6,7 @@ namespace UnrealBuildTool.Rules
 	{
 		public NansDialogSystem(ReadOnlyTargetRules Target) : base(Target)
 		{
-			// This to allow dynamic_cast
-			// https://answers.unrealengine.com/questions/477792/how-do-i-cast-between-polymorphic-classes-that-don.html?sort=oldest
-			bUseRTTI = true;
+			PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
 			PublicDependencyModuleNames.AddRange(
 				new string[]
@@ -28,7 +26,6 @@ namespace UnrealBuildTool.Rules
 					"Slate",
 					"SlateCore",
 					"InputCore",
-					"Kismet",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansTimelineSystemUE4",
