@@ -4,6 +4,8 @@
 
 #include "AI/BehaviorTree/Tasks/BTTask_Base.h"
 #include "CoreMinimal.h"
+
+#include "BTDialogueTypes.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 
 #include "BTTask_ButtonsSequence.generated.h"
