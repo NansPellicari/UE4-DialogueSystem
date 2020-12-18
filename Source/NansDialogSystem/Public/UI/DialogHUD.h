@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "DialogHUD.generated.h"
 

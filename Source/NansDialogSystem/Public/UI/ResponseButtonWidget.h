@@ -4,9 +4,11 @@
 
 #include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
-#include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "ResponseButtonWidget.generated.h"
+
+class UResponseButtonWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FResponseBTEvent, UResponseButtonWidget*, Button);
 

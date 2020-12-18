@@ -4,7 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "WheelButtonWidget.generated.h"
 
@@ -16,9 +16,21 @@ enum class EWheelDirection : uint8
 	Anticlockwise
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWheelButtonEvent, UWheelButtonWidget*, Widget, EWheelDirection, Direction);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FWheelButtonEvent,
+	class UWheelButtonWidget*,
+	Widget,
+	EWheelDirection,
+	Direction
+);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWheelButtonSimpleEvent);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FWheelButtonEventCpp, UWheelButtonWidget* /*, Widget*/, EWheelDirection /*, Direction*/);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(
+	FWheelButtonEventCpp,
+	class UWheelButtonWidget* /*, Widget*/,
+	EWheelDirection /*, Direction*/
+);
 DECLARE_MULTICAST_DELEGATE(FWheelButtonSimpleEventCpp);
 
 /**
@@ -46,17 +58,20 @@ public:
 	float GetRoundDistance();
 	float GetDragDistanceClockwise();
 	float GetDragDistanceAntiClockwise();
+
 	bool GetResetDistanceOnDrop()
 	{
 		return ResetDistanceOnDrop;
 	};
+
 	float GetMouseVelocityInfluenceRatio()
 	{
 		return MouseVelocityInfluenceRatio;
 	};
 	EWheelDirection GetDirection();
 
-	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply
+	NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual bool NativeOnDragOver(
 		const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

@@ -3,7 +3,7 @@
 #include "AI/Task/BTTask_SimpleResponses.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 #include "UI/ResponseButtonWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"

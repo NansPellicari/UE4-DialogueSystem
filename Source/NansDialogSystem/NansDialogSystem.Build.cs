@@ -13,7 +13,7 @@ namespace UnrealBuildTool.Rules
 				{
 					"Core",
 				}
-				);
+			);
 
 			PrivateDependencyModuleNames.AddRange(
 				new string[]
@@ -32,11 +32,11 @@ namespace UnrealBuildTool.Rules
 					"NansFactorsFactoryCore",
 					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
-					"NansExtension",
+					"NansUMGExtent",
 					"NansCommon", // TODO should remove this dependencies
 					"Interactive",
 				}
-				);
+			);
 
 			PrivateIncludePathModuleNames.AddRange(
 				new string[]

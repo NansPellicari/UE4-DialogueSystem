@@ -4,7 +4,7 @@
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
-#include "NansExtension/Public/UMG/Blueprint/NansUserWidget.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"

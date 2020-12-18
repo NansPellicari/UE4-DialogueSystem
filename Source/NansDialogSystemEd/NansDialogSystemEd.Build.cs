@@ -30,15 +30,16 @@ namespace UnrealBuildTool.Rules
 					"NansFactorsFactoryCore",
 					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
-					"NansExtension",
+					"NansUMGExtent",
 					"NansCommon",
 					"Interactive",
 					"NansDialogSystem",
 				});
 			PrivateIncludePaths.AddRange(
-				new string[] {
+				new string[]
+				{
 					"NansDialogSystemEd/Private"
-			});
+				});
 		}
 	}
 }
