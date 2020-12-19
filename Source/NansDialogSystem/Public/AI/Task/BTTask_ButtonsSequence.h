@@ -50,7 +50,7 @@ public:
 	 *      = 24 combinations
 	 * Or IAJA:
 	 *      fr: Interpretation Analyse Jugement Agression
-	 *      en: Interpretation Analysis Judgment Agression
+	 *      en: Interpretation Analysis Judgment Aggression
 	 *      Easyer = only 12 combinations
 	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
