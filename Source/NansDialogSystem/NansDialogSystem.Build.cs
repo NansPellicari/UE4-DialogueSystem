@@ -26,6 +26,7 @@ namespace UnrealBuildTool.Rules
 					"Slate",
 					"SlateCore",
 					"InputCore",
+					"DeveloperSettings",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansTimelineSystemUE4",
