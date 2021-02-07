@@ -1,19 +1,33 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "AI/Task/BTTask_ButtonsSequence.h"
 
-#include "AI/Task/BTTask_Countdown.h"
 #include "BTDialogueResponseContainer.h"
+#include "PointSystemHelpers.h"
+#include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanelSlot.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
-#include "PointSystemHelpers.h"
 #include "Service/ButtonSequenceMovementManager.h"
+#include "Service/InteractiveBTHelpers.h"
 #include "Service/NansArrayUtils.h"
+#include "Setting/InteractiveSettings.h"
 #include "UI/ButtonSequenceWidget.h"
 #include "UI/DialogHUD.h"
+#include "UI/InteractiveHUDPlayer.h"
 #include "UI/WheelButtonWidget.h"
 #include "UI/WheelProgressBarWidget.h"
 
@@ -27,6 +41,12 @@ UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& Objec
 	BTSequenceManager = MakeShareable(new NButtonSequenceMovementManager());
 	CountDownTask = ObjectInitializer.CreateDefaultSubobject<UBTTask_Countdown>(this, TEXT("Countdown"));
 	CountDownTask->OnCountdownEnds().AddUObject(this, &UBTTask_ButtonsSequence::OnCountdownEnds);
+	auto Settings = UInteractiveSettings::Get()->BehaviorTreeSettings;
+
+	if (UINameKey == NAME_None)
+	{
+		UINameKey = Settings.UINameKey;
+	}
 }
 
 void UBTTask_ButtonsSequence::BeginDestroy()
@@ -54,8 +74,23 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	OwnerComponent = &OwnerComp;
 	Blackboard = OwnerComp.GetBlackboardComponent();
-	DialogHUD = Cast<UDialogHUD>(Blackboard->GetValueAsObject(HUD));
 
+	auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
+	if (!IsValid(PlayerHUD))
+	{
+		return EBTNodeResult::Type::Aborted;
+	}
+	const FName UIName = Blackboard->GetValueAsName(UINameKey);
+	if (!PlayerHUD->IsDisplayed(UIName))
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			FText::Format(LOCTEXT("WrongHUDName", "The HUD {0} is not currently displayed "), FText::FromName(UIName))
+		);
+		return EBTNodeResult::Aborted;
+	}
+
+	DialogHUD = Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
 	if (!ensure(DialogHUD != nullptr))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
@@ -68,7 +103,10 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 
 	if (!ensure(ButtonsSlot != nullptr))
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongButtonsSlotName", "The ButtonsSlotName set doesn't exists in HUD in "));
+		EDITOR_ERROR(
+			"DialogSystem",
+			LOCTEXT("WrongButtonsSlotName", "The ButtonsSlotName set doesn't exists in HUD in ")
+		);
 		return EBTNodeResult::Aborted;
 	}
 
@@ -109,7 +147,8 @@ void UBTTask_ButtonsSequence::TickTask(UBehaviorTreeComponent& OwnerComp, uint8*
 	FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 }
 
-void UBTTask_ButtonsSequence::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+void UBTTask_ButtonsSequence::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
+	EBTNodeResult::Type TaskResult)
 {
 	CountDownTask->OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 	PlayerTries.Empty();
@@ -128,7 +167,10 @@ void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)
 		// Should be a Weiiiird behavior, but just in case
 		if (!ensure(Widget != nullptr))
 		{
-			EDITOR_ERROR("DialogSystem", LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in "));
+			EDITOR_ERROR(
+				"DialogSystem",
+				LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in ")
+			);
 			FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 			return;
 		}
@@ -200,7 +242,10 @@ int32 UBTTask_ButtonsSequence::GetEarnedPoint()
 {
 	if (SequenceIndex < 0 || SequenceIndex >= Sequences.Num())
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in "));
+		EDITOR_ERROR(
+			"DialogSystem",
+			LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in ")
+		);
 		return 0;
 	}
 	FBTButtonSequence Sequence = Sequences[SequenceIndex];
@@ -221,7 +266,8 @@ int32 UBTTask_ButtonsSequence::GetEarnedPoint()
 	// return FMath::RoundToInt((float)Sequence.LevelCoefficient / Total);
 }
 
-const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tries, const FBTButtonSequence& Sequence) const
+const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tries,
+	const FBTButtonSequence& Sequence) const
 {
 	FString StringSequence = Sequence.ButtonSequence.ToString();
 
@@ -253,7 +299,7 @@ const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tri
 		}
 	}
 	found = found == 1 ? 0 : found;
-	return FMath::FloorToInt((found / (float) Tries.Len()) * Sequence.LevelCoefficient);
+	return FMath::FloorToInt((found / static_cast<float>(Tries.Len())) * Sequence.LevelCoefficient);
 }
 
 FString UBTTask_ButtonsSequence::GetStaticDescription() const
@@ -267,17 +313,27 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 		Arguments.Add(TEXT("sequence"), Sequence.ButtonSequence);
 		Arguments.Add(TEXT("category"), FText::FromString(CategoryStr));
 		Desc += "\n\n----------------------\n";
-		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {sequence} :: {category} ]"), Arguments)
-					.ToString();
+		Desc += FText::Format(
+				LOCTEXT("TaskButtonSequenceSequenceTitle", "[ Sequence {sequence} :: {category} ]"),
+				Arguments
+			)
+			.ToString();
 		Desc += "\n";
-		Desc += FText::Format(LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}"), Sequence.LevelCoefficient, i)
-					.ToString();
+		Desc += FText::Format(
+				LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}"),
+				Sequence.LevelCoefficient,
+				i
+			)
+			.ToString();
 		Desc += "\n\n";
 		Desc += LOCTEXT("TaskButtonSequenceSequenceResponseTitle", "Responses for points:").ToString();
 		Arguments.Empty();
 		Arguments.Add(TEXT("default"), Sequence.DefaultResponse);
 		FString Text =
-			FText::Format(LOCTEXT("TaskButtonSequenceSequenceDefaultResponse", "[-1] \"{default}\""), Arguments).ToString();
+			FText::Format(
+				LOCTEXT("TaskButtonSequenceSequenceDefaultResponse", "[-1] \"{default}\""),
+				Arguments
+			).ToString();
 		Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
 
 		for (FBTButtonSequenceResponse Response : Sequence.ResponsesForPoint)
@@ -286,7 +342,10 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 			RespArguments.Add(TEXT("response"), Response.Response);
 			RespArguments.Add(TEXT("point"), Response.ForPoint);
 			Text =
-				FText::Format(LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\""), RespArguments).ToString();
+				FText::Format(
+					LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\""),
+					RespArguments
+				).ToString();
 			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
 		}
 
@@ -296,11 +355,11 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 		i++;
 	}
 
-	Desc += "\nHUD: " + HUD.ToString();
+	Desc += "\nUINameKey: " + UINameKey.ToString();
 	Desc += "\nResponse Container: " + ResponseContainerKey.ToString();
 
 	Desc += "\nResponse Button Widget: ";
-	if (ButtonWidget != NULL && !ButtonWidget->GetDefaultObject()->GetClass()->GetFullName().IsEmpty())
+	if (ButtonWidget != nullptr && !ButtonWidget->GetDefaultObject()->GetClass()->GetFullName().IsEmpty())
 	{
 		Desc += ButtonWidget->GetDefaultObject()->GetClass()->GetName();
 	}
@@ -339,11 +398,15 @@ FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence&
 		FPermutationChances& Chance = Chances.FindOrAdd(Points);
 		Chance.TotalChances++;
 		Chance.Possibility = str;
-	} while (UNansArrayUtils::NextPermutation(CharArr));
+	}
+	while (UNansArrayUtils::NextPermutation(CharArr));
 
-	Chances.KeySort([](int32 A, int32 B) {
-		return A < B;	 // sort keys in reverse
-	});
+	Chances.KeySort(
+		[](int32 A, int32 B)
+		{
+			return A < B; // sort keys in reverse
+		}
+	);
 	FString Desc = "";
 	for (TPair<int32, FPermutationChances> Chance : Chances)
 	{
@@ -351,10 +414,14 @@ FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence&
 		RespArguments.Add(TEXT("possibility"), FText::FromString(Chance.Value.Possibility));
 		RespArguments.Add(TEXT("totalChances"), Chance.Value.TotalChances);
 		RespArguments.Add(TEXT("point"), Chance.Key);
-		Desc += "\n\t* " + FText::Format(LOCTEXT("TaskButtonSequenceSequencePermutPossibilities",
-											 "{point}: TotalChances = {totalChances} eg. \"{possibility}\""),
-							   RespArguments)
-							   .ToString();
+		Desc += "\n\t* " + FText::Format(
+				LOCTEXT(
+					"TaskButtonSequenceSequencePermutPossibilities",
+					"{point}: TotalChances = {totalChances} eg. \"{possibility}\""
+				),
+				RespArguments
+			)
+			.ToString();
 	}
 	StaticButtonSequenceDescriptions::SetDescription(Sequence, Desc);
 	return Desc;
@@ -388,7 +455,10 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 	{
 		if (SequenceIndex < 0 || SequenceIndex >= Sequences.Num())
 		{
-			EDITOR_ERROR("DialogSystem", LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in "));
+			EDITOR_ERROR(
+				"DialogSystem",
+				LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in ")
+			);
 			FinishLatentTask(*OwnerComponent, EBTNodeResult::Aborted);
 			return;
 		}
@@ -417,7 +487,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 	for (int32 i = 0; i < ButtonsSlot->GetChildrenCount(); ++i)
 	{
 		UButtonSequenceWidget* ButtonFromList = Cast<UButtonSequenceWidget>(ButtonsSlot->GetChildAt(i));
-		if (ButtonFromList == nullptr) continue;	// only concerned about button
+		if (ButtonFromList == nullptr) continue; // only concerned about button
 		ButtonFromList->SetVisibility(ESlateVisibility::Visible);
 	}
 }

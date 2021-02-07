@@ -1,9 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #pragma once
 
-#include "AI/BehaviorTree/Tasks/BTTask_Base.h"
 #include "CoreMinimal.h"
+#include "AI/BehaviorTree/Tasks/BTTask_Base.h"
 
 #include "BTDialogueTypes.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
@@ -172,8 +183,8 @@ protected:
 	 * "WheelButton" (UWheelButtonWidget) and "ProgressBar" (UWheelProgressBarWidget)
 	 * to work properly.
 	 */
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	FName HUD = FName("HUD");
+	UPROPERTY(VisibleAnywhere, Category = "HUD")
+	FName UINameKey = NAME_None;
 
 	UPROPERTY(EditInstanceOnly, Category = "HUD")
 	TSubclassOf<UButtonSequenceWidget> ButtonWidget;
@@ -197,7 +208,8 @@ protected:
 	int32 TimeToResponse = 0;
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult);
+	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
+		EBTNodeResult::Type TaskResult) override;
 
 	UPROPERTY()
 	UBehaviorTreeComponent* OwnerComponent;
