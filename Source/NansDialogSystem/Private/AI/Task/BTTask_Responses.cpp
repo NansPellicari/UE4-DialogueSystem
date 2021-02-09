@@ -20,6 +20,7 @@
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
+#include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Setting/InteractiveSettings.h"
 #include "UI/DialogHUD.h"
@@ -68,9 +69,10 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
 		return EBTNodeResult::Aborted;
 	}
-	DialogHUD = GetHUDFromBlackboard(OwnerComp);
+	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogHUD))
 	{
+		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
@@ -395,26 +397,6 @@ FString UBTTask_Responses::DisplayStaticResponses(
 		ReturnDesc += "----------------------\n";
 	}
 	return ReturnDesc;
-}
-
-UDialogHUD* UBTTask_Responses::GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp)
-{
-	const auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	if (!IsValid(PlayerHUD))
-	{
-		return nullptr;
-	}
-	const FName UIName = Blackboard->GetValueAsName(UINameKey);
-	if (!PlayerHUD->IsDisplayed(UIName))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(LOCTEXT("WrongHUDName", "The HUD {0} is not currently displayed "), FText::FromName(UIName))
-		);
-		return nullptr;
-	}
-
-	return Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
 }
 
 void UBTTask_Responses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) {}

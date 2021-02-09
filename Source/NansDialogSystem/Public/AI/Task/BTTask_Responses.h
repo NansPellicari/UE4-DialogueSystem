@@ -115,7 +115,5 @@ private:
 	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);
 	FString DisplayStaticResponses(
 		const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const;
-
-	virtual UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp);
 	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
 };

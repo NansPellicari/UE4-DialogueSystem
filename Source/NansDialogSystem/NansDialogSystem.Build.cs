@@ -6,17 +6,17 @@ namespace UnrealBuildTool.Rules
 	{
 		public NansDialogSystem(ReadOnlyTargetRules Target) : base(Target)
 		{
-			PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 			PublicDependencyModuleNames.AddRange(
-				new string[]
+				new[]
 				{
-					"Core",
+					"Core"
 				}
 			);
 
 			PrivateDependencyModuleNames.AddRange(
-				new string[]
+				new[]
 				{
 					"CoreUObject",
 					"Engine", // TODO This one should be removed when NansCommon be removed too
@@ -27,6 +27,8 @@ namespace UnrealBuildTool.Rules
 					"SlateCore",
 					"InputCore",
 					"DeveloperSettings",
+					"GameplayAbilities",
+					"GameplayTags",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansTimelineSystemUE4",
@@ -35,14 +37,14 @@ namespace UnrealBuildTool.Rules
 					"NansBehaviorSteps",
 					"NansUMGExtent",
 					"NansCommon", // TODO should remove this dependencies
-					"Interactive",
+					"Interactive"
 				}
 			);
 
 			PrivateIncludePathModuleNames.AddRange(
-				new string[]
+				new[]
 				{
-					"MessageLog",
+					"MessageLog"
 				}
 			);
 		}

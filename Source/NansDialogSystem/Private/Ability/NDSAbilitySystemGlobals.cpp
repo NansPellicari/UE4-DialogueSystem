@@ -11,28 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "Ability/NDSAbilitySystemGlobals.h"
 
-#include "CoreMinimal.h"
-#include "AI/Task/BTTask_Responses.h"
+#include "Ability/NDSGameplayEffectTypes.h"
 
-#include "BTTask_SimpleResponses.generated.h"
+UNDSAbilitySystemGlobals::UNDSAbilitySystemGlobals() {}
 
-/**
- *
- */
-UCLASS()
-class NANSDIALOGSYSTEM_API UBTTask_SimpleResponses : public UBTTask_Responses
+FGameplayEffectContext* UNDSAbilitySystemGlobals::AllocGameplayEffectContext() const
 {
-	GENERATED_BODY()
-
-	UBTTask_SimpleResponses(const FObjectInitializer& objectInitializer);
-
-public:
-#if WITH_EDITOR
-	virtual FName GetNodeIconName() const override;
-#endif	  // WITH_EDITOR
-
-private:
-	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-};
+	return new FNDSGameplayEffectContext();
+}

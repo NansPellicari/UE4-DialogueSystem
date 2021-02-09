@@ -1,3 +1,16 @@
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "Service/BTDialogDifficultyHandler.h"
 
 #include "BTDialogueTypes.h"
@@ -21,7 +34,10 @@ void UBTDialogDifficultyHandler::Initialize()
 	check(GetWorld());
 
 	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
-	checkf(GI->Implements<UNFactorsFactoryGameInstance>(), TEXT("The GameInstance should implements INFactorsFactoryGameInstance"));
+	checkf(
+		GI->Implements<UNFactorsFactoryGameInstance>(),
+		TEXT("The GameInstance should implements INFactorsFactoryGameInstance")
+	);
 
 	FactorsClient = INFactorsFactoryGameInstance::Execute_GetFactorsFactoryClient(GI);
 }
@@ -35,12 +51,21 @@ float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& 
 	{
 		for (auto& Factor : Factors)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s - factor %s: %f"), ANSI_TO_TCHAR(__FUNCTION__), *Factor.Key.ToString(), Factor.Value);
+			UE_LOG(
+				LogTemp,
+				Warning,
+				TEXT("%s - factor %s: %f"),
+				ANSI_TO_TCHAR(__FUNCTION__),
+				*Factor.Key.ToString(),
+				Factor.Value
+			);
 		}
 	}
 #endif
 
-	TArray<FNDialogFactorTypeSettings> RespFactors = Response.Category.GetFactors((int32) EFactorType::Difficulty);
+	TArray<FNDialogFactorTypeSettings> RespFactors = Response.Category.GetFactors(
+		static_cast<int32>(EFactorType::Difficulty)
+	);
 
 	if (RespFactors.Num() <= 0)
 	{
@@ -51,26 +76,31 @@ float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& 
 
 	for (const auto& RespFactor : RespFactors)
 	{
-		if (((int32) EFactorType::Difficulty & RespFactor.Type) == 0) continue;
+		if ((static_cast<int32>(EFactorType::Difficulty) & RespFactor.Type) == 0) continue;
 		if (!FactorsClient->HasFactor(RespFactor.Factor.Name))
 		{
-			EDITOR_WARN("DialogSystem",
+			EDITOR_WARN(
+				"DialogSystem",
 				FText::Format(LOCTEXT("FactorInexistant", "You should create the factor {0} to use it here"),
-					FText::FromName(RespFactor.Factor.Name)));
+					FText::FromName(RespFactor.Factor.Name))
+			);
 			continue;
 		}
 
-		checkf(RespFactor.bHasRange,
+		checkf(
+			RespFactor.bHasRange,
 			TEXT("When a factor (%s) is a difficulty, it has to be a configured with a range lh & rh"),
-			*RespFactor.Factor.Name.ToString());
+			*RespFactor.Factor.Name.ToString()
+		);
 
 		NFactorStateInRange* State = new NFactorStateInRange(RespFactor.Range.Lh, RespFactor.Range.Rh);
 		FactorsClient->GetState(RespFactor.Factor.Name, *State);
-		float Factor = State->GetDecimalPercent();
+		const float Factor = State->GetDecimalPercent();
 
 		for (const FNDialogFactorSettings& Setting : Settings)
 		{
-			if (Setting.Category.Name == Response.Category.Name && Setting.RangeFrom <= Factor && Setting.RangeTo >= Factor)
+			if (Setting.Category.Name == Response.Category.Name && Setting.RangeFrom <= Factor && Setting.RangeTo >=
+				Factor)
 			{
 				// TODO should be great to set rules like: Multiply with base difficulty, mutiply with last computed diff, etc...
 				DifficultyLevel *= Setting.Multiplier;

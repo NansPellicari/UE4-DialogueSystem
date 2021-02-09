@@ -1,12 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "AI/Task/BTTask_WheelResponses.h"
 
 #include "BTDialogueResponseContainer.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
 #include "Service/BTDialogDifficultyHandler.h"
 #include "UI/DialogHUD.h"
@@ -25,7 +35,7 @@ FString UBTTask_WheelResponses::GetStaticDescription() const
 
 void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	if (!ensure(DialogHUD != nullptr))
+	if (!IsValid(DialogHUD))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
@@ -35,19 +45,26 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 	// TODO make wheel name configurable?
 	UWheelButtonWidget* WheelButton = Cast<UWheelButtonWidget>(DialogHUD->FindWidget(FName("WheelButton")));
 
-	if (!ensure(WheelButton != nullptr))
+	if (!IsValid(WheelButton))
 	{
-		EDITOR_ERROR("DialogSystem",
-			LOCTEXT("WrongWheelButtonNameOrInexistant", "Check the wheel button name or if exists in the Dialog HUD in "),
-			this);
+		EDITOR_ERROR(
+			"DialogSystem",
+			LOCTEXT("WrongWheelButtonNameOrInexistant", "Check the wheel button name or if exists in the Dialog HUD in "
+			),
+			this
+		);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 		return;
 	}
 
 	WheelButton->GetWheelDistRatio(WheelRatioClockwise, WheelRatioAntiClockwise);
 
-	float ClockwiseWheelReach = FMath::Clamp<float>(WheelRatioClockwise - WheelRatioAntiClockwise, ResponsesTypeTolerance, 100);
-	float CounterClockwiseWheelReach =
+	const float ClockwiseWheelReach = FMath::Clamp<float>(
+		WheelRatioClockwise - WheelRatioAntiClockwise,
+		ResponsesTypeTolerance,
+		100
+	);
+	const float CounterClockwiseWheelReach =
 		FMath::Clamp<float>(WheelRatioAntiClockwise - WheelRatioClockwise, ResponsesTypeTolerance, 100);
 
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
@@ -56,19 +73,24 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 
 	if (!ensure(DifficultyHandler != nullptr))
 	{
-		EDITOR_ERROR("DialogSystem",
+		EDITOR_ERROR(
+			"DialogSystem",
 			LOCTEXT("DifficultyHandlerMissingOnWheelResponses", "The difficulty handler is missing on WheelResponses"),
-			this);
+			this
+		);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 		return;
 	}
 
-	for (TPair<FString, int32> ResponseIndex : ListButtonIndexes)
+	for (const TPair<FString, int32> ResponseIndex : ListButtonIndexes)
 	{
 		UResponseButtonWidget* Button = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(ResponseIndex.Value));
 		if (!ensure(Button != nullptr))
 		{
-			EDITOR_ERROR("DialogSystem", LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in "));
+			EDITOR_ERROR(
+				"DialogSystem",
+				LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in ")
+			);
 			FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 			return;
 		}
@@ -76,10 +98,10 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		UBTDialogueResponseContainer* ResponseContainer = Button->GetResponse();
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 
-		bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP &&
-				   DifficultyHandler->GetDifficultyLevel(Response) <= ClockwiseWheelReach);
-		bool DOWN = (ResponseContainer->InfluencedBy == EResponseDirection::DOWN &&
-					 DifficultyHandler->GetDifficultyLevel(Response) <= CounterClockwiseWheelReach);
+		const bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP &&
+						 DifficultyHandler->GetDifficultyLevel(Response) <= ClockwiseWheelReach);
+		const bool DOWN = (ResponseContainer->InfluencedBy == EResponseDirection::DOWN &&
+						   DifficultyHandler->GetDifficultyLevel(Response) <= CounterClockwiseWheelReach);
 
 		if (UP || DOWN || ResponseContainer->InfluencedBy == EResponseDirection::NONE)
 		{

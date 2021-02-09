@@ -14,25 +14,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/Task/BTTask_Responses.h"
-
-#include "BTTask_SimpleResponses.generated.h"
+#include "AbilitySystemGlobals.h"
+#include "NDSAbilitySystemGlobals.generated.h"
 
 /**
- *
+ * Thanks to https://github.com/tranek/GASShooter
+ * Child class of UAbilitySystemGlobals.
+ * Do not try to get a reference to this or call into it during constructors of other UObjects. It will crash in packaged games.
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTTask_SimpleResponses : public UBTTask_Responses
+class NANSDIALOGSYSTEM_API UNDSAbilitySystemGlobals : public UAbilitySystemGlobals
 {
 	GENERATED_BODY()
-
-	UBTTask_SimpleResponses(const FObjectInitializer& objectInitializer);
-
 public:
-#if WITH_EDITOR
-	virtual FName GetNodeIconName() const override;
-#endif	  // WITH_EDITOR
+	UNDSAbilitySystemGlobals();
 
-private:
-	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	static UNDSAbilitySystemGlobals& GSGet()
+	{
+		return dynamic_cast<UNDSAbilitySystemGlobals&>(Get());
+	}
+
+	/** Should allocate a project specific GameplayEffectContext struct. Caller is responsible for deallocation */
+	virtual FGameplayEffectContext* AllocGameplayEffectContext() const override;
 };

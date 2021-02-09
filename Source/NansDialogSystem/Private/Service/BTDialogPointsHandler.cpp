@@ -1,3 +1,16 @@
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "Service/BTDialogPointsHandler.h"
 
 #include "BTDialogueTypes.h"
@@ -6,9 +19,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
 #include "NansFactorsFactoryCore/Public/FactorState.h"
-#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
 #include "NansFactorsFactoryUE4/Public/FactorsFactoryClientAdapter.h"
 #include "NansFactorsFactoryUE4/Public/FactorsFactoryGameInstance.h"
+#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
 #include "NansFactorsFactoryUE4/Public/Operator/OperatorProviders.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Setting/DialogSystemSettings.h"
@@ -44,8 +57,7 @@ void UBTDialogPointsHandler::Initialize(
 	check(GetWorld());
 
 	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
-	checkf
-	(
+	checkf(
 		GI->Implements<UNFactorsFactoryGameInstance>(),
 		TEXT("The GameInstance should implements INFactorsFactoryGameInstance")
 	);
@@ -64,8 +76,7 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	{
 		FFormatNamedArguments RespArguments;
 		RespArguments.Add(TEXT("category"), FText::FromName(Point.Category.Name));
-		EDITOR_WARN
-		(
+		EDITOR_WARN(
 			"DialogSystem",
 			FText::Format(
 				LOCTEXT("CanNotAddPointsForACategory", "You must defined a points multiplier for {category} "),
@@ -90,8 +101,7 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	FactorUnit->InitialPoint = Point.Point;
 	FactorUnit->BehaviorTreePathName = BehaviorTreePathName;
 	FactorUnit->AIPawnPathName = AIPawnPathName;
-	UNOperatorSimpleOperations* Provider = Cast<UNOperatorSimpleOperations>
-	(
+	UNOperatorSimpleOperations* Provider = Cast<UNOperatorSimpleOperations>(
 		FactorsClient->CreateOperatorProvider(PointsCollector, UNOperatorSimpleOperations::StaticClass())
 	);
 	Provider->Type = ENFactorSimpleOperation::Add;
@@ -107,8 +117,7 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	int32 Key = FactorsClient->AddFactorUnit(PointsCollector, FactorUnit);
 	if (Key < 0)
 	{
-		EDITOR_ERROR
-		(
+		EDITOR_ERROR(
 			"DialogSystem",
 			FText::Format(
 				LOCTEXT("FactorUnitCanNotBeAdded",
@@ -145,8 +154,9 @@ int32 UBTDialogPointsHandler::GetDialogPoints(FNResponseCategory Category) const
 	for (const int32& PointsKey : FactorUnitKeys)
 	{
 		// TODO change this with new ExtraData
-		UNDialogFactorUnit* FactorUnit = Cast<UNDialogFactorUnit>
-			(FactorsClient->GetFactorUnit(PointsCollector, PointsKey));
+		UNDialogFactorUnit* FactorUnit = Cast<UNDialogFactorUnit>(
+			FactorsClient->GetFactorUnit(PointsCollector, PointsKey)
+		);
 
 		if (FactorUnit->CategoryName == Category.Name)
 		{

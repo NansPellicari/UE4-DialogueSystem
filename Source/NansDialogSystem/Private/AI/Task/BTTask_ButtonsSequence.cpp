@@ -22,6 +22,7 @@
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/ButtonSequenceMovementManager.h"
+#include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Service/NansArrayUtils.h"
 #include "Setting/InteractiveSettings.h"
@@ -75,25 +76,10 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	OwnerComponent = &OwnerComp;
 	Blackboard = OwnerComp.GetBlackboardComponent();
 
-	auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	if (!IsValid(PlayerHUD))
+	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
+	if (!IsValid(DialogHUD))
 	{
-		return EBTNodeResult::Type::Aborted;
-	}
-	const FName UIName = Blackboard->GetValueAsName(UINameKey);
-	if (!PlayerHUD->IsDisplayed(UIName))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(LOCTEXT("WrongHUDName", "The HUD {0} is not currently displayed "), FText::FromName(UIName))
-		);
-		return EBTNodeResult::Aborted;
-	}
-
-	DialogHUD = Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
-	if (!ensure(DialogHUD != nullptr))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
+		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 

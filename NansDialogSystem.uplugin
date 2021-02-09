@@ -18,7 +18,7 @@
 		{
 			"Name": "NansDialogSystem",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		},
 		{
 			"Name": "NansDialogSystemEd",
@@ -57,6 +57,14 @@
 		},
 		{
 			"Name": "Interactive",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
 			"Enabled": true
 		}
 	]

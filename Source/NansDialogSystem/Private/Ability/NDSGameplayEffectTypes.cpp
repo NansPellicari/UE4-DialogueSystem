@@ -11,22 +11,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "Ability/NDSGameplayEffectTypes.h"
 
-#include "CoreMinimal.h"
-
-#include "UI/DialogHUD.h"
-
-class UBehaviorTreeComponent;
-class UBlackboardComponent;
-
-/**
- * 
- */
-class NANSDIALOGSYSTEM_API NDialogBTHelpers
+void FNDSGameplayEffectContext::AddExtraData(FGameplayTag Tag, const FString& Data)
 {
-public:
-	NDialogBTHelpers();
-	~NDialogBTHelpers();
-	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-};
+	ExtraData.Add(Tag, Data);
+}
+
+void FNDSGameplayEffectContext::AddExtraData(TMap<FGameplayTag, FString> NewData)
+{
+	ExtraData.Append(NewData);
+}
+
+TMap<FGameplayTag, FString> FNDSGameplayEffectContext::GetExtraData() const
+{
+	return ExtraData;
+}
+
+bool FNDSGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s"), ANSI_TO_TCHAR(__FUNCTION__));
+	// TODO serialize the ExtraData TMap 
+	return Super::NetSerialize(Ar, Map, bOutSuccess);
+}
