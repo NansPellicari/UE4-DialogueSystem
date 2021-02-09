@@ -63,7 +63,7 @@ struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
-	FName Name;
+	FGameplayTag Name;
 
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FLinearColor Color;
@@ -74,9 +74,8 @@ struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
 	static FNDialogResponseCategorySettings* CreateNullInstance()
 	{
 		FNDialogResponseCategorySettings* NullInst = new FNDialogResponseCategorySettings();
-		NullInst->Name = NAME_None;
+		NullInst->Name = FGameplayTag::EmptyTag;
 		NullInst->Color = FLinearColor::Black;
-		NullInst->Factors.Empty();
 		return NullInst;
 	}
 };
@@ -111,7 +110,7 @@ public:
 		}
 	}
 
-	void GetPointsMultipliersConfigs(TMap<FName, TArray<FNDialogFactorTypeSettings>>& Confs) const
+	void GetPointsMultipliersConfigs(TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>>& Confs) const
 	{
 		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
 		{

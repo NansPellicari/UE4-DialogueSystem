@@ -1,11 +1,10 @@
-// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
-//
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,10 +13,10 @@
 
 #include "Pin/ResponseCategoryPin.h"
 
+#include "ScopedTransaction.h"
+#include "SNameComboBox.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "SNameComboBox.h"
-#include "ScopedTransaction.h"
 #include "Setting/DialogSystemSettings.h"
 
 void SNResponseCategoryPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
@@ -31,7 +30,7 @@ TSharedRef<SWidget> SNResponseCategoryPin::GetDefaultValueWidget()
 	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
 	for (const auto& Setting : Settings)
 	{
-		CategoryList.Add(MakeShareable(new FName(Setting.Name)));
+		CategoryList.Add(MakeShareable(new FName(Setting.Name.ToString())));
 	}
 
 	Settings.Empty();
@@ -47,13 +46,14 @@ TSharedRef<SWidget> SNResponseCategoryPin::GetDefaultValueWidget()
 		InitialSelectedName = GetSelectedName();
 	}
 
-	return SAssignNew(NameComboBox, SNameComboBox)	  // note you can display any widget here
+	return SAssignNew(NameComboBox, SNameComboBox) // note you can display any widget here
 		.ContentPadding(FMargin(6.0f, 2.0f))
 		.OptionsSource(&CategoryList)
 		.InitiallySelectedItem(InitialSelectedName)
 		.OnComboBoxOpening(this, &SNResponseCategoryPin::OnComboBoxOpening)
 		.OnSelectionChanged(this, &SNResponseCategoryPin::OnAttributeSelected);
 }
+
 void SNResponseCategoryPin::OnAttributeSelected(TSharedPtr<FName> ItemSelected, ESelectInfo::Type SelectInfo)
 {
 	if (ItemSelected.IsValid())
@@ -79,16 +79,21 @@ void SNResponseCategoryPin::SetPropertyWithName(const FName& Name)
 
 	// To set the property we need to use a FString
 	// using this format: (MyPropertyName="My Value")
-	FString PinString = TEXT("(Name=\"");
-	PinString += *Name.ToString();
-	PinString += TEXT("\")");
+	FString PinString = TEXT("(Name=(TagName=\"");
+	PinString += Name.ToString();
+	PinString += TEXT("\"))");
 
 	FString CurrentDefaultValue = GraphPinObj->GetDefaultAsString();
 
 	if (CurrentDefaultValue != PinString)
 	{
 		const FScopedTransaction Transaction(
-			NSLOCTEXT("GraphEditor", "ChangeResponseCategorySettingsPinValue", "Change ResponseCategory Settings Pin Value"));
+			NSLOCTEXT(
+				"GraphEditor",
+				"ChangeResponseCategorySettingsPinValue",
+				"Change ResponseCategory Settings Pin Value"
+			)
+		);
 		GraphPinObj->Modify();
 
 		if (PinString != GraphPinObj->GetDefaultAsString())
@@ -103,7 +108,7 @@ TSharedPtr<FName> SNResponseCategoryPin::GetSelectedName() const
 	int32 NameCount = CategoryList.Num();
 	if (NameCount <= 0)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	FName Name;
@@ -117,7 +122,7 @@ TSharedPtr<FName> SNResponseCategoryPin::GetSelectedName() const
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void SNResponseCategoryPin::GetPropertyAsName(FName& OutName) const
@@ -132,14 +137,19 @@ void SNResponseCategoryPin::GetPropertyAsName(FName& OutName) const
 
 	if (PinString.StartsWith(TEXT("(")) && PinString.EndsWith(TEXT(")")))
 	{
-		PinString = PinString.LeftChop(1);
-		PinString = PinString.RightChop(1);
-		PinString.Split("=", NULL, &PinString);
-
-		if (PinString.StartsWith(TEXT("\"")) && PinString.EndsWith(TEXT("\"")))
+		PinString = PinString.LeftChop(1); // to remove ")"
+		PinString = PinString.RightChop(6); // to remove "(Name="
+		if (PinString.StartsWith(TEXT("(")) && PinString.EndsWith(TEXT(")")))
 		{
 			PinString = PinString.LeftChop(1);
 			PinString = PinString.RightChop(1);
+			PinString.Split(FString("="), nullptr, &PinString);
+
+			if (PinString.StartsWith(TEXT("\"")) && PinString.EndsWith(TEXT("\"")))
+			{
+				PinString = PinString.LeftChop(1);
+				PinString = PinString.RightChop(1);
+			}
 		}
 	}
 

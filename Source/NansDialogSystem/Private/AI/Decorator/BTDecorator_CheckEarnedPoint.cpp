@@ -1,4 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
@@ -12,22 +23,29 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitializer& ObjectInitializer) : Super(
+	ObjectInitializer
+)
 {
 	NodeName = "Conditions with earned points";
 	Comparator = ObjectInitializer.CreateDefaultSubobject<UNansComparator>(this, TEXT("Comparator"));
 }
 
-bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
+	uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
+		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+	);
 
 	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR("DialogSystem",
+		EDITOR_ERROR(
+			"DialogSystem",
 			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			(UObject*) OwnerComp.GetCurrentTree());
+			reinterpret_cast<UObject*>(OwnerComp.GetCurrentTree())
+		);
 		return false;
 	}
 
@@ -36,20 +54,24 @@ bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComp
 
 bool UBTDecorator_CheckEarnedPoint::EvaluateArray(UBTDialogPointsHandler* PointsHandler) const
 {
-	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
+	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
 
 	for (int32 Index = 0; Index < EarnedPointsConditions.Num(); ++Index)
 	{
 		FPointCondition PointCondition = EarnedPointsConditions[Index];
-		if (PointCondition.PointType.Name == NAME_None)
+		if (!PointCondition.PointType.Name.IsValid())
 		{
 			ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(false));
 			continue;
 		}
 
-		int32 Points = PointsHandler->GetDialogPoints(PointCondition.PointType);
-		bool Results = Comparator->EvaluateComparator<int32>(PointCondition.Operator, Points, PointCondition.CompareTo);
+		const int32 Points = PointsHandler->GetDialogPoints(PointCondition.PointType);
+		const bool Results = Comparator->EvaluateComparator<int32>(
+			PointCondition.Operator,
+			Points,
+			PointCondition.CompareTo
+		);
 		ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(Results));
 
 		if (HasConditionsOperator == false && Results == false)
@@ -76,11 +98,13 @@ FString UBTDecorator_CheckEarnedPoint::GetStaticDescription() const
 	{
 		FPointCondition Condition = EarnedPointsConditions[Index];
 
-		ReturnDesc += FString::Printf(TEXT("\nC%d %s %s %d"),
+		ReturnDesc += FString::Printf(
+			TEXT("\nC%d %s %s %d"),
 			Index,
 			*Condition.PointType.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
-			Condition.CompareTo);
+			Condition.CompareTo
+		);
 	}
 
 	if (ConditionsOperators.Num() <= 0) return ReturnDesc;

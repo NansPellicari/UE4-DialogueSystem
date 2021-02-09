@@ -6,10 +6,10 @@ namespace UnrealBuildTool.Rules
 	{
 		public NansDialogSystemEd(ReadOnlyTargetRules Target) : base(Target)
 		{
-			PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+			PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 			PrivateDependencyModuleNames.AddRange(
-				new string[]
+				new[]
 				{
 					"Core",
 					"CoreUObject",
@@ -24,6 +24,8 @@ namespace UnrealBuildTool.Rules
 					"InputCore",
 					"Kismet",
 					"KismetCompiler",
+					"GameplayAbilities",
+					"GameplayTags",
 					"EditorStyle",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
@@ -33,10 +35,10 @@ namespace UnrealBuildTool.Rules
 					"NansUMGExtent",
 					"NansCommon",
 					"Interactive",
-					"NansDialogSystem",
+					"NansDialogSystem"
 				});
 			PrivateIncludePaths.AddRange(
-				new string[]
+				new[]
 				{
 					"NansDialogSystemEd/Private"
 				});

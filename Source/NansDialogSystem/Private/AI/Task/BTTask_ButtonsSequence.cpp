@@ -306,9 +306,10 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 			.ToString();
 		Desc += "\n";
 		Desc += FText::Format(
-				LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}"),
+				LOCTEXT("TaskButtonSequenceSequenceDetails", "lvl: {0}, Position: {1}, Direction: {2}"),
 				Sequence.LevelCoefficient,
-				i
+				i,
+				FText::FromString(ENUM_TO_STRING(EResponseDirection, Sequence.Direction))
 			)
 			.ToString();
 		Desc += "\n\n";

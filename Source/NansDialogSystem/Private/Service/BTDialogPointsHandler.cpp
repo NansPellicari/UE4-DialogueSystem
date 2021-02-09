@@ -75,7 +75,7 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	if (!PointsMultipliers.Contains(Point.Category.Name))
 	{
 		FFormatNamedArguments RespArguments;
-		RespArguments.Add(TEXT("category"), FText::FromName(Point.Category.Name));
+		RespArguments.Add(TEXT("category"), FText::FromString(Point.Category.Name.ToString()));
 		EDITOR_WARN(
 			"DialogSystem",
 			FText::Format(

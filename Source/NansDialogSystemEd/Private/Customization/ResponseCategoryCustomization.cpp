@@ -1,13 +1,25 @@
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "Customization/ResponseCategoryCustomization.h"
 
+#include "SGraphPin.h"
+#include "SlateBasics.h"
+#include "SNameComboBox.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "PropertyEditor/Public/DetailLayoutBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
 #include "PropertyEditor/Public/PropertyHandle.h"
-#include "SGraphPin.h"
-#include "SNameComboBox.h"
-#include "SlateBasics.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SWidget.h"
 
@@ -28,6 +40,10 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 
 	FString Val;
 	NameProperty->GetValueAsDisplayString(Val);
+	// Because it's in format (TagName="My.Tag")
+	Val.Split("=", nullptr, &Val);
+	Val = Val.LeftChop(2);
+	Val = Val.RightChop(1);
 	FName NameSelected = FName(*Val);
 
 	TArray<FNDialogResponseCategorySettings> Settings;
@@ -38,8 +54,8 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 
 	for (const auto& Setting : Settings)
 	{
-		CategoryList.Add(MakeShareable(new FName(Setting.Name)));
-		if (NameSelected == Setting.Name)
+		CategoryList.Add(MakeShareable(new FName(Setting.Name.ToString())));
+		if (NameSelected.ToString() == Setting.Name.ToString())
 		{
 			InitialSelectedName = CategoryList[Index];
 		}
@@ -51,7 +67,7 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 	OnAttributeSelected(MakeShareable(new FName(*Val)), ESelectInfo::Direct);
 
 	HeaderRow.NameContent()[StructPropertyHandle->CreatePropertyNameWidget()]
-		.ValueContent()[SAssignNew(NameComboBox, SNameComboBox)	   // note you can display any widget here
+		.ValueContent()[SAssignNew(NameComboBox, SNameComboBox) // note you can display any widget here
 							.ContentPadding(FMargin(6.0f, 2.0f))
 							.OptionsSource(&CategoryList)
 							.InitiallySelectedItem(InitialSelectedName)
@@ -60,14 +76,18 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 
 void FNResponseCategoryCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle,
 	class IDetailChildrenBuilder& StructBuilder,
-	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
-{
-}
+	IPropertyTypeCustomizationUtils& StructCustomizationUtils) {}
+
 void FNResponseCategoryCustomization::OnAttributeSelected(TSharedPtr<FName> Selection, ESelectInfo::Type SelectInfo)
 {
 	if (NameProperty.IsValid())
 	{
-		FPropertyAccess::Result Result = NameProperty->SetValueFromFormattedString(Selection->ToString());
+		FString TagString = TEXT("(");
+		TagString += TEXT("TagName=\"");
+		TagString += Selection->ToString();
+		TagString += TEXT("\"");
+		TagString += TEXT(")");
+		FPropertyAccess::Result Result = NameProperty->SetValueFromFormattedString(TagString);
 		// FString StrResult = Result == FPropertyAccess::Fail ? "Fail" : "Success";
 		// StrResult = Result == FPropertyAccess::MultipleValues ? "MultipleValues" : StrResult;
 		// UE_LOG(LogTemp, Warning, TEXT("%s: %s - access: %s"), ANSI_TO_TCHAR(__FUNCTION__), *Selection->ToString(), *StrResult);
