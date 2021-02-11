@@ -14,20 +14,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "UI/DialogHUD.h"
+#include "Components/ActorComponent.h"
+#include "PlayerDialogComponent.generated.h"
 
-class UBehaviorTreeComponent;
-class UBlackboardComponent;
 
 /**
- * 
+ * The main Goal of this Component is to save data from dialog session.
+ * It is also used to retrieve data on previous or actual session to perform some checks on previously chosen responses. 
  */
-class NANSDIALOGSYSTEM_API NDialogBTHelpers
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class NANSDIALOGSYSTEM_API UPlayerDialogComponent : public UActorComponent
 {
+	GENERATED_BODY()
+
 public:
-	NDialogBTHelpers();
-	~NDialogBTHelpers();
-	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-	static UAbilitySystemComponent* GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
+	UPlayerDialogComponent();
+
+protected:
+	virtual void BeginPlay() override;
+	;
 };

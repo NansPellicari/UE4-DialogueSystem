@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "UI/DialogHUD.h"
-
-class UBehaviorTreeComponent;
-class UBlackboardComponent;
+#include "GameplayEffectExecutionCalculation.h"
+#include "PointsEarnedExecCalculation.generated.h"
 
 /**
  * 
  */
-class NANSDIALOGSYSTEM_API NDialogBTHelpers
+UCLASS()
+class NANSDIALOGSYSTEM_API UPointsEarnedExecCalculation : public UGameplayEffectExecutionCalculation
 {
+	GENERATED_BODY()
+
 public:
-	NDialogBTHelpers();
-	~NDialogBTHelpers();
-	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-	static UAbilitySystemComponent* GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
+	UPointsEarnedExecCalculation();
+
+	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+		OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 };

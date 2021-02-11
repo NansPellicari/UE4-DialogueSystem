@@ -13,6 +13,25 @@
 
 #include "NDSFunctionLibrary.h"
 
+
+#include "Ability/NDSAbilitySystemComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/ErrorUtils.h"
+#include "Setting/DialogSystemSettings.h"
+
+#define LOCTEXT_NAMESPACE "DialogSystem"
+
+void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle,
+	FDialogueBlockResult Data)
+{
+	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
+	if (EffectContext)
+	{
+		EffectContext->AddPointsData(Data);
+	}
+}
+
 void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle EffectContextHandle, FGameplayTag Tag,
 	const FString& Data)
 {
@@ -45,3 +64,26 @@ TMap<FGameplayTag, FString> UNDSFunctionLibrary::EffectContextGetExtraData(
 	}
 	return Data;
 }
+
+bool UNDSFunctionLibrary::IsPlayerCanDialogue(UObject* WorldContextObject, int32 PlayerIndex)
+{
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(WorldContextObject->GetWorld(), PlayerIndex);
+	UNDSAbilitySystemComponent* ABS = Player->FindComponentByClass<UNDSAbilitySystemComponent>();
+	if (!IsValid(ABS)) return false;
+	TArray<FGameplayAbilitySpec*> MatchingGameplayAbilities;
+	ABS->GetActivatableGameplayAbilitySpecsByAllMatchingTags(
+		UDialogSystemSettings::Get()->TagsForDialogAbility,
+		MatchingGameplayAbilities
+	);
+	if (MatchingGameplayAbilities.Num() <= 0)
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			LOCTEXT("CanNotAddPointsForACategory", "Player should be able to speak!"),
+			WorldContextObject
+		);
+		return false;
+	}
+	return true;
+}
+#undef LOCTEXT_NAMESPACE

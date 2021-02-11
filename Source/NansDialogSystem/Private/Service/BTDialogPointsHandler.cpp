@@ -13,7 +13,13 @@
 
 #include "Service/BTDialogPointsHandler.h"
 
+
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AIController.h"
 #include "BTDialogueTypes.h"
+#include "NDSFunctionLibrary.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/GameInstance.h"
 #include "Factor/DialogFactorUnit.h"
 #include "Kismet/GameplayStatics.h"
@@ -47,12 +53,17 @@ void UBTDialogPointsHandler::Clear()
 	HeapResponses.Empty();
 	FactorsPointsAtStart = 0;
 	FactorUnitKeys.Empty();
+	PlayerABS->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
 }
 
-void UBTDialogPointsHandler::Initialize(
-	TScriptInterface<IBTStepsHandler> _StepsHandler, FString _BehaviorTreePathName, FString _AIPawnPathName)
+bool UBTDialogPointsHandler::Initialize(
+	TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp, FString InAIPawnPathName,
+	UAbilitySystemComponent* InPlayerABS)
 {
-	StepsHandler = _StepsHandler;
+	StepsHandler = InStepsHandler;
+	PlayerABS = InPlayerABS;
+	BehaviorTreePathName = OwnerComp.GetPathName();
+	AIPawnPathName = InAIPawnPathName;
 
 	check(GetWorld());
 
@@ -67,6 +78,26 @@ void UBTDialogPointsHandler::Initialize(
 	NFactorState* State = new NFactorState();
 	FactorsClient->GetState(PointsCollector, *State);
 	FactorsPointsAtStart = State->Compute();
+
+
+	// ==================
+	// Replace with that:
+	// ==================
+	// TODO retrieve index for splitted screen 
+	verify(UNDSFunctionLibrary::IsPlayerCanDialogue(&OwnerComp, 0));
+
+	// Activating Dialog Gameplay Activity
+	FGameplayEventData Payload;
+	// TODO Check: need more data ?
+	Payload.Instigator = OwnerComp.GetAIOwner()->GetPawn();
+	Payload.Target = PlayerABS->GetOwnerActor();
+	Payload.EventTag = UDialogSystemSettings::Get()->TriggerAbilityTag;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+		PlayerABS->GetOwnerActor(),
+		UDialogSystemSettings::Get()->TriggerAbilityTag,
+		Payload
+	);
+	return true;
 }
 
 void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
@@ -127,6 +158,43 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 		return;
 	}
 	FactorUnitKeys.Add(Key);
+
+
+	// ==================
+	// Replace with that:
+	// ==================
+	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
+	if (!IsValid(GEffect))
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			FText::Format(
+				LOCTEXT("EffectOnEarnedMissing",
+					"No effect on earned is set for point type {0}"),
+				FText::FromString(Point.Category.Name.ToString()))
+		);
+		return;
+	}
+	FString BaseName = TEXT("DialogBlock");
+	BaseName.Append("#");
+	BaseName.AppendInt(Step);
+	FGameplayEffectContextHandle FxContextHandle = PlayerABS->MakeEffectContext();
+	FDialogueBlockResult DialogData;
+	DialogData.Difficulty = Point.Difficulty;
+	DialogData.Position = Position;
+	DialogData.CategoryName = Point.Category.Name;
+	DialogData.BlockName = FName(BaseName);
+	DialogData.InitialPoint = Point.Point;
+	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
+	FGameplayEffectSpecHandle SpecHandle = PlayerABS->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
+	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
+	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, UDialogSystemSettings::Get()->TagToIdentifyDialogEffect);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
+		SpecHandle,
+		UDialogSystemSettings::Get()->PointMagnitudeTag,
+		Point.Point
+	);
+	PlayerABS->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 UNDialogFactorUnit* UBTDialogPointsHandler::GetLastResponse()

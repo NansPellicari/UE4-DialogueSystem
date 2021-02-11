@@ -15,6 +15,8 @@
 
 #include "CoreMinimal.h"
 
+
+#include "BTDialogueTypes.h"
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "NDSFunctionLibrary.generated.h"
@@ -28,6 +30,9 @@ class NANSDIALOGSYSTEM_API UNDSFunctionLibrary : public UBlueprintFunctionLibrar
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
+	static void EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle, FDialogueBlockResult Data);
+
+	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
 	static void EffectContextAddExtraData(FGameplayEffectContextHandle EffectContextHandle, FGameplayTag Tag,
 		const FString& Data);
 
@@ -38,4 +43,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
 	static TMap<FGameplayTag, FString> EffectContextGetExtraData(
 		const FGameplayEffectContextHandle& EffectContextHandle);
+
+	UFUNCTION(BlueprintCallable, Category="Ability", Meta = (WorldContext = "WorldContextObject"))
+	static bool IsPlayerCanDialogue(UObject* WorldContextObject, int32 PlayerIndex = 0);
 };

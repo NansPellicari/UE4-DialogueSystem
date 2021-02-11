@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include "GameplayEffect.h"
 #include "GameplayTags.h"
 #include "BTDialogueTypes.generated.h"
 
@@ -55,7 +56,7 @@ struct NANSDIALOGSYSTEM_API FNResponseCategory
 };
 
 /**
- * Dialogue Reponse Struct
+ * Dialogue Response Struct
  */
 USTRUCT(BlueprintType)
 struct NANSDIALOGSYSTEM_API FBTDialogueResponse
@@ -72,10 +73,49 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	FNResponseCategory Category;
 
+	/** If true, tasks will use the Default GameplayEffect set in DialogSystemSettings. */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
+	bool bUsedDefaultEffect = true;
+
+	/**
+	* /!\ Note: Be aware that this effect is used to create a GameplayEffectSpec in Tasks to add:
+	*
+	* - some level magnitude (using SetByCaller)
+	* - some extra data to pass to the PlayerDialogComponent (see FNDSGameplayEffectContext)
+	* - asset tags to identify easily the gameplay effect as a dialog effect (see UDialogSystemSettings::TagToIdentifyDialogEffect)
+	*
+	* Take this in consideration when you build your GameplayEffect.
+	*/
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", Meta=(EditCondition="!bUsedDefaultEffect"))
+	TSubclassOf<UGameplayEffect> EffectOnEarned;
+
+	TSubclassOf<UGameplayEffect> GetSpawnableEffectOnEarned() const;
+
 	static FBTDialogueResponse CreateNullObject()
 	{
 		FBTDialogueResponse Response = FBTDialogueResponse();
 		Response.Text = NSLOCTEXT("DialogSystem", "DefaultDialogueResponseText", "Euh...");
 		return Response;
 	}
+};
+
+USTRUCT(BlueprintType)
+struct NANSDIALOGSYSTEM_API FDialogueBlockResult
+{
+	GENERATED_USTRUCT_BODY()
+
+	FDialogueBlockResult() {}
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
+	int32 Position = -100;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
+	FName BlockName = NAME_None;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
+	int32 Difficulty = 0;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
+	float InitialPoint = -1.f;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
+	FGameplayTag CategoryName = FGameplayTag::EmptyTag;
+
+	FString ToString();
 };

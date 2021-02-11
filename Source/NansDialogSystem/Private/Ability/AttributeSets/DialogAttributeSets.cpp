@@ -11,23 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "Ability/AttributeSets/DialogAttributeSets.h"
+UDialogAttributeSets::UDialogAttributeSets() { }
 
-#include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "UI/DialogHUD.h"
-
-class UBehaviorTreeComponent;
-class UBlackboardComponent;
-
-/**
- * 
- */
-class NANSDIALOGSYSTEM_API NDialogBTHelpers
+void UDialogAttributeSets::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-public:
-	NDialogBTHelpers();
-	~NDialogBTHelpers();
-	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-	static UAbilitySystemComponent* GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-};
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}

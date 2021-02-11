@@ -14,7 +14,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AttributeSet.h"
 #include "BTDialogueTypes.h"
+#include "GameplayEffect.h"
+#include "Ability/GA_BaseDialog.h"
+#include "Ability/AttributeSets/DialogAttributeSets.h"
 #include "Attribute/FactorAttribute.h"
 #include "Engine/DeveloperSettings.h"
 #include "NansCoreHelpers/Public/Math/MathTypes.h"
@@ -68,6 +72,18 @@ struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	FLinearColor Color;
 
+	/**
+	 * /!\ Note: Be aware that this default effect is used to create a GameplayEffectSpec in Tasks to add:
+	 *
+	 * - some level magnitude (using SetByCaller)
+	 * - some extra data to pass to the PlayerDialogComponent (see FNDSGameplayEffectContext)
+	 * - asset tags to identify easily the gameplay effect as a dialog effect (see UDialogSystemSettings::TagToIdentifyDialogEffect)
+	 *
+	 * Take this in consideration when you build your GameplayEffect.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category=GameplayEffect)
+	TSubclassOf<UGameplayEffect> DefaultEffect;
+
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	TArray<FNDialogFactorTypeSettings> Factors;
 
@@ -88,6 +104,64 @@ class NANSDIALOGSYSTEM_API UDialogSystemSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 public:
+	/**
+	* /!\ This tag will be add to each GameplayEffectSpec create by the Dialog system.
+	* It helps to identify clearly where the effect comes from.
+	*/
+	UPROPERTY(GlobalConfig, EditAnywhere)
+	FGameplayTag TagToIdentifyDialogEffect;
+
+	UPROPERTY(GlobalConfig, EditAnywhere)
+	FGameplayTag TriggerAbilityTag;
+
+	UPROPERTY(GlobalConfig, EditAnywhere)
+	bool bUseDefaultDialogAbility = true;
+
+	/**
+	* Before going in any dialog, the Dialog System checks if player has ability to talk.
+	*/
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="!bUseDefaultDialogAbility"))
+	TSubclassOf<UGameplayAbility> RequiredAbility = UGA_BaseDialog::StaticClass();
+
+	/**
+	* /!\ This is the Meta attribute you should create in your AttributeSet.
+	* This meta attribute should be dedicated to collect dialog points.
+	*/
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="!bUseDefaultDialogAbility"))
+	FGameplayAttribute MetaAttributeForPointsEarning;
+
+	/**
+	 * Set if GA_BaseDialog ability can debug.
+	 */
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="bUseDefaultDialogAbility"))
+	bool bDebugDialogAbility = false;
+
+	/**
+	 * These tags are added to the player when he starts a dialog.
+	 * The dialog ability set them in Activation Owned Tags
+	 */
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="bUseDefaultDialogAbility"))
+	FGameplayTagContainer DialogActivationOwnedTags;
+
+	/**
+	 * Tags to add in the dialog ability 
+	 */
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="bUseDefaultDialogAbility"))
+	FGameplayTagContainer TagsForDialogAbility;
+
+	/**
+	 * Tags that ability's owner has which can block Dialog ability activation.
+	 */
+	UPROPERTY(GlobalConfig, EditAnywhere, Meta=(EditCondition="bUseDefaultDialogAbility"))
+	FGameplayTagContainer TagsBlockingDialogAbility;
+
+	/**
+	 * This tag is used to send point magnitude on the GameplayEffect,
+	 * it should influence earned points amount.
+	 */
+	UPROPERTY(GlobalConfig, EditAnywhere)
+	FGameplayTag PointMagnitudeTag;
+
 	UPROPERTY(GlobalConfig, EditAnywhere)
 	FFactorAttribute PointsCollector;
 	UPROPERTY(GlobalConfig, EditAnywhere)
@@ -108,6 +182,15 @@ public:
 		{
 			ShareableNames.Add(Settings);
 		}
+	}
+
+	FGameplayAttribute GetMetaAttributeForPointsEarning() const
+	{
+		if (bUseDefaultDialogAbility)
+		{
+			return UDialogAttributeSets::GetPointsEarnedAttribute();
+		}
+		return MetaAttributeForPointsEarning;
 	}
 
 	void GetPointsMultipliersConfigs(TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>>& Confs) const

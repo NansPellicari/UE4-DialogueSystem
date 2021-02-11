@@ -15,6 +15,7 @@
 
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/Character.h"
 #include "Misc/ErrorUtils.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Setting/InteractiveSettings.h"
@@ -34,7 +35,7 @@ UDialogHUD* NDialogBTHelpers::GetHUDFromBlackboard(UBehaviorTreeComponent& Owner
 	const auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
 	if (!IsValid(PlayerHUD))
 	{
-		// error are already manage in NInteractiveBTHelpers::GetPlayerHUD()
+		// errors are already manage in NInteractiveBTHelpers::GetPlayerHUD()
 		return nullptr;
 	}
 	const FName UIName = Blackboard->GetValueAsName(UINameKey);
@@ -49,5 +50,29 @@ UDialogHUD* NDialogBTHelpers::GetHUDFromBlackboard(UBehaviorTreeComponent& Owner
 	}
 
 	return Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
+}
+
+UAbilitySystemComponent* NDialogBTHelpers::
+GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard)
+{
+	auto Char = NInteractiveBTHelpers::GetPlayerCharacter(OwnerComp, __FUNCTION__);
+	if (!IsValid(Char))
+	{
+		// errors are already manage in NInteractiveBTHelpers::GetPlayerCharacter()
+		return nullptr;
+	}
+
+	auto Comp = Char->FindComponentByClass<UAbilitySystemComponent>();
+	if (!IsValid(Comp))
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			FText::Format(LOCTEXT("ABSNotFound", "The UAbilitySystemComponent has not be found in {0} "), FText::
+				FromString(OwnerComp.GetFullName())),
+			&OwnerComp
+		);
+		return nullptr;
+	}
+	return Comp;
 }
 #undef LOCTEXT_NAMESPACE

@@ -13,8 +13,12 @@
 
 #include "BTDialogueTypes.h"
 
+
+#include "Misc/ErrorUtils.h"
 #include "NansCoreHelpers/Public/Misc/NansAssertionMacros.h"
 #include "Setting/DialogSystemSettings.h"
+
+#define LOCTEXT_NAMESPACE "DialogSystem"
 
 FLinearColor FNResponseCategory::GetColor() const
 {
@@ -62,3 +66,40 @@ const FNDialogResponseCategorySettings& FNResponseCategory::GetConfig() const
 	}
 	return OutSetting;
 }
+
+TSubclassOf<UGameplayEffect> FBTDialogueResponse::GetSpawnableEffectOnEarned() const
+{
+	auto GEffect = EffectOnEarned;
+	if (!IsValid(GEffect))
+	{
+		for (const auto& CatSet : UDialogSystemSettings::Get()->ResponseCategorySettings)
+		{
+			if (CatSet.Name == Category.Name)
+			{
+				GEffect = CatSet.DefaultEffect;
+				break;
+			}
+		}
+		if (!IsValid(GEffect))
+		{
+			return nullptr;
+		}
+	}
+	return GEffect;
+}
+
+FString FDialogueBlockResult::ToString()
+{
+	FStringFormatOrderedArguments Args;
+	Args.Add(Position);
+	Args.Add(BlockName.ToString());
+	Args.Add(Difficulty);
+	Args.Add(InitialPoint);
+	Args.Add(CategoryName.ToString());
+	return FString::Format(
+		TEXT(" Position: {0}, BlockName: {1}, Difficulty: {2}, InitialPoint: {3}, CategoryName: {4}"),
+		Args
+	);
+}
+
+#undef LOCTEXT_NAMESPACE

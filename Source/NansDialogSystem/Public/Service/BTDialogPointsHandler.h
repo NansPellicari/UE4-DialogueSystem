@@ -22,6 +22,7 @@
 struct FNDialogFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class IBTStepsHandler;
+class UBehaviorTreeComponent;
 
 /**
  * Points Associated to step
@@ -48,8 +49,8 @@ public:
 	bool bDebug = false;
 
 	UBTDialogPointsHandler();
-	void Initialize(TScriptInterface<IBTStepsHandler> _StepsHandler, FString _BehaviorTreePathName,
-		FString _AIPawnPathName);
+	bool Initialize(TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
+		FString InAIPawnPathName, UAbilitySystemComponent* InPlayerABS);
 
 	virtual void BeginDestroy() override;
 
@@ -72,6 +73,9 @@ public:
 protected:
 	UPROPERTY()
 	TScriptInterface<IBTStepsHandler> StepsHandler;
+	UPROPERTY()
+	UAbilitySystemComponent* PlayerABS;
+
 	TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>> PointsMultipliers;
 	FName PointsCollector;
 
