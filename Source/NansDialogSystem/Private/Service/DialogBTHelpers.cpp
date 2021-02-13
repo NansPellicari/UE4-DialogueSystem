@@ -53,7 +53,7 @@ UDialogHUD* NDialogBTHelpers::GetHUDFromBlackboard(UBehaviorTreeComponent& Owner
 }
 
 UAbilitySystemComponent* NDialogBTHelpers::
-GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard)
+GetABS(UBehaviorTreeComponent& OwnerComp)
 {
 	auto Char = NInteractiveBTHelpers::GetPlayerCharacter(OwnerComp, __FUNCTION__);
 	if (!IsValid(Char))
@@ -68,6 +68,30 @@ GetABS(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard)
 		EDITOR_ERROR(
 			"DialogSystem",
 			FText::Format(LOCTEXT("ABSNotFound", "The UAbilitySystemComponent has not be found in {0} "), FText::
+				FromString(OwnerComp.GetFullName())),
+			&OwnerComp
+		);
+		return nullptr;
+	}
+	return Comp;
+}
+
+UPlayerDialogComponent* NDialogBTHelpers::GetDialogComponent(UBehaviorTreeComponent& OwnerComp)
+{
+	auto Char = NInteractiveBTHelpers::GetPlayerCharacter(OwnerComp, __FUNCTION__);
+	if (!IsValid(Char))
+	{
+		// errors are already manage in NInteractiveBTHelpers::GetPlayerCharacter()
+		return nullptr;
+	}
+
+	auto Comp = Char->FindComponentByClass<UPlayerDialogComponent>();
+	if (!IsValid(Comp))
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			FText::Format(LOCTEXT("PlayerDialogCompNotFound", "The UPlayerDialogComponent has not be found in {0} "),
+				FText::
 				FromString(OwnerComp.GetFullName())),
 			&OwnerComp
 		);

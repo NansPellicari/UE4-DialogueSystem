@@ -14,22 +14,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "Component/PlayerDialogComponent.h"
-#include "UI/DialogHUD.h"
-
-class UBehaviorTreeComponent;
-class UBlackboardComponent;
+#include "DialogueSequence.h"
+#include "DialogueHistory.generated.h"
 
 /**
  * 
  */
-class NANSDIALOGSYSTEM_API NDialogBTHelpers
+USTRUCT(BlueprintType)
+struct NANSDIALOGSYSTEM_API FDialogueHistory
 {
-public:
-	NDialogBTHelpers();
-	~NDialogBTHelpers();
-	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-	static UAbilitySystemComponent* GetABS(UBehaviorTreeComponent& OwnerComp);
-	static UPlayerDialogComponent* GetDialogComponent(UBehaviorTreeComponent& OwnerComp);
+	GENERATED_BODY()
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueHistory")
+	FString LevelName;
+	// UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueHistory")
+	// FString LevelId;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueHistory")
+	TArray<FDialogueSequence> Sequences;
 };

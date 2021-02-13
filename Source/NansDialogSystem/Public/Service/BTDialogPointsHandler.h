@@ -16,9 +16,13 @@
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
 #include "PointSystemHelpers.h"
+#include "AI/Decorator/BTDecorator_CheckInStep.h"
+#include "Component/PlayerDialogComponent.h"
+#include "Dialogue/DialogueHistorySearch.h"
 #include "Factor/DialogFactorUnit.h"
 #include "BTDialogPointsHandler.generated.h"
 
+struct FDialogueSequence;
 struct FNDialogFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class IBTStepsHandler;
@@ -48,9 +52,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool bDebug = false;
 
+
 	UBTDialogPointsHandler();
 	bool Initialize(TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
-		FString InAIPawnPathName, UAbilitySystemComponent* InPlayerABS);
+		FDialogueSequence DialogueSequence);
 
 	virtual void BeginDestroy() override;
 
@@ -58,23 +63,19 @@ public:
 	void AddPoints(FNPoint Point, int32 Position);
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	UNDialogFactorUnit* GetLastResponse();
-
-	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	UNDialogFactorUnit* GetLastResponseFromStep(const int32 SearchStep);
-
+	void Clear();
+	bool HasResults(const FNDialogueHistorySearch& Search);
+	bool HasResults(const TArray<FNDialogueHistorySearch> Searches, TArray<FNansConditionOperator> ConditionsOperators);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
 	int32 GetDialogPoints(FNResponseCategory Category) const;
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
-	float GetPoints() const;
-	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	void Clear();
 
 protected:
 	UPROPERTY()
 	TScriptInterface<IBTStepsHandler> StepsHandler;
 	UPROPERTY()
 	UAbilitySystemComponent* PlayerABS;
+	UPROPERTY()
+	UPlayerDialogComponent* DialogComp;
 
 	TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>> PointsMultipliers;
 	FName PointsCollector;

@@ -16,7 +16,6 @@
 #include "CoreMinimal.h"
 
 
-#include "BTDialogueTypes.h"
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "NDSFunctionLibrary.generated.h"
@@ -30,7 +29,7 @@ class NANSDIALOGSYSTEM_API UNDSFunctionLibrary : public UBlueprintFunctionLibrar
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
-	static void EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle, FDialogueBlockResult Data);
+	static void EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle, FDialogueResult Data);
 
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
 	static void EffectContextAddExtraData(FGameplayEffectContextHandle EffectContextHandle, FGameplayTag Tag,

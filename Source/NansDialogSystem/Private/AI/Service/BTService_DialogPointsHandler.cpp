@@ -13,7 +13,11 @@
 
 #include "AI/Service/BTService_DialogPointsHandler.h"
 
+
+#include "AIController.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Dialogue/DialogueSequence.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
@@ -59,15 +63,20 @@ void UBTService_DialogPointsHandler::OnBecomeRelevant(UBehaviorTreeComponent& Ow
 			);
 			return;
 		}
+		FDialogueSequence NewDialogueSequence;
+		NewDialogueSequence.Name = OwnerComp.GetCurrentTree()->GetFName();
+		NewDialogueSequence.Owner = ActorOwner->GetPathName();
+
 		TScriptInterface<IBTStepsHandler> BTStepsHandler;
 		BTStepsHandler.SetObject(BTSteps);
 		BTStepsHandler.SetInterface(Cast<IBTStepsHandler>(BTSteps));
 		BTDialogPointsHandler->Initialize(
 			BTStepsHandler,
 			OwnerComp,
-			ActorOwner->GetPathName(),
-			NDialogBTHelpers::GetABS(OwnerComp, BlackboardComp)
+			NewDialogueSequence
 		);
+
+		BTDialogPointsHandler->bDebug = bDebugHandler;
 
 		// TODO create a decorator for this
 		// if (!bCanDialogue)

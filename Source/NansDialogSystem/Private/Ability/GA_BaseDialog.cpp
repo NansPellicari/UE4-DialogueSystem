@@ -16,10 +16,11 @@
 
 #include "GameplayEffectExtension.h"
 #include "NansDialogSystemLog.h"
-#include "PlayerDialogComponent.h"
+#include "Component/PlayerDialogComponent.h"
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Ability/AbilityTasks/AT_WaitReceivePoints.h"
 #include "Ability/AttributeSets/DialogAttributeSets.h"
+#include "Dialogue/DialogueResult.h"
 #include "GameFramework/Character.h"
 #include "Misc/ErrorUtils.h"
 #include "Setting/DialogSystemSettings.h"
@@ -133,7 +134,7 @@ void UGA_BaseDialog::CancelAbility(const FGameplayAbilitySpecHandle Handle, cons
 }
 
 void UGA_BaseDialog::OnPointsEarnedAttributeChanged(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-	float MitigatedPoints, FDialogueBlockResult ExtraData)
+	float MitigatedPoints, FDialogueResult ExtraData)
 {
 	UPlayerDialogComponent* DialogComp = Character->FindComponentByClass<UPlayerDialogComponent>();
 
@@ -150,6 +151,8 @@ void UGA_BaseDialog::OnPointsEarnedAttributeChanged(UNDSAbilitySystemComponent* 
 		);
 		UE_LOG(LogDialogSystem, Display, TEXT("%s GetData: %s"), ANSI_TO_TCHAR(__FUNCTION__), *ExtraData.ToString());
 	}
+
+	DialogComp->AddResponse(ExtraData);
 }
 
 void UGA_BaseDialog::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

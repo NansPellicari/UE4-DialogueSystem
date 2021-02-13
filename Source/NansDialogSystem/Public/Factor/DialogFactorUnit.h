@@ -31,8 +31,4 @@ public:
 	int32 InitialPoint;
 	UPROPERTY(BlueprintReadWrite, Category = "FactorsFactory|Unit")
 	FGameplayTag CategoryName;
-	UPROPERTY(BlueprintReadWrite, Category = "FactorsFactory|Unit")
-	FString BehaviorTreePathName;
-	UPROPERTY(BlueprintReadWrite, Category = "FactorsFactory|Unit")
-	FString AIPawnPathName;
 };

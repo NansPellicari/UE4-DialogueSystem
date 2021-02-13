@@ -13,6 +13,7 @@
 
 #include "Ability/AbilityTasks/AT_WaitReceivePoints.h"
 #include "Ability/NDSAbilitySystemComponent.h"
+#include "Dialogue/DialogueResult.h"
 
 UAT_WaitReceivePoints::UAT_WaitReceivePoints(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -51,7 +52,7 @@ void UAT_WaitReceivePoints::OnDestroy(bool AbilityIsEnding)
 }
 
 void UAT_WaitReceivePoints::OnPointsReceived(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-	float MitigatedPoints, FDialogueBlockResult ExtraData)
+	float MitigatedPoints, FDialogueResult ExtraData)
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

@@ -15,7 +15,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
-#include "BTDialogueTypes.h"
+#include "Dialogue/DialogueResult.h"
 #include "NDSAbilitySystemComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
@@ -26,7 +26,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
 	UnmitigatedDamage,
 	float,
 	MitigatedDamage,
-	FDialogueBlockResult,
+	FDialogueResult,
 	ExtraData
 );
 
@@ -46,5 +46,5 @@ public:
 
 	// Called from PointsEarnedExecCalculation. Broadcasts on ReceivedPoints whenever this ASC receives points.
 	virtual void ReceivePoints(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage,
-		FDialogueBlockResult ExtraData);
+		FDialogueResult ExtraData);
 };

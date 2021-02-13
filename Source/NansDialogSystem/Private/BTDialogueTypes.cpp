@@ -88,18 +88,4 @@ TSubclassOf<UGameplayEffect> FBTDialogueResponse::GetSpawnableEffectOnEarned() c
 	return GEffect;
 }
 
-FString FDialogueBlockResult::ToString()
-{
-	FStringFormatOrderedArguments Args;
-	Args.Add(Position);
-	Args.Add(BlockName.ToString());
-	Args.Add(Difficulty);
-	Args.Add(InitialPoint);
-	Args.Add(CategoryName.ToString());
-	return FString::Format(
-		TEXT(" Position: {0}, BlockName: {1}, Difficulty: {2}, InitialPoint: {3}, CategoryName: {4}"),
-		Args
-	);
-}
-
 #undef LOCTEXT_NAMESPACE

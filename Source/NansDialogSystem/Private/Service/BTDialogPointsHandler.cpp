@@ -17,9 +17,11 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AIController.h"
 #include "BTDialogueTypes.h"
+#include "NansDialogSystemLog.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Dialogue/DialogueSequence.h"
 #include "Engine/GameInstance.h"
 #include "Factor/DialogFactorUnit.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,6 +32,7 @@
 #include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
 #include "NansFactorsFactoryUE4/Public/Operator/OperatorProviders.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
+#include "Service/DialogBTHelpers.h"
 #include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
@@ -53,38 +56,80 @@ void UBTDialogPointsHandler::Clear()
 	HeapResponses.Empty();
 	FactorsPointsAtStart = 0;
 	FactorUnitKeys.Empty();
+	bDebug = false;
 	PlayerABS->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
 }
 
+bool UBTDialogPointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
+	TArray<FNansConditionOperator> ConditionsOperators)
+{
+	verify(IsValid(DialogComp));
+	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
+	TMap<FString, BoolStruct*> ConditionsResults;
+	int32 Idx = 0;
+	if (Searches.Num() > 0)
+	{
+		for (auto& Search : Searches)
+		{
+			FString SearchKey = UNansComparator::BuildKeyFromIndex(Idx);
+			const bool bResult = HasResults(Search);
+			if (bDebug)
+			{
+				UE_LOG(
+					LogDialogSystem,
+					Display,
+					TEXT("%s search: %s - results: %i"),
+					*SearchKey,
+					*Search.ToString(),
+					bResult
+				);
+			}
+			ConditionsResults.Add(SearchKey, new BoolStruct(bResult));
+			++Idx;
+			if (HasConditionsOperator == false && bResult == false)
+			{
+				break;
+			}
+		}
+	}
+	if (ConditionsResults.Num() <= 0)
+	{
+		return false;
+	}
+	if (HasConditionsOperator == false)
+	{
+		FString Key = UNansComparator::BuildKeyFromIndex(ConditionsResults.Num() - 1);
+		return ConditionsResults.FindRef(Key)->value;
+	}
+
+	return UNansComparator::EvaluateOperators(ConditionsOperators, ConditionsResults, bDebug);
+}
+
+bool UBTDialogPointsHandler::HasResults(const FNDialogueHistorySearch& Search)
+{
+	verify(IsValid(DialogComp));
+	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
+	return Results.Num() > 0;
+}
+
 bool UBTDialogPointsHandler::Initialize(
-	TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp, FString InAIPawnPathName,
-	UAbilitySystemComponent* InPlayerABS)
+	TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
+	FDialogueSequence DialogueSequence)
 {
 	StepsHandler = InStepsHandler;
-	PlayerABS = InPlayerABS;
-	BehaviorTreePathName = OwnerComp.GetPathName();
-	AIPawnPathName = InAIPawnPathName;
+	PlayerABS = NDialogBTHelpers::GetABS(OwnerComp);
+	BehaviorTreePathName = DialogueSequence.Name.ToString();
+	AIPawnPathName = DialogueSequence.Owner;
 
 	check(GetWorld());
 
-	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
-	checkf(
-		GI->Implements<UNFactorsFactoryGameInstance>(),
-		TEXT("The GameInstance should implements INFactorsFactoryGameInstance")
-	);
-
-	FactorsClient = INFactorsFactoryGameInstance::Execute_GetFactorsFactoryClient(GI);
-
-	NFactorState* State = new NFactorState();
-	FactorsClient->GetState(PointsCollector, *State);
-	FactorsPointsAtStart = State->Compute();
-
-
-	// ==================
-	// Replace with that:
-	// ==================
 	// TODO retrieve index for splitted screen 
 	verify(UNDSFunctionLibrary::IsPlayerCanDialogue(&OwnerComp, 0));
+
+	DialogComp = NDialogBTHelpers::GetDialogComponent(OwnerComp);
+	verify(IsValid(DialogComp));
+
+	DialogComp->AddSequence(DialogueSequence);
 
 	// Activating Dialog Gameplay Activity
 	FGameplayEventData Payload;
@@ -103,66 +148,7 @@ bool UBTDialogPointsHandler::Initialize(
 void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 {
 	int32 Step = IBTStepsHandler::Execute_GetCurrentStep(StepsHandler.GetObject());
-	if (!PointsMultipliers.Contains(Point.Category.Name))
-	{
-		FFormatNamedArguments RespArguments;
-		RespArguments.Add(TEXT("category"), FText::FromString(Point.Category.Name.ToString()));
-		EDITOR_WARN(
-			"DialogSystem",
-			FText::Format(
-				LOCTEXT("CanNotAddPointsForACategory", "You must defined a points multiplier for {category} "),
-				RespArguments)
-		);
-		return;
-	}
 
-
-	TArray<FNDialogFactorTypeSettings> FactorTypes = PointsMultipliers.FindChecked(Point.Category.Name);
-	// TODO refacto: Rather than creates a child factor, creates a data field FArchive to pass what ever you want... ? test
-	// + add possibility to  tag a Factor Unit: this way easier to find by tag (identified by family)
-	UNDialogFactorUnit* FactorUnit =
-		Cast<UNDialogFactorUnit>(FactorsClient->CreateFactorUnit(PointsCollector, UNDialogFactorUnit::StaticClass()));
-	FString BaseReason = TEXT("Dialog");
-	BaseReason.Append("_");
-	BaseReason.Append(Point.Category.Name.ToString());
-	FactorUnit->Reason = FName(*BaseReason);
-	FactorUnit->Step = Step;
-	FactorUnit->Position = Position;
-	FactorUnit->CategoryName = Point.Category.Name;
-	FactorUnit->InitialPoint = Point.Point;
-	FactorUnit->BehaviorTreePathName = BehaviorTreePathName;
-	FactorUnit->AIPawnPathName = AIPawnPathName;
-	UNOperatorSimpleOperations* Provider = Cast<UNOperatorSimpleOperations>(
-		FactorsClient->CreateOperatorProvider(PointsCollector, UNOperatorSimpleOperations::StaticClass())
-	);
-	Provider->Type = ENFactorSimpleOperation::Add;
-	FactorUnit->SetOperatorProvider(Provider);
-
-	NFactorState* State = new NFactorState();
-	for (const auto& FactorType : FactorTypes)
-	{
-		FactorsClient->GetState(FactorType.Factor.Name, *State);
-		FactorUnit->FactorUnitValue += Point.Point * State->Compute();
-	}
-
-	int32 Key = FactorsClient->AddFactorUnit(PointsCollector, FactorUnit);
-	if (Key < 0)
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(
-				LOCTEXT("FactorUnitCanNotBeAdded",
-					"the factor unit (reason: {0}) can not be added to the point collector"),
-				FText::FromString(BaseReason))
-		);
-		return;
-	}
-	FactorUnitKeys.Add(Key);
-
-
-	// ==================
-	// Replace with that:
-	// ==================
 	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
 	if (!IsValid(GEffect))
 	{
@@ -175,16 +161,15 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 		);
 		return;
 	}
-	FString BaseName = TEXT("DialogBlock");
-	BaseName.Append("#");
+	FString BaseName = TEXT("Step");
 	BaseName.AppendInt(Step);
 	FGameplayEffectContextHandle FxContextHandle = PlayerABS->MakeEffectContext();
-	FDialogueBlockResult DialogData;
+	FDialogueResult DialogData;
 	DialogData.Difficulty = Point.Difficulty;
 	DialogData.Position = Position;
 	DialogData.CategoryName = Point.Category.Name;
 	DialogData.BlockName = FName(BaseName);
-	DialogData.InitialPoint = Point.Point;
+	DialogData.InitialPoints = Point.Point;
 	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
 	FGameplayEffectSpecHandle SpecHandle = PlayerABS->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
 	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
@@ -197,56 +182,24 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	PlayerABS->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
-UNDialogFactorUnit* UBTDialogPointsHandler::GetLastResponse()
-{
-	// TODO change this with new ExtraData
-	return Cast<UNDialogFactorUnit>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys.Last()));
-}
-
-float UBTDialogPointsHandler::GetPoints() const
-{
-	int32 TotalPoints = 0;
-
-	NFactorState* State = new NFactorState();
-	FactorsClient->GetState(PointsCollector, *State);
-
-	return FMath::RoundToInt(State->Compute() - FactorsPointsAtStart);
-}
-
 int32 UBTDialogPointsHandler::GetDialogPoints(FNResponseCategory Category) const
 {
+	verify(IsValid(DialogComp));
 	int32 TotalPoints = 0;
-	ensureMsgf(PointsMultipliers.Contains(Category.Name), TEXT("Category asked doesn't apply on dialog system"));
 	int32 Points = 0;
+	FNDialogueHistorySearch Search;
+	Search.DialogName.bIsAll = true;
+	Search.PropertyName = ENPropertyValue::All;
+	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
 
-	for (const int32& PointsKey : FactorUnitKeys)
+	for (const FDialogueResult& Result : Results)
 	{
-		// TODO change this with new ExtraData
-		UNDialogFactorUnit* FactorUnit = Cast<UNDialogFactorUnit>(
-			FactorsClient->GetFactorUnit(PointsCollector, PointsKey)
-		);
-
-		if (FactorUnit->CategoryName == Category.Name)
+		if (Result.CategoryName == Category.Name)
 		{
-			Points += FactorUnit->InitialPoint;
+			Points += Result.InitialPoints;
 		}
 	}
 	return Points;
 }
 
-UNDialogFactorUnit* UBTDialogPointsHandler::GetLastResponseFromStep(const int32 SearchStep)
-{
-	UNDialogFactorUnit* FactorUnit = nullptr;
-	for (int32 Index = FactorUnitKeys.Num() - 1; Index >= 0; --Index)
-	{
-		// TODO change this with new ExtraData
-		FactorUnit = Cast<UNDialogFactorUnit>(FactorsClient->GetFactorUnit(PointsCollector, FactorUnitKeys[Index]));
-
-		if (FactorUnit->Step == SearchStep)
-		{
-			break;
-		}
-	}
-	return FactorUnit;
-}
 #undef LOCTEXT_NAMESPACE

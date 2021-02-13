@@ -18,7 +18,7 @@
 #include "Ability/AsyncTaskAttributeChanged.h"
 #include "GA_BaseDialog.generated.h"
 
-struct FDialogueBlockResult;
+struct FDialogueResult;
 class UNDSAbilitySystemComponent;
 /**
  * 
@@ -42,7 +42,7 @@ public:
 
 	UFUNCTION()
 	void OnPointsEarnedAttributeChanged(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-		float MitigatedPoints, FDialogueBlockResult ExtraData);
+		float MitigatedPoints, FDialogueResult ExtraData);
 
 protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

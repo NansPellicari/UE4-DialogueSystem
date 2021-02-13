@@ -35,21 +35,3 @@ struct NANSDIALOGSYSTEM_API FNPoint
 	UPROPERTY(BlueprintReadWrite, Category = "Point")
 	TSubclassOf<UGameplayEffect> EffectOnEarned;
 };
-
-/**
- * Condition for point
- */
-USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FPointCondition
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	FNResponseCategory PointType;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	ENansConditionComparator Operator;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	int32 CompareTo;
-};

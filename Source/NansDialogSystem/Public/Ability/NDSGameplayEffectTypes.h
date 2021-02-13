@@ -13,9 +13,10 @@
 
 #pragma once
 
-#include "BTDialogueTypes.h"
 #include "GameplayEffectTypes.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
+#include "Dialogue/DialogueResult.h"
+
 #include "NDSGameplayEffectTypes.generated.h"
 
 /**
@@ -29,8 +30,8 @@ struct NANSDIALOGSYSTEM_API FNDSGameplayEffectContext : public FGameplayEffectCo
 {
 	GENERATED_BODY()
 
-	virtual void AddPointsData(FDialogueBlockResult Data);
-	virtual FDialogueBlockResult GetPointData() const;
+	virtual void AddPointsData(FDialogueResult Data);
+	virtual FDialogueResult GetPointData() const;
 	virtual void AddExtraData(FGameplayTag Tag, const FString& Data);
 	virtual void AddExtraData(TMap<FGameplayTag, FString> NewData);
 	virtual TMap<FGameplayTag, FString> GetExtraData() const;
@@ -66,7 +67,7 @@ protected:
 	UPROPERTY()
 	TMap<FGameplayTag, FString> ExtraData;
 	UPROPERTY()
-	FDialogueBlockResult PointsData;
+	FDialogueResult PointsData;
 };
 
 

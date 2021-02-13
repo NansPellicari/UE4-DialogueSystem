@@ -14,53 +14,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PointSystemHelpers.h"
 #include "BehaviorTree/BTDecorator.h"
 #include "Dialogue/DialogueHistorySearch.h"
-
-
-#include "BTDecorator_CheckEarnedPoint.generated.h"
+#include "BTDecorator_CheckDialogueResults.generated.h"
 
 class UNansComparator;
 class UBTDialogPointsHandler;
-
-
-/**
-* Condition for point
-*/
-USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FPointCondition
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	FNResponseCategory PointType;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	ENansConditionComparator Operator;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	int32 CompareTo;
-
-	static void ToDialogueHistorySearch(const TArray<FPointCondition> ResponsePositions,
-		TArray<FNansConditionOperator> ConditionsOperators,
-		TArray<FNDialogueHistorySearch>& Searches,
-		TArray<FNansConditionOperator>& Operators);
-};
-
 
 /**
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
+class NANSDIALOGSYSTEM_API UBTDecorator_CheckDialogueResults : public UBTDecorator
 {
 	GENERATED_UCLASS_BODY()
 
-	// Basically conditions are check "first at last" with AND operator, use "ConditionsOperators" if you want more
-	// This allow to check values already earned in this Behavior Tree
 	UPROPERTY(EditAnywhere, Category = "Condition")
-	TArray<FPointCondition> EarnedPointsConditions;
+	TArray<FNDialogueHistorySearch> DialogueHistorySearches;
 
 	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
 	UPROPERTY(EditAnywhere, Category = "Condition")

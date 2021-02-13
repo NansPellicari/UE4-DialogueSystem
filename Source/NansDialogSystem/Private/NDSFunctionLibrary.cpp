@@ -23,7 +23,7 @@
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
 void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle,
-	FDialogueBlockResult Data)
+	FDialogueResult Data)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)

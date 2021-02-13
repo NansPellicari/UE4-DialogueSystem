@@ -16,6 +16,8 @@
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "Ability/NDSAbilitySystemComponent.h"
+#include "Dialogue/DialogueResult.h"
+
 #include "AT_WaitReceivePoints.generated.h"
 
 /**
@@ -33,7 +35,7 @@ class NANSDIALOGSYSTEM_API UAT_WaitReceivePoints : public UAbilityTask
 
 	UFUNCTION()
 	void OnPointsReceived(class UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints, float MitigatedPoints,
-		FDialogueBlockResult ExtraData);
+		FDialogueResult ExtraData);
 
 	// Wait until the ability owner receives points.
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf =

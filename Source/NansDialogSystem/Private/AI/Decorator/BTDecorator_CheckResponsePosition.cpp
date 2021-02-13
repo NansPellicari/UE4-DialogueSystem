@@ -1,4 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
@@ -11,67 +22,63 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
+void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponsePositionCondition> ResponsePositions,
+	TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
+	TArray<FNansConditionOperator>& Operators)
+{
+	for (auto& RespPos : ResponsePositions)
+	{
+		FNDialogueHistorySearch Search, Search2;
+
+		Search.DialogName.SetValue(FString("Step") + FString::FromInt(RespPos.Step));
+		Search.DialogName.bLastOnly = true;
+
+		Search.PropertyName = ENPropertyValue::SentencePosition;
+		Search.Operator = RespPos.Operator;
+		Search.FloatValue = RespPos.Position;
+
+
+		Searches.Add(Search);
+	}
+	Operators.Append(ConditionsOperators);
+}
+
 UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	NodeName = "Conditions on response order";
-	Comparator = ObjectInitializer.CreateDefaultSubobject<UNansComparator>(this, TEXT("Comparator"));
 }
 
-bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+
+bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
+	uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(PointsHandlerKeyName));
+	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
+		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+	);
 
 	if (PointsHandler == nullptr)
 	{
-		EDITOR_ERROR("DialogSystem",
+		EDITOR_ERROR(
+			"DialogSystem",
 			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			(UObject*) OwnerComp.GetCurrentTree());
+			(UObject*) OwnerComp.GetCurrentTree()
+		);
 		return false;
 	}
 
-	return EvaluateArray(PointsHandler);
-}
+	TArray<FNDialogueHistorySearch> Searches;
+	TArray<FNansConditionOperator> Operators;
 
-bool UBTDecorator_CheckResponsePosition::EvaluateArray(UBTDialogPointsHandler* PointsHandler) const
-{
-	bool HasConditionsOperator = ConditionsOperators.Num() > 0;
-	TMap<FString, BoolStruct*> ConditionsResults;
+	FResponsePositionCondition::ToDialogueHistorySearch(
+		ResponsePositionConditions,
+		ConditionsOperators,
+		Searches,
+		Operators
+	);
 
-	for (int32 Index = 0; Index < ResponsePositionConditions.Num(); ++Index)
-	{
-		FResponsePositionCondition ResponseCondition = ResponsePositionConditions[Index];
-
-		UNDialogFactorUnit* FactorUnit = PointsHandler->GetLastResponseFromStep(ResponseCondition.Step);
-
-		if (FactorUnit->Step <= 0)
-		{
-			return false;
-		}
-
-		bool Results =
-			Comparator->EvaluateComparator<int32>(ResponseCondition.Operator, FactorUnit->Position, ResponseCondition.Position);
-		ConditionsResults.Add(Comparator->BuildKeyFromIndex(Index), new BoolStruct(Results));
-
-		if (HasConditionsOperator == false && Results == false)
-		{
-			break;
-		}
-	}
-
-	if (HasConditionsOperator == false)
-	{
-		FString Key = Comparator->BuildKeyFromIndex(ConditionsResults.Num() - 1);
-		return ConditionsResults.FindRef(Key)->value;
-	}
-
-	// TODO DEBUG to remove
-	/*for (TPair<FString, BoolStruct*> Result : ConditionsResults) {
-		UE_LOG(LogTemp, Warning, TEXT("Result: %s %i"), *Result.Key, Result.Value->value);
-	}*/
-
-	return Comparator->EvaluateOperators(ConditionsOperators, ConditionsResults);
+	return PointsHandler->HasResults(Searches, Operators);
 }
 
 FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
@@ -83,17 +90,19 @@ FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 	{
 		FResponsePositionCondition Condition = ResponsePositionConditions[Index];
 
-		ReturnDesc += FString::Printf(TEXT("\nC%d Step %d, response %s %d"),
-			Index,
+		ReturnDesc += FString::Printf(
+			TEXT("\n%s Step %d, response %s %d"),
+			*UNansComparator::BuildKeyFromIndex(Index),
 			Condition.Step,
 			*UNansComparator::ComparatorToString(Condition.Operator),
-			Condition.Position);
+			Condition.Position
+		);
 	}
 
 	if (ConditionsOperators.Num() <= 0) return ReturnDesc;
 
 	ReturnDesc += FString("\n\nConditions Operators:");
-	ReturnDesc += Comparator->OperatorsToString(ConditionsOperators);
+	ReturnDesc += UNansComparator::OperatorsToString(ConditionsOperators);
 
 	return ReturnDesc;
 }

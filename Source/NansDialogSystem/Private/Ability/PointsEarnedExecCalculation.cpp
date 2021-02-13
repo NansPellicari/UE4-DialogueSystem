@@ -63,7 +63,7 @@ void UPointsEarnedExecCalculation::Execute_Implementation(
 		ANSI_TO_TCHAR(__FUNCTION__)
 	);
 
-	FDialogueBlockResult XtraData = ContextHandle->GetPointData();
+	FDialogueResult XtraData = ContextHandle->GetPointData();
 
 	// Gather the tags from the source and target as that can affect which buffs should be used
 	const FGameplayTagContainer* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
@@ -106,6 +106,8 @@ void UPointsEarnedExecCalculation::Execute_Implementation(
 	UNDSAbilitySystemComponent* TargetASC = Cast<UNDSAbilitySystemComponent>(TargetAbilitySystemComponent);
 	if (TargetASC)
 	{
+		XtraData.UnmitigatedPointsEarned = UnmitigatedPointsEarned;
+		XtraData.MitigatedPointsEarned = MitigatedPointsEarned;
 		UNDSAbilitySystemComponent* SourceASC = Cast<UNDSAbilitySystemComponent>(SourceAbilitySystemComponent);
 		TargetASC->ReceivePoints(SourceASC, UnmitigatedPointsEarned, MitigatedPointsEarned, XtraData);
 	}

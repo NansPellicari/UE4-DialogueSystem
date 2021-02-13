@@ -99,23 +99,3 @@ public:
 	}
 };
 
-USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FDialogueBlockResult
-{
-	GENERATED_USTRUCT_BODY()
-
-	FDialogueBlockResult() {}
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
-	int32 Position = -100;
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
-	FName BlockName = NAME_None;
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
-	int32 Difficulty = 0;
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
-	float InitialPoint = -1.f;
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Response")
-	FGameplayTag CategoryName = FGameplayTag::EmptyTag;
-
-	FString ToString();
-};

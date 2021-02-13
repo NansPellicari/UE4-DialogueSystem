@@ -13,12 +13,12 @@
 
 #include "Ability/NDSGameplayEffectTypes.h"
 
-void FNDSGameplayEffectContext::AddPointsData(FDialogueBlockResult Data)
+void FNDSGameplayEffectContext::AddPointsData(FDialogueResult Data)
 {
 	PointsData = Data;
 }
 
-FDialogueBlockResult FNDSGameplayEffectContext::GetPointData() const
+FDialogueResult FNDSGameplayEffectContext::GetPointData() const
 {
 	return PointsData;
 }

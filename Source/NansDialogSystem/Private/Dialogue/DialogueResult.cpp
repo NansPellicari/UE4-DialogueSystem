@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,12 +11,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Ability/NDSAbilitySystemComponent.h"
-
 #include "Dialogue/DialogueResult.h"
 
-void UNDSAbilitySystemComponent::ReceivePoints(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-	float MitigatedPoints, FDialogueResult ExtraData)
+FString FDialogueResult::ToString() const
 {
-	ReceivedPoints.Broadcast(SourceASC, UnmitigatedPoints, MitigatedPoints, ExtraData);
+	FStringFormatOrderedArguments Args;
+	Args.Add(Position);
+	Args.Add(BlockName.ToString());
+	Args.Add(Difficulty);
+	Args.Add(InitialPoints);
+	Args.Add(CategoryName.ToString());
+	return FString::Format(
+		TEXT(" Position: {0}, BlockName: {1}, Difficulty: {2}, InitialPoints: {3}, CategoryName: {4}"),
+		Args
+	);
 }

@@ -11,26 +11,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
-#include "PlayerDialogComponent.generated.h"
-
-
-/**
- * The main Goal of this Component is to save data from dialog session.
- * It is also used to retrieve data on previous or actual session to perform some checks on previously chosen responses. 
- */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class NANSDIALOGSYSTEM_API UPlayerDialogComponent : public UActorComponent
-{
-	GENERATED_BODY()
-
-public:
-	UPlayerDialogComponent();
-
-protected:
-	virtual void BeginPlay() override;
-	;
-};
+#include "Dialogue/DialogueSequence.h"

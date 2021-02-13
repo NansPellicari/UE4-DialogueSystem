@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,12 +11,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Ability/NDSAbilitySystemComponent.h"
-
-#include "Dialogue/DialogueResult.h"
-
-void UNDSAbilitySystemComponent::ReceivePoints(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-	float MitigatedPoints, FDialogueResult ExtraData)
-{
-	ReceivedPoints.Broadcast(SourceASC, UnmitigatedPoints, MitigatedPoints, ExtraData);
-}
+#include "Dialogue/DialogueHistory.h"
