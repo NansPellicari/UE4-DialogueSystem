@@ -29,25 +29,13 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-UBTDialogPointsHandler::UBTDialogPointsHandler()
-{
-	UDialogSystemSettings::Get()->GetPointsMultipliersConfigs(PointsMultipliers);
-	PointsCollector = UDialogSystemSettings::Get()->PointsCollector.Name;
-}
-
 void UBTDialogPointsHandler::BeginDestroy()
 {
-	HeapResponses.Empty();
-	FactorsPointsAtStart = 0;
-	FactorUnitKeys.Empty();
 	Super::BeginDestroy();
 }
 
 void UBTDialogPointsHandler::Clear()
 {
-	HeapResponses.Empty();
-	FactorsPointsAtStart = 0;
-	FactorUnitKeys.Empty();
 	bDebug = false;
 	PlayerABS->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
 }

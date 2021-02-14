@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,15 @@ USTRUCT(BlueprintType)
 struct NANSDIALOGSYSTEM_API FNPoint
 {
 	GENERATED_USTRUCT_BODY()
+
+	FNPoint() {}
+	FNPoint(const FBTDialogueResponse& Response)
+	{
+		EffectOnEarned = Response.GetSpawnableEffectOnEarned();
+		Difficulty = Response.Difficulty;
+		Point = Response.Point;
+		Category = Response.Category;
+	}
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point")
 	int32 Point = 0;

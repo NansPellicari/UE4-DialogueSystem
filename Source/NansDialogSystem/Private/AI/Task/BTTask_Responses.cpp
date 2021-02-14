@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
 #include "AI/Task/BTTask_Responses.h"
 
 #include "BTDialogueResponseContainer.h"
+#include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/Button.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Setting/InteractiveSettings.h"
@@ -69,19 +71,29 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
 		return EBTNodeResult::Aborted;
 	}
+	PointsHandler = Cast<UBTDialogPointsHandler>(
+		Blackboard->GetValueAsObject(PointsHandlerKeyName)
+	);
+
+	if (!IsValid(PointsHandler))
+	{
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotPointsHandler", "Set a UBTDialogPointsHandler in "));
+		return EBTNodeResult::Aborted;
+	}
+
 	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogHUD))
 	{
 		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
-	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
-
 	if (!ensure(DialogHUD != nullptr))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
 		return EBTNodeResult::Aborted;
 	}
+
+	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
 
 	ResponsesSlot = Cast<UPanelWidget>(DialogHUD->FindWidget(ResponsesSlotName));
 
@@ -269,7 +281,9 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 	}
 
 	UBTDialogueResponseContainer* ResponseContainer = ButtonWidget->GetResponse();
-	Blackboard->SetValueAsObject(ResponseContainerName, ResponseContainer);
+	// Blackboard->SetValueAsObject(ResponseContainerName, ResponseContainer);
+
+	PointsHandler->AddPoints(FNPoint(ResponseContainer->GetResponse()), ResponseContainer->DisplayOrder);
 
 	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text);
 	ResponseStatus = EBTNodeResult::Succeeded;
@@ -294,8 +308,10 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 		DialogueResponse->SetResponse(Response);
 	}
 
+	PointsHandler->AddPoints(FNPoint(DialogueResponse->GetResponse()), DialogueResponse->DisplayOrder);
+
 	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text);
-	Blackboard->SetValueAsObject(ResponseContainerName, DialogueResponse);
+	// Blackboard->SetValueAsObject(ResponseContainerName, DialogueResponse);
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include "BTTask_ButtonsSequence.generated.h"
 
+class UBTDialogPointsHandler;
 class UDialogHUD;
 class UPanelWidget;
 class UButtonSequenceWidget;
@@ -37,9 +38,31 @@ struct NANSDIALOGSYSTEM_API FBTButtonSequenceResponse
 
 public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	int32 ForPoint = 0;
+	int32 ForPoint = -1;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = true))
 	FText Response;
+
+	/** If true, tasks will use the Default GameplayEffect set in DialogSystemSettings. */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
+	bool bUsedDefaultEffect = true;
+
+
+	/**
+	* /!\ Note: Be aware that this effect is used to create a GameplayEffectSpec in Tasks to add:
+	*
+	* - some level magnitude (using SetByCaller)
+	* - some extra data to pass to the PlayerDialogComponent (see FNDSGameplayEffectContext)
+	* - asset tags to identify easily the gameplay effect as a dialog effect (see UDialogSystemSettings::TagToIdentifyDialogEffect)
+	*
+	* Take this in consideration when you build your GameplayEffect.
+	*/
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", Meta=(EditCondition="!bUsedDefaultEffect"))
+	TSubclassOf<UGameplayEffect> EffectOnEarned;
+
+	/** this is given by FBTButtonSequence to easily use GetSpawnableEffectOnEarned() */
+	FNDialogueCategory Category;
+
+	TSubclassOf<UGameplayEffect> GetSpawnableEffectOnEarned() const;
 };
 
 /**
@@ -52,7 +75,7 @@ struct NANSDIALOGSYSTEM_API FBTButtonSequence
 
 public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	FText DefaultResponse;
+	FBTButtonSequenceResponse Default;
 
 	/**
 	 * Can be OSBD for ex:
@@ -94,11 +117,11 @@ public:
 	// if points passed is 0, returned response is "response default"
 	// if points passed is 2, returned response is "response 1"
 	// if points passed is 3, returned response is "response 2"
-	FText GetResponseForPoints(int32 Points)
+	FBTButtonSequenceResponse GetResponseForPoints(int32 Points)
 	{
-		if (ResponsesForPoint.Num() <= 0) return DefaultResponse;
+		if (ResponsesForPoint.Num() <= 0) return Default;
 
-		FText Response = DefaultResponse;
+		FBTButtonSequenceResponse Response = Default;
 
 		for (FBTButtonSequenceResponse Resp : ResponsesForPoint)
 		{
@@ -106,9 +129,8 @@ public:
 			{
 				return Response;
 			}
-			Response = Resp.Response;
+			Response = Resp;
 		}
-
 		return Response;
 	};
 };
@@ -195,6 +217,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "HUD")
 	FName ButtonAfterName = FName("ButtonAfter");
 
+	UPROPERTY(EditInstanceOnly, Category = "Service")
+	FName PointsHandlerKeyName = FName("PointsHandler");
+
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	FName ResponseContainerKey = FName("ResponseContainer");
 
@@ -224,6 +249,8 @@ protected:
 
 private:
 	TSharedPtr<NButtonSequenceMovementManager> BTSequenceManager;
+	UPROPERTY()
+	UBTDialogPointsHandler* PointsHandler;
 	FString PlayerTries;
 	int32 SequenceIndex = -1;
 	EBTNodeResult::Type TriesStatus = EBTNodeResult::InProgress;

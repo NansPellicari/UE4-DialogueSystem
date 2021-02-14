@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,8 @@
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
 #include "BTDialogueTypes.h"
-#include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
 

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 #include "Component/PlayerDialogComponent.h"
 #include "Dialogue/DialogueHistorySearch.h"
-#include "Factor/DialogFactorUnit.h"
 #include "BTDialogPointsHandler.generated.h"
 
 struct FDialogueSequence;
@@ -27,22 +26,6 @@ struct FNDialogFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class IBTStepsHandler;
 class UBehaviorTreeComponent;
-
-/**
- * Points Associated to step
- * TODO remove this and replace by factor
- */
-USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FBTPointInStep
-{
-	GENERATED_USTRUCT_BODY()
-
-	FBTPointInStep(int32 _Step = 0, FNPoint _Point = FNPoint(), int32 _Position = 0)
-		: Step(_Step), Point(_Point), Position(_Position) {};
-	int32 Step;
-	FNPoint Point;
-	int32 Position;
-};
 
 UCLASS(BlueprintType)
 class NANSDIALOGSYSTEM_API UBTDialogPointsHandler : public UObject
@@ -53,7 +36,7 @@ public:
 	bool bDebug = false;
 
 
-	UBTDialogPointsHandler();
+	UBTDialogPointsHandler() {}
 	bool Initialize(TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
 		FDialogueSequence DialogueSequence);
 
@@ -77,16 +60,6 @@ protected:
 	UPROPERTY()
 	UPlayerDialogComponent* DialogComp;
 
-	TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>> PointsMultipliers;
-	FName PointsCollector;
-
-	/** A HEAP on point by step, the HEAP allow to keep trace of action's chronologicaly */
-	TArray<FBTPointInStep> HeapResponses;
-	TArray<int32> FactorUnitKeys;
 	FString BehaviorTreePathName;
 	FString AIPawnPathName;
-
-	UPROPERTY()
-	UNFactorsFactoryClientAdapter* FactorsClient;
-	float FactorsPointsAtStart;
 };

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@
 #include "Components/CanvasPanelSlot.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "Service/BTDialogPointsHandler.h"
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Service/NansArrayUtils.h"
+#include "Setting/DialogSystemSettings.h"
 #include "Setting/InteractiveSettings.h"
 #include "UI/ButtonSequenceWidget.h"
 #include "UI/DialogHUD.h"
@@ -33,6 +35,27 @@
 #include "UI/WheelProgressBarWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
+
+TSubclassOf<UGameplayEffect> FBTButtonSequenceResponse::GetSpawnableEffectOnEarned() const
+{
+	auto GEffect = EffectOnEarned;
+	if (!IsValid(GEffect))
+	{
+		for (const auto& CatSet : UDialogSystemSettings::Get()->ResponseCategorySettings)
+		{
+			if (CatSet.Name == Category.Name)
+			{
+				GEffect = CatSet.DefaultEffect;
+				break;
+			}
+		}
+		if (!IsValid(GEffect))
+		{
+			return nullptr;
+		}
+	}
+	return GEffect;
+}
 
 UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -75,6 +98,16 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	OwnerComponent = &OwnerComp;
 	Blackboard = OwnerComp.GetBlackboardComponent();
+
+	PointsHandler = Cast<UBTDialogPointsHandler>(
+		Blackboard->GetValueAsObject(PointsHandlerKeyName)
+	);
+
+	if (!IsValid(PointsHandler))
+	{
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotPointsHandler", "Set a UBTDialogPointsHandler in "));
+		return EBTNodeResult::Aborted;
+	}
 
 	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogHUD))
@@ -175,7 +208,9 @@ void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)
 
 void UBTTask_ButtonsSequence::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 {
-	Blackboard->SetValueAsObject(ResponseContainerKey, UBTDialogueResponseContainer::CreateNullObject(OwnerComp));
+	auto RespCont = UBTDialogueResponseContainer::CreateNullObject(OwnerComp);
+	PointsHandler->AddPoints(FNPoint(RespCont->GetResponse()), SequenceIndex);
+	// Blackboard->SetValueAsObject(ResponseContainerKey, RespCont);
 	RemoveButtons(*OwnerComp);
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
@@ -288,6 +323,75 @@ const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tri
 	return FMath::FloorToInt((found / static_cast<float>(Tries.Len())) * Sequence.LevelCoefficient);
 }
 
+void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
+{
+	PlayerTries += Button->GetText();
+
+	for (int32 Index = 0; Index != Sequences.Num(); ++Index)
+	{
+		FBTButtonSequence Seq = Sequences[Index];
+		FString StringSequence = Seq.ButtonSequence.ToString();
+		if (StringSequence.Len() == PlayerTries.Len() && UNTextLibrary::ArePermutations(StringSequence, PlayerTries))
+		{
+			Button->SetVisibility(ESlateVisibility::Collapsed);
+			TriesStatus = EBTNodeResult::Succeeded;
+			SequenceIndex = Index;
+			break;
+		}
+
+		if (UNTextLibrary::LettersAreInString(StringSequence, PlayerTries))
+		{
+			Button->SetVisibility(ESlateVisibility::Collapsed);
+			// Ok, go on player !!
+			return;
+		}
+	}
+
+	if (TriesStatus == EBTNodeResult::Succeeded)
+	{
+		if (SequenceIndex < 0 || SequenceIndex >= Sequences.Num())
+		{
+			EDITOR_ERROR(
+				"DialogSystem",
+				LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in ")
+			);
+			FinishLatentTask(*OwnerComponent, EBTNodeResult::Aborted);
+			return;
+		}
+		int32 TotalPoint = GetEarnedPoint();
+		FBTButtonSequence Sequence = Sequences[SequenceIndex];
+		auto Resp = Sequence.GetResponseForPoints(TotalPoint);
+		FNPoint Point;
+		Point.Category = Sequence.Category;
+		Point.Point = TotalPoint;
+		Point.EffectOnEarned = Resp.GetSpawnableEffectOnEarned();
+		Point.Difficulty = static_cast<float>(Sequence.LevelCoefficient);
+
+		// UBTDialogueResponseContainer* ResponseContainer =
+		// 	NewObject<UBTDialogueResponseContainer>(OwnerComponent, UBTDialogueResponseContainer::StaticClass());
+		// ResponseContainer->SetResponse(Response);
+		// ResponseContainer->DisplayOrder = SequenceIndex;
+		// Blackboard->SetValueAsObject(ResponseContainerKey, ResponseContainer);
+
+		PointsHandler->AddPoints(Point, SequenceIndex);
+
+		DialogHUD->OnResponse.Broadcast(Resp.Response);
+		RemoveButtons(*OwnerComponent);
+		return;
+	}
+
+	// here because the last letter disable the tried sequence
+	// So restart the tries
+	PlayerTries.Empty();
+	SequenceIndex = -1;
+	for (int32 i = 0; i < ButtonsSlot->GetChildrenCount(); ++i)
+	{
+		UButtonSequenceWidget* ButtonFromList = Cast<UButtonSequenceWidget>(ButtonsSlot->GetChildAt(i));
+		if (ButtonFromList == nullptr) continue; // only concerned about button
+		ButtonFromList->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
 FString UBTTask_ButtonsSequence::GetStaticDescription() const
 {
 	FString Desc = Super::GetStaticDescription();
@@ -315,7 +419,7 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 		Desc += "\n\n";
 		Desc += LOCTEXT("TaskButtonSequenceSequenceResponseTitle", "Responses for points:").ToString();
 		Arguments.Empty();
-		Arguments.Add(TEXT("default"), Sequence.DefaultResponse);
+		Arguments.Add(TEXT("default"), Sequence.Default.Response);
 		FString Text =
 			FText::Format(
 				LOCTEXT("TaskButtonSequenceSequenceDefaultResponse", "[-1] \"{default}\""),
@@ -325,12 +429,17 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 
 		for (FBTButtonSequenceResponse Response : Sequence.ResponsesForPoint)
 		{
+			Response.Category = Sequence.Category;
+			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
+								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+								   : FText::FromString(TEXT("No effect"));
 			FFormatNamedArguments RespArguments;
 			RespArguments.Add(TEXT("response"), Response.Response);
 			RespArguments.Add(TEXT("point"), Response.ForPoint);
+			RespArguments.Add(TEXT("effect"), EffectName);
 			Text =
 				FText::Format(
-					LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\""),
+					LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\" Effect: {effect}"),
 					RespArguments
 				).ToString();
 			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
@@ -412,71 +521,6 @@ FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence&
 	}
 	StaticButtonSequenceDescriptions::SetDescription(Sequence, Desc);
 	return Desc;
-}
-
-void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
-{
-	PlayerTries += Button->GetText();
-
-	for (int32 Index = 0; Index != Sequences.Num(); ++Index)
-	{
-		FBTButtonSequence Seq = Sequences[Index];
-		FString StringSequence = Seq.ButtonSequence.ToString();
-		if (StringSequence.Len() == PlayerTries.Len() && UNTextLibrary::ArePermutations(StringSequence, PlayerTries))
-		{
-			Button->SetVisibility(ESlateVisibility::Collapsed);
-			TriesStatus = EBTNodeResult::Succeeded;
-			SequenceIndex = Index;
-			break;
-		}
-
-		if (UNTextLibrary::LettersAreInString(StringSequence, PlayerTries))
-		{
-			Button->SetVisibility(ESlateVisibility::Collapsed);
-			// Ok, go on player !!
-			return;
-		}
-	}
-
-	if (TriesStatus == EBTNodeResult::Succeeded)
-	{
-		if (SequenceIndex < 0 || SequenceIndex >= Sequences.Num())
-		{
-			EDITOR_ERROR(
-				"DialogSystem",
-				LOCTEXT("NoSequenceHasBeenChosen", "A sequence is required to get the earned point in ")
-			);
-			FinishLatentTask(*OwnerComponent, EBTNodeResult::Aborted);
-			return;
-		}
-		int32 TotalPoint = GetEarnedPoint();
-		FBTButtonSequence Sequence = Sequences[SequenceIndex];
-		FBTDialogueResponse Response;
-		Response.Category = Sequence.Category;
-		Response.Point = TotalPoint;
-		Response.Text = Sequence.GetResponseForPoints(TotalPoint);
-
-		UBTDialogueResponseContainer* ResponseContainer =
-			NewObject<UBTDialogueResponseContainer>(OwnerComponent, UBTDialogueResponseContainer::StaticClass());
-		ResponseContainer->SetResponse(Response);
-		ResponseContainer->DisplayOrder = SequenceIndex;
-		Blackboard->SetValueAsObject(ResponseContainerKey, ResponseContainer);
-
-		DialogHUD->OnResponse.Broadcast(Response.Text);
-		RemoveButtons(*OwnerComponent);
-		return;
-	}
-
-	// here because the last letter disable the tried sequence
-	// So restart the tries
-	PlayerTries.Empty();
-	SequenceIndex = -1;
-	for (int32 i = 0; i < ButtonsSlot->GetChildrenCount(); ++i)
-	{
-		UButtonSequenceWidget* ButtonFromList = Cast<UButtonSequenceWidget>(ButtonsSlot->GetChildAt(i));
-		if (ButtonFromList == nullptr) continue; // only concerned about button
-		ButtonFromList->SetVisibility(ESlateVisibility::Visible);
-	}
 }
 
 #undef LOCTEXT_NAMESPACE

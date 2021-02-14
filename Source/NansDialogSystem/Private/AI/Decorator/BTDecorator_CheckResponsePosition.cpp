@@ -13,9 +13,7 @@
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
-#include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Factor/DialogFactorUnit.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/NansComparator.h"
