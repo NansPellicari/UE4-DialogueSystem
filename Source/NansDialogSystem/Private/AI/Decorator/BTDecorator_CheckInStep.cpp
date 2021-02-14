@@ -50,7 +50,7 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 
 			Search2.PropertyName = ENPropertyValue::CategoryName;
 			Search2.Operator = ENansConditionComparator::Equals;
-			Search2.CategoryValue = Step.CategoryPoint;
+			Search2.CategoryValue = Step.Category;
 			Searches.Add(Search);
 			Searches.Add(Search2);
 			FNansConditionOperator Operator;
@@ -130,7 +130,7 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 			*UNansComparator::BuildKeyFromIndex(Index),
 			Condition.Step,
 			Condition.isDone ? "x" : " ",
-			*Condition.CategoryPoint.Name.ToString(),
+			*Condition.Category.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.CompareTo
 		);

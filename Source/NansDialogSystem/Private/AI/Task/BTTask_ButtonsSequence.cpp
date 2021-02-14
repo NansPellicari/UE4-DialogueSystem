@@ -453,7 +453,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 		FBTButtonSequence Sequence = Sequences[SequenceIndex];
 		FBTDialogueResponse Response;
 		Response.Category = Sequence.Category;
-		Response.Level = TotalPoint;
+		Response.Point = TotalPoint;
 		Response.Text = Sequence.GetResponseForPoints(TotalPoint);
 
 		UBTDialogueResponseContainer* ResponseContainer =

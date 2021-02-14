@@ -68,7 +68,7 @@ public:
 	FText ButtonSequence;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	FNResponseCategory Category;
+	FNDialogueCategory Category;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	EResponseDirection Direction = EResponseDirection::NONE;

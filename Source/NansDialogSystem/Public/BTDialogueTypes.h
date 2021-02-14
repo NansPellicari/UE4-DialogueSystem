@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,24 +39,24 @@ enum class EFactorType : uint8
 
 ENUM_CLASS_FLAGS(EFactorType)
 
-struct FNDialogResponseCategorySettings;
+struct FNDialogueCategorySettings;
 struct FNDialogFactorTypeSettings;
 
 USTRUCT(BlueprintType)
-struct NANSDIALOGSYSTEM_API FNResponseCategory
+struct NANSDIALOGSYSTEM_API FNDialogueCategory
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ResponseCategory")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DialogueCategory")
 	FGameplayTag Name;
 
 	FLinearColor GetColor() const;
 	TArray<FNDialogFactorTypeSettings> GetFactors(const int32 Type = 0) const;
-	const FNDialogResponseCategorySettings& GetConfig() const;
+	const FNDialogueCategorySettings& GetConfig() const;
 };
 
 /**
- * Dialogue Response Struct
+ * It is a params struct used in BehaviorTree UI to set a button data.
  */
 USTRUCT(BlueprintType)
 struct NANSDIALOGSYSTEM_API FBTDialogueResponse
@@ -67,11 +67,11 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = true))
 	FText Text;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	int32 Level = 0;
+	int32 Point = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	float DifficultyLevel = 0;
+	float Difficulty = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
-	FNResponseCategory Category;
+	FNDialogueCategory Category;
 
 	/** If true, tasks will use the Default GameplayEffect set in DialogSystemSettings. */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
@@ -98,4 +98,3 @@ public:
 		return Response;
 	}
 };
-

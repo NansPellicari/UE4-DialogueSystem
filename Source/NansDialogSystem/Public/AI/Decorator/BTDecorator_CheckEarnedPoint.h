@@ -34,7 +34,7 @@ struct NANSDIALOGSYSTEM_API FPointCondition
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	FNResponseCategory PointType;
+	FNDialogueCategory PointType;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
 	ENansConditionComparator Operator;

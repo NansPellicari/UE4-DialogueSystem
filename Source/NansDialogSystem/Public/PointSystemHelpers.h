@@ -29,7 +29,7 @@ struct NANSDIALOGSYSTEM_API FNPoint
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point")
 	int32 Point = 0;
 	UPROPERTY(BlueprintReadWrite, Category = "Point")
-	FNResponseCategory Category;
+	FNDialogueCategory Category;
 	UPROPERTY(BlueprintReadWrite, Category = "Point")
 	float Difficulty = 0.f;
 	UPROPERTY(BlueprintReadWrite, Category = "Point")

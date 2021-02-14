@@ -69,9 +69,9 @@ float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& 
 
 	if (RespFactors.Num() <= 0)
 	{
-		return Response.DifficultyLevel;
+		return Response.Difficulty;
 	}
-	const float BaseLevel = Response.DifficultyLevel;
+	const float BaseLevel = Response.Difficulty;
 	float DifficultyLevel = BaseLevel;
 
 	for (const auto& RespFactor : RespFactors)

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 
 		Search.PropertyName = ENPropertyValue::SentencePosition;
 		Search.Operator = RespPos.Operator;
-		Search.FloatValue = RespPos.Position;
+		Search.IntValue = RespPos.Position;
 
 
 		Searches.Add(Search);
@@ -63,7 +63,7 @@ bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTre
 		EDITOR_ERROR(
 			"DialogSystem",
 			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			(UObject*) OwnerComp.GetCurrentTree()
+			reinterpret_cast<UObject*>(OwnerComp.GetCurrentTree())
 		);
 		return false;
 	}
@@ -88,7 +88,7 @@ FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 	ReturnDesc += FString("\n\nResponse position conditions:");
 	for (int32 Index = 0; Index != ResponsePositionConditions.Num(); ++Index)
 	{
-		FResponsePositionCondition Condition = ResponsePositionConditions[Index];
+		const FResponsePositionCondition Condition = ResponsePositionConditions[Index];
 
 		ReturnDesc += FString::Printf(
 			TEXT("\n%s Step %d, response %s %d"),

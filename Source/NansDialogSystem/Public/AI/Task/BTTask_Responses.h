@@ -78,7 +78,7 @@ protected:
 	TArray<FBTDialogueResponse> ReponsesUP;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	FNResponseCategory MiddleResponseCategory;
+	FNDialogueCategory MiddleResponseCategory;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	FText MiddleResponse;

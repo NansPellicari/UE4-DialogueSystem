@@ -31,7 +31,7 @@ struct NANSDIALOGSYSTEM_API FNDialogFactorSettings
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Category = Difficulty)
-	FNResponseCategory Category;
+	FNDialogueCategory Category;
 	UPROPERTY(EditAnywhere, Category = Difficulty)
 	float Multiplier;
 	UPROPERTY(EditAnywhere, Category = Difficulty, Meta = (ClampMin = "0", ClampMax = "1"))
@@ -62,7 +62,7 @@ struct NANSDIALOGSYSTEM_API FNDialogFactorTypeSettings
 };
 
 USTRUCT()
-struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
+struct NANSDIALOGSYSTEM_API FNDialogueCategorySettings
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -87,9 +87,9 @@ struct NANSDIALOGSYSTEM_API FNDialogResponseCategorySettings
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
 	TArray<FNDialogFactorTypeSettings> Factors;
 
-	static FNDialogResponseCategorySettings* CreateNullInstance()
+	static FNDialogueCategorySettings* CreateNullInstance()
 	{
-		FNDialogResponseCategorySettings* NullInst = new FNDialogResponseCategorySettings();
+		FNDialogueCategorySettings* NullInst = new FNDialogueCategorySettings();
 		NullInst->Name = FGameplayTag::EmptyTag;
 		NullInst->Color = FLinearColor::Black;
 		return NullInst;
@@ -165,7 +165,7 @@ public:
 	UPROPERTY(GlobalConfig, EditAnywhere)
 	FFactorAttribute PointsCollector;
 	UPROPERTY(GlobalConfig, EditAnywhere)
-	TArray<FNDialogResponseCategorySettings> ResponseCategorySettings;
+	TArray<FNDialogueCategorySettings> ResponseCategorySettings;
 	UPROPERTY(GlobalConfig, EditAnywhere)
 	TArray<FNDialogFactorSettings> DifficultySettings;
 
@@ -195,7 +195,7 @@ public:
 
 	void GetPointsMultipliersConfigs(TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>>& Confs) const
 	{
-		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
+		for (FNDialogueCategorySettings Settings : ResponseCategorySettings)
 		{
 			for (auto& Factor : Settings.Factors)
 			{
@@ -211,9 +211,9 @@ public:
 		}
 	}
 
-	void GetResponseCategoryConfigs(TArray<FNDialogResponseCategorySettings>& ShareableNames) const
+	void GetDialogueCategoryConfigs(TArray<FNDialogueCategorySettings>& ShareableNames) const
 	{
-		for (FNDialogResponseCategorySettings Settings : ResponseCategorySettings)
+		for (FNDialogueCategorySettings Settings : ResponseCategorySettings)
 		{
 			ShareableNames.Add(Settings);
 		}

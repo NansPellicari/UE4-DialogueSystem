@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
 
 
 #include "Misc/ErrorUtils.h"
-#include "NansCoreHelpers/Public/Misc/NansAssertionMacros.h"
 #include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-FLinearColor FNResponseCategory::GetColor() const
+FLinearColor FNDialogueCategory::GetColor() const
 {
-	const FNDialogResponseCategorySettings& Config = GetConfig();
+	const FNDialogueCategorySettings& Config = GetConfig();
 
 	return Config.Color;
 }
 
-TArray<FNDialogFactorTypeSettings> FNResponseCategory::GetFactors(const int32 Type) const
+TArray<FNDialogFactorTypeSettings> FNDialogueCategory::GetFactors(const int32 Type) const
 {
-	const FNDialogResponseCategorySettings& Config = GetConfig();
+	const FNDialogueCategorySettings& Config = GetConfig();
 	if (static_cast<int32>(Type) == 0) return Config.Factors;
 
 	TArray<FNDialogFactorTypeSettings> OutFactors;
@@ -43,18 +42,18 @@ TArray<FNDialogFactorTypeSettings> FNResponseCategory::GetFactors(const int32 Ty
 	return OutFactors;
 }
 
-const FNDialogResponseCategorySettings& FNResponseCategory::GetConfig() const
+const FNDialogueCategorySettings& FNDialogueCategory::GetConfig() const
 {
-	ensureMsgf(Name.IsValid(), TEXT("You should set a name before getting the config of a FNResponseCategory."));
-	static TMap<FGameplayTag, FNDialogResponseCategorySettings> SettingsByName;
-	FNDialogResponseCategorySettings& OutSetting = *FNDialogResponseCategorySettings::CreateNullInstance();
+	ensureMsgf(Name.IsValid(), TEXT("You should set a name before getting the config of a FNDialogueCategory."));
+	static TMap<FGameplayTag, FNDialogueCategorySettings> SettingsByName;
+	FNDialogueCategorySettings& OutSetting = *FNDialogueCategorySettings::CreateNullInstance();
 	if (SettingsByName.Contains(Name))
 	{
 		OutSetting = SettingsByName.FindRef(Name);
 		return OutSetting;
 	}
-	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
+	TArray<FNDialogueCategorySettings> Settings;
+	UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
 	for (auto& Setting : Settings)
 	{
 		if (Setting.Name == Name)

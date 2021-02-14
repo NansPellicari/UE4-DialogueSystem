@@ -39,6 +39,6 @@ protected:
 private:
 	TSharedPtr<IPropertyHandle> StructHandle;
 	TArray<TSharedPtr<FName>> CategoryList;
-	TMap<TSharedPtr<FName>, FNDialogResponseCategorySettings> SettingsList;
+	TMap<TSharedPtr<FName>, FNDialogueCategorySettings> SettingsList;
 	TSharedPtr<SNameComboBox> NameComboBox;
 };

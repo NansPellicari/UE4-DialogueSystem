@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #include "Customization/CurrentOrAllCustomization.h"
 #include "Customization/DialogFactorSettingsCustomization.h"
 #include "Customization/DialogFactorTypeSettingsCustomization.h"
+#include "Customization/DialogueCategoryCustomization.h"
 #include "Customization/FullValueCustomization.h"
-#include "Customization/ResponseCategoryCustomization.h"
 #include "Modules/ModuleManager.h"
 #include "Pin/DialogSettingsPinFactory.h"
 #include "PropertyEditor/Public/PropertyEditorModule.h"
@@ -44,8 +44,8 @@ void FNansDialogSystemEd::StartupModule()
 
 	// Custom properties
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-		"NResponseCategory",
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNResponseCategoryCustomization::MakeInstance)
+		"NDialogueCategory",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogueCategoryCustomization::MakeInstance)
 	);
 	PropertyModule.RegisterCustomPropertyTypeLayout(
 		"NDialogFactorTypeSettings",
@@ -80,7 +80,7 @@ void FNansDialogSystemEd::ShutdownModule()
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(
 			"PropertyEditor"
 		);
-		PropertyModule.UnregisterCustomPropertyTypeLayout("NResponseCategory");
+		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogueCategory");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorTypeSettings");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorSettings");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NCurrentOrAll");

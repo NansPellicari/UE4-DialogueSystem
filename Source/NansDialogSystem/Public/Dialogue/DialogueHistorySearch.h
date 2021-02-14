@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ enum class ENPropertyValue : uint8
 	SentencePosition,
 	BlockName,
 	Difficulty,
-	All,
+	IsDone
 };
 
 /**
@@ -122,7 +122,7 @@ struct NANSDIALOGSYSTEM_API FNDialogueHistorySearch
 	FNAllOrName DialogName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ENPropertyValue PropertyName;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName != ENPropertyValue::IsDone"))
 	ENansConditionComparator Operator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition=
 		"PropertyName == ENPropertyValue::Difficulty || PropertyName == ENPropertyValue::SentencePosition"))
@@ -133,7 +133,7 @@ struct NANSDIALOGSYSTEM_API FNDialogueHistorySearch
 		"PropertyName == ENPropertyValue::InitialPoints || PropertyName == ENPropertyValue::PointsEarned"))
 	float FloatValue = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName == ENPropertyValue::CategoryName"))
-	FNResponseCategory CategoryValue;
+	FNDialogueCategory CategoryValue;
 
 	bool IsInt() const
 	{
@@ -220,8 +220,8 @@ struct NANSDIALOGSYSTEM_API FNDialogueHistorySearch
 		return FString::Printf(
 			TEXT("%s %s %s"),
 			*SearchToString(),
-			*UNansComparator::ComparatorToString(Operator),
-			*ValueToString()
+			(PropertyName != ENPropertyValue::IsDone) ? *UNansComparator::ComparatorToString(Operator) : TEXT(""),
+			(PropertyName != ENPropertyValue::IsDone) ? *ValueToString() : TEXT("")
 		);
 	}
 };

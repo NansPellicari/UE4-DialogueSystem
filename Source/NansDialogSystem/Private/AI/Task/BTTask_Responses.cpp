@@ -210,14 +210,14 @@ void UBTTask_Responses::CreateButtons()
 		// reverse loop to set the right display order
 		for (int8 i = ReponsesUP.Num() - 1; i >= 0; --i)
 		{
-			CreateButton(ReponsesUP[i], Index++, ++Position, ReponsesUP.Last().Level);
+			CreateButton(ReponsesUP[i], Index++, ++Position, ReponsesUP.Last().Point);
 		}
 	}
 
 	Position = 0;
 	FBTDialogueResponse MiddleDialogueResponse;
 	MiddleDialogueResponse.Category = MiddleResponseCategory;
-	MiddleDialogueResponse.Level = MiddleResponsePoint;
+	MiddleDialogueResponse.Point = MiddleResponsePoint;
 	MiddleDialogueResponse.Text = MiddleResponse;
 	MiddleResponseIndex = Index++;
 	CreateButton(MiddleDialogueResponse, MiddleResponseIndex, Position, 1);
@@ -226,7 +226,7 @@ void UBTTask_Responses::CreateButtons()
 	{
 		for (int8 i = 0; i < ReponsesDOWN.Num(); ++i)
 		{
-			CreateButton(ReponsesDOWN[i], Index++, ++Position, ReponsesDOWN.Last().Level);
+			CreateButton(ReponsesDOWN[i], Index++, ++Position, ReponsesDOWN.Last().Point);
 		}
 	}
 }
@@ -290,7 +290,7 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 	{
 		FBTDialogueResponse Response = DialogueResponse->GetResponse();
 		Response.Category = MiddleResponseCategory;
-		Response.Level = 0;
+		Response.Point = 0;
 		DialogueResponse->SetResponse(Response);
 	}
 
@@ -380,8 +380,8 @@ FString UBTTask_Responses::DisplayStaticResponses(
 			FFormatNamedArguments Arguments;
 			FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
 			Arguments.Add(TEXT("response"), FText::FromString(Text));
-			Arguments.Add(TEXT("level"), Response.Level);
-			Arguments.Add(TEXT("difficulty"), Response.DifficultyLevel);
+			Arguments.Add(TEXT("level"), Response.Point);
+			Arguments.Add(TEXT("difficulty"), Response.Difficulty);
 			Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
 			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
 			ReturnDesc += FText::Format(

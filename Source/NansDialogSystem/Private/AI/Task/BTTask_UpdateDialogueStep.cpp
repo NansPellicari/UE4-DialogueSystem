@@ -55,8 +55,8 @@ EBTNodeResult::Type UBTTask_UpdateDialogueStep::ExecuteTask(UBehaviorTreeCompone
 	{
 		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 		Point.EffectOnEarned = Response.GetSpawnableEffectOnEarned();
-		Point.Difficulty = Response.DifficultyLevel;
-		Point.Point = Response.Level;
+		Point.Difficulty = Response.Difficulty;
+		Point.Point = Response.Point;
 		Point.Category = Response.Category;
 		Position = ResponseContainer->DisplayOrder;
 		ResponseContainer->MarkPendingKill();

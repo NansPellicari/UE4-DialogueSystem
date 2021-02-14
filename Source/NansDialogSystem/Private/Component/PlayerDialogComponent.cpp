@@ -151,7 +151,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					continue;
 				}
 				bool bSuccess = false;
-				if (Search.PropertyName == ENPropertyValue::All)
+				if (!bSuccess && Search.PropertyName == ENPropertyValue::IsDone)
 				{
 					bSuccess = true;
 				}

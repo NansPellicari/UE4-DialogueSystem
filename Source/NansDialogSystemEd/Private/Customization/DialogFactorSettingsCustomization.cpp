@@ -264,7 +264,7 @@ FLinearColor FNDialogFactorSettingsCustomization::GetColor(TSharedPtr<IPropertyH
 		CategoryValue.Split("=", nullptr, &CategoryValue);
 		CategoryValue = CategoryValue.LeftChop(2);
 		CategoryValue = CategoryValue.RightChop(1);
-		FNResponseCategory Cat;
+		FNDialogueCategory Cat;
 		Cat.Name = FGameplayTag::RequestGameplayTag(*CategoryValue);
 		if (!CategoryValue.IsEmpty() && Cat.Name.IsValid())
 		{

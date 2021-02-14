@@ -67,7 +67,7 @@ public:
 	bool HasResults(const FNDialogueHistorySearch& Search);
 	bool HasResults(const TArray<FNDialogueHistorySearch> Searches, TArray<FNansConditionOperator> ConditionsOperators);
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
-	int32 GetDialogPoints(FNResponseCategory Category) const;
+	int32 GetDialogPoints(FNDialogueCategory Category) const;
 
 protected:
 	UPROPERTY()

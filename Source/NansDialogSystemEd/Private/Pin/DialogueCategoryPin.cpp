@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Pin/ResponseCategoryPin.h"
+#include "Pin/DialogueCategoryPin.h"
 
 #include "ScopedTransaction.h"
 #include "SNameComboBox.h"
@@ -19,15 +19,15 @@
 #include "EdGraph/EdGraphSchema.h"
 #include "Setting/DialogSystemSettings.h"
 
-void SNResponseCategoryPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
+void SNDialogueCategoryPin::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj)
 {
 	SGraphPin::Construct(SGraphPin::FArguments(), InGraphPinObj);
 }
 
-TSharedRef<SWidget> SNResponseCategoryPin::GetDefaultValueWidget()
+TSharedRef<SWidget> SNDialogueCategoryPin::GetDefaultValueWidget()
 {
-	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
+	TArray<FNDialogueCategorySettings> Settings;
+	UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
 	for (const auto& Setting : Settings)
 	{
 		CategoryList.Add(MakeShareable(new FName(Setting.Name.ToString())));
@@ -50,11 +50,11 @@ TSharedRef<SWidget> SNResponseCategoryPin::GetDefaultValueWidget()
 		.ContentPadding(FMargin(6.0f, 2.0f))
 		.OptionsSource(&CategoryList)
 		.InitiallySelectedItem(InitialSelectedName)
-		.OnComboBoxOpening(this, &SNResponseCategoryPin::OnComboBoxOpening)
-		.OnSelectionChanged(this, &SNResponseCategoryPin::OnAttributeSelected);
+		.OnComboBoxOpening(this, &SNDialogueCategoryPin::OnComboBoxOpening)
+		.OnSelectionChanged(this, &SNDialogueCategoryPin::OnAttributeSelected);
 }
 
-void SNResponseCategoryPin::OnAttributeSelected(TSharedPtr<FName> ItemSelected, ESelectInfo::Type SelectInfo)
+void SNDialogueCategoryPin::OnAttributeSelected(TSharedPtr<FName> ItemSelected, ESelectInfo::Type SelectInfo)
 {
 	if (ItemSelected.IsValid())
 	{
@@ -62,7 +62,7 @@ void SNResponseCategoryPin::OnAttributeSelected(TSharedPtr<FName> ItemSelected, 
 	}
 }
 
-void SNResponseCategoryPin::OnComboBoxOpening()
+void SNDialogueCategoryPin::OnComboBoxOpening()
 {
 	TSharedPtr<FName> SelectedName = GetSelectedName();
 	if (SelectedName.IsValid())
@@ -72,10 +72,10 @@ void SNResponseCategoryPin::OnComboBoxOpening()
 	}
 }
 
-void SNResponseCategoryPin::SetPropertyWithName(const FName& Name)
+void SNDialogueCategoryPin::SetPropertyWithName(const FName& Name)
 {
 	check(GraphPinObj);
-	check(GraphPinObj->PinType.PinSubCategoryObject == FNResponseCategory::StaticStruct());
+	check(GraphPinObj->PinType.PinSubCategoryObject == FNDialogueCategory::StaticStruct());
 
 	// To set the property we need to use a FString
 	// using this format: (MyPropertyName="My Value")
@@ -90,8 +90,8 @@ void SNResponseCategoryPin::SetPropertyWithName(const FName& Name)
 		const FScopedTransaction Transaction(
 			NSLOCTEXT(
 				"GraphEditor",
-				"ChangeResponseCategorySettingsPinValue",
-				"Change ResponseCategory Settings Pin Value"
+				"ChangeDialogueCategorySettingsPinValue",
+				"Change DialogueCategory Settings Pin Value"
 			)
 		);
 		GraphPinObj->Modify();
@@ -103,7 +103,7 @@ void SNResponseCategoryPin::SetPropertyWithName(const FName& Name)
 	}
 }
 
-TSharedPtr<FName> SNResponseCategoryPin::GetSelectedName() const
+TSharedPtr<FName> SNDialogueCategoryPin::GetSelectedName() const
 {
 	int32 NameCount = CategoryList.Num();
 	if (NameCount <= 0)
@@ -125,12 +125,12 @@ TSharedPtr<FName> SNResponseCategoryPin::GetSelectedName() const
 	return nullptr;
 }
 
-void SNResponseCategoryPin::GetPropertyAsName(FName& OutName) const
+void SNDialogueCategoryPin::GetPropertyAsName(FName& OutName) const
 {
 	check(GraphPinObj);
-	check(GraphPinObj->PinType.PinSubCategoryObject == FNResponseCategory::StaticStruct());
+	check(GraphPinObj->PinType.PinSubCategoryObject == FNDialogueCategory::StaticStruct());
 
-	// As we saw in the SNResponseCategoryPin::SetPropertyWithName()
+	// As we saw in the SNDialogueCategoryPin::SetPropertyWithName()
 	// The value is saved in the format (MyPropertyName="My Value") as a FString.
 	// So we have to retrieve the real value and convert it to a FName
 	FString PinString = GraphPinObj->GetDefaultAsString();

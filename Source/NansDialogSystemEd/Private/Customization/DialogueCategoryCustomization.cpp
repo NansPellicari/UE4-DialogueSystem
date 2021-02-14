@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,30 +11,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Customization/ResponseCategoryCustomization.h"
+#include "Customization/DialogueCategoryCustomization.h"
 
-#include "SGraphPin.h"
 #include "SlateBasics.h"
 #include "SNameComboBox.h"
-#include "NansUE4Utilities/public/Misc/TextLibrary.h"
-#include "PropertyEditor/Public/DetailLayoutBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
 #include "PropertyEditor/Public/PropertyHandle.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Widgets/SWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-TSharedRef<IPropertyTypeCustomization> FNResponseCategoryCustomization::MakeInstance()
+TSharedRef<IPropertyTypeCustomization> FNDialogueCategoryCustomization::MakeInstance()
 {
-	return MakeShareable(new FNResponseCategoryCustomization());
+	return MakeShareable(new FNDialogueCategoryCustomization());
 }
 
-void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle,
+void FNDialogueCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle,
 	class FDetailWidgetRow& HeaderRow,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-	NameProperty = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FNResponseCategory, Name));
+	NameProperty = StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FNDialogueCategory, Name));
 
 	check(NameProperty.IsValid());
 
@@ -46,8 +42,8 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 	Val = Val.RightChop(1);
 	FName NameSelected = FName(*Val);
 
-	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
+	TArray<FNDialogueCategorySettings> Settings;
+	UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
 	int32 Index = 0;
 	CategoryList.Empty();
 	TSharedPtr<FName> InitialSelectedName;
@@ -71,14 +67,14 @@ void FNResponseCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 							.ContentPadding(FMargin(6.0f, 2.0f))
 							.OptionsSource(&CategoryList)
 							.InitiallySelectedItem(InitialSelectedName)
-							.OnSelectionChanged(this, &FNResponseCategoryCustomization::OnAttributeSelected)];
+							.OnSelectionChanged(this, &FNDialogueCategoryCustomization::OnAttributeSelected)];
 }
 
-void FNResponseCategoryCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle,
+void FNDialogueCategoryCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle,
 	class IDetailChildrenBuilder& StructBuilder,
 	IPropertyTypeCustomizationUtils& StructCustomizationUtils) {}
 
-void FNResponseCategoryCustomization::OnAttributeSelected(TSharedPtr<FName> Selection, ESelectInfo::Type SelectInfo)
+void FNDialogueCategoryCustomization::OnAttributeSelected(TSharedPtr<FName> Selection, ESelectInfo::Type SelectInfo)
 {
 	if (NameProperty.IsValid())
 	{

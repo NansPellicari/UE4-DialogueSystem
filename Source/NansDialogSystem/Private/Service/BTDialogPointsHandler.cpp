@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,24 +13,16 @@
 
 #include "Service/BTDialogPointsHandler.h"
 
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AIController.h"
 #include "BTDialogueTypes.h"
 #include "NansDialogSystemLog.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Dialogue/DialogueSequence.h"
-#include "Engine/GameInstance.h"
-#include "Factor/DialogFactorUnit.h"
 #include "Kismet/GameplayStatics.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
-#include "NansFactorsFactoryCore/Public/FactorState.h"
-#include "NansFactorsFactoryUE4/Public/FactorsFactoryClientAdapter.h"
 #include "NansFactorsFactoryUE4/Public/FactorsFactoryGameInstance.h"
-#include "NansFactorsFactoryUE4/Public/FactorUnit/FactorUnitView.h"
-#include "NansFactorsFactoryUE4/Public/Operator/OperatorProviders.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialogBTHelpers.h"
 #include "Setting/DialogSystemSettings.h"
@@ -182,14 +174,13 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	PlayerABS->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
-int32 UBTDialogPointsHandler::GetDialogPoints(FNResponseCategory Category) const
+int32 UBTDialogPointsHandler::GetDialogPoints(FNDialogueCategory Category) const
 {
 	verify(IsValid(DialogComp));
-	int32 TotalPoints = 0;
 	int32 Points = 0;
 	FNDialogueHistorySearch Search;
 	Search.DialogName.bIsAll = true;
-	Search.PropertyName = ENPropertyValue::All;
+	Search.PropertyName = ENPropertyValue::IsDone;
 	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
 
 	for (const FDialogueResult& Result : Results)
