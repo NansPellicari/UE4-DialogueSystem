@@ -19,52 +19,53 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-FLinearColor FNDialogueCategory::GetColor() const
+FLinearColor FNDialogueCategory::GetColorFromSettings(const FNDialogueCategory& DialogueCategory)
 {
-	const FNDialogueCategorySettings& Config = GetConfig();
+	static TMap<FGameplayTag, FLinearColor> ColorsCached;
+	FLinearColor Color;
 
-	return Config.Color;
-}
-
-TArray<FNDialogFactorTypeSettings> FNDialogueCategory::GetFactors(const int32 Type) const
-{
-	const FNDialogueCategorySettings& Config = GetConfig();
-	if (static_cast<int32>(Type) == 0) return Config.Factors;
-
-	TArray<FNDialogFactorTypeSettings> OutFactors;
-	for (const auto& Factor : Config.Factors)
+	if (!ColorsCached.Contains(DialogueCategory.Name))
 	{
-		if (Type & Factor.Type)
+		TArray<FNDialogueCategorySettings> Settings;
+		UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
+		for (auto Set : Settings)
 		{
-			OutFactors.Add(Factor);
+			if (Set.Name == DialogueCategory.Name)
+			{
+				ColorsCached.Add(Set.Name, Set.Color);
+				break;
+			}
 		}
 	}
-	return OutFactors;
+	if (!ColorsCached.Contains(DialogueCategory.Name)) return {};
+
+	return ColorsCached.FindRef(DialogueCategory.Name);
 }
 
-const FNDialogueCategorySettings& FNDialogueCategory::GetConfig() const
+TArray<FNDialogueDifficultyMagnitudeFactorSettings> FNDialogueCategory::GetDifficulties(const FNDialogueCategory& DialogueCategory)
 {
+	const FGameplayTag Name = DialogueCategory.Name;
 	ensureMsgf(Name.IsValid(), TEXT("You should set a name before getting the config of a FNDialogueCategory."));
-	static TMap<FGameplayTag, FNDialogueCategorySettings> SettingsByName;
-	FNDialogueCategorySettings& OutSetting = *FNDialogueCategorySettings::CreateNullInstance();
-	if (SettingsByName.Contains(Name))
+	static TMap<FGameplayTag, FNDialogueDifficultyMagnitudeSettings> SettingsByName;
+
+	if (!SettingsByName.Contains(Name))
 	{
-		OutSetting = SettingsByName.FindRef(Name);
-		return OutSetting;
-	}
-	TArray<FNDialogueCategorySettings> Settings;
-	UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
-	for (auto& Setting : Settings)
-	{
-		if (Setting.Name == Name)
+		TArray<FNDialogueDifficultyMagnitudeSettings> Settings;
+		UDialogSystemSettings::Get()->GetDialogueDifficultyMagnitudeConfigs(Settings);
+		for (auto& Setting : Settings)
 		{
-			SettingsByName.Add(Name, Setting);
-			OutSetting = SettingsByName.FindRef(Name);
-			break;
+			if (Setting.Category.Name == Name)
+			{
+				SettingsByName.Add(Name, Setting);
+				break;
+			}
 		}
 	}
-	return OutSetting;
+	if (!SettingsByName.Contains(Name)) return {};
+
+	return SettingsByName.FindRef(DialogueCategory.Name).Attributes;
 }
+
 
 TSubclassOf<UGameplayEffect> FBTDialogueResponse::GetSpawnableEffectOnEarned() const
 {

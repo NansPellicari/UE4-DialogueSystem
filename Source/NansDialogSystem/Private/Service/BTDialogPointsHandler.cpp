@@ -22,7 +22,6 @@
 #include "Dialogue/DialogueSequence.h"
 #include "Kismet/GameplayStatics.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
-#include "NansFactorsFactoryUE4/Public/FactorsFactoryGameInstance.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialogBTHelpers.h"
 #include "Setting/DialogSystemSettings.h"
@@ -37,7 +36,7 @@ void UBTDialogPointsHandler::BeginDestroy()
 void UBTDialogPointsHandler::Clear()
 {
 	bDebug = false;
-	PlayerABS->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
+	PlayerGASC->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
 }
 
 bool UBTDialogPointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
@@ -97,7 +96,7 @@ bool UBTDialogPointsHandler::Initialize(
 	FDialogueSequence DialogueSequence)
 {
 	StepsHandler = InStepsHandler;
-	PlayerABS = NDialogBTHelpers::GetABS(OwnerComp);
+	PlayerGASC = NDialogBTHelpers::GetGASC(OwnerComp);
 	BehaviorTreePathName = DialogueSequence.Name.ToString();
 	AIPawnPathName = DialogueSequence.Owner;
 
@@ -115,10 +114,10 @@ bool UBTDialogPointsHandler::Initialize(
 	FGameplayEventData Payload;
 	// TODO Check: need more data ?
 	Payload.Instigator = OwnerComp.GetAIOwner()->GetPawn();
-	Payload.Target = PlayerABS->GetOwnerActor();
+	Payload.Target = PlayerGASC->GetOwnerActor();
 	Payload.EventTag = UDialogSystemSettings::Get()->TriggerAbilityTag;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
-		PlayerABS->GetOwnerActor(),
+		PlayerGASC->GetOwnerActor(),
 		UDialogSystemSettings::Get()->TriggerAbilityTag,
 		Payload
 	);
@@ -143,15 +142,16 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 	}
 	FString BaseName = TEXT("Step");
 	BaseName.AppendInt(Step);
-	FGameplayEffectContextHandle FxContextHandle = PlayerABS->MakeEffectContext();
+	FGameplayEffectContextHandle FxContextHandle = PlayerGASC->MakeEffectContext();
 	FDialogueResult DialogData;
 	DialogData.Difficulty = Point.Difficulty;
 	DialogData.Position = Position;
 	DialogData.CategoryName = Point.Category.Name;
 	DialogData.BlockName = FName(BaseName);
 	DialogData.InitialPoints = Point.Point;
+	DialogData.Response = Point.Response;
 	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
-	FGameplayEffectSpecHandle SpecHandle = PlayerABS->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
+	FGameplayEffectSpecHandle SpecHandle = PlayerGASC->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
 	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
 	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, UDialogSystemSettings::Get()->TagToIdentifyDialogEffect);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
@@ -159,7 +159,7 @@ void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 		UDialogSystemSettings::Get()->PointMagnitudeTag,
 		Point.Point
 	);
-	PlayerABS->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	PlayerGASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 int32 UBTDialogPointsHandler::GetDialogPoints(FNDialogueCategory Category) const

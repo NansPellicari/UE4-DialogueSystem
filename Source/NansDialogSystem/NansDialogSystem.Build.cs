@@ -32,8 +32,6 @@ namespace UnrealBuildTool.Rules
 					"NansCoreHelpers",
 					"NansUE4Utilities",
 					"NansTimelineSystemUE4",
-					"NansFactorsFactoryCore",
-					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
 					"NansUMGExtent",
 					"NansCommon", // TODO should remove this dependencies

@@ -44,10 +44,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "NansFactorsFactory",
-			"Enabled": true
-		},
-		{
 			"Name": "NansBehaviorSteps",
 			"Enabled": true
 		},

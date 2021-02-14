@@ -243,7 +243,7 @@ void UBTTask_ButtonsSequence::CreateButtons()
 
 			if (ColorIsComputed == false)
 			{
-				FinalColor = Sequence.Category.GetColor();
+				FinalColor = FNDialogueCategory::GetColorFromSettings(Sequence.Category);
 				ColorIsComputed = true;
 			}
 
@@ -326,6 +326,7 @@ const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tri
 void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 {
 	PlayerTries += Button->GetText();
+	FText SequenceTxt;
 
 	for (int32 Index = 0; Index != Sequences.Num(); ++Index)
 	{
@@ -336,6 +337,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 			Button->SetVisibility(ESlateVisibility::Collapsed);
 			TriesStatus = EBTNodeResult::Succeeded;
 			SequenceIndex = Index;
+			SequenceTxt = Seq.ButtonSequence;
 			break;
 		}
 
@@ -364,6 +366,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 		FNPoint Point;
 		Point.Category = Sequence.Category;
 		Point.Point = TotalPoint;
+		Point.Response = SequenceTxt;
 		Point.EffectOnEarned = Resp.GetSpawnableEffectOnEarned();
 		Point.Difficulty = static_cast<float>(Sequence.LevelCoefficient);
 

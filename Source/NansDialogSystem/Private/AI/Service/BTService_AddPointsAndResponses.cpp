@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ void UBTService_AddPointsAndResponses::OnBecomeRelevant(UBehaviorTreeComponent& 
 		Point.Difficulty = Response.Difficulty;
 		Point.Point = Response.Point;
 		Point.Category = Response.Category;
+		Point.Response = Response.Text;
 		Position = ResponseContainer->DisplayOrder;
 		ResponseContainer->MarkPendingKill();
 	}

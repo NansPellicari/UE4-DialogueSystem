@@ -56,7 +56,7 @@ protected:
 	UPROPERTY()
 	TScriptInterface<IBTStepsHandler> StepsHandler;
 	UPROPERTY()
-	UAbilitySystemComponent* PlayerABS;
+	UAbilitySystemComponent* PlayerGASC;
 	UPROPERTY()
 	UPlayerDialogComponent* DialogComp;
 

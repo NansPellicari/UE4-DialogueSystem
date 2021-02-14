@@ -30,6 +30,6 @@ public:
 	NDialogBTHelpers();
 	~NDialogBTHelpers();
 	static UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
-	static UAbilitySystemComponent* GetABS(UBehaviorTreeComponent& OwnerComp);
+	static UAbilitySystemComponent* GetGASC(UBehaviorTreeComponent& OwnerComp);
 	static UPlayerDialogComponent* GetDialogComponent(UBehaviorTreeComponent& OwnerComp);
 };

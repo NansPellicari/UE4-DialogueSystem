@@ -16,7 +16,6 @@
 #include "Customization/AllOrNameCustomization.h"
 #include "Customization/CurrentOrAllCustomization.h"
 #include "Customization/DialogFactorSettingsCustomization.h"
-#include "Customization/DialogFactorTypeSettingsCustomization.h"
 #include "Customization/DialogueCategoryCustomization.h"
 #include "Customization/FullValueCustomization.h"
 #include "Modules/ModuleManager.h"
@@ -48,10 +47,6 @@ void FNansDialogSystemEd::StartupModule()
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogueCategoryCustomization::MakeInstance)
 	);
 	PropertyModule.RegisterCustomPropertyTypeLayout(
-		"NDialogFactorTypeSettings",
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogFactorTypeSettingsCustomization::MakeInstance)
-	);
-	PropertyModule.RegisterCustomPropertyTypeLayout(
 		"NDialogFactorSettings",
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FNDialogFactorSettingsCustomization::MakeInstance)
 	);
@@ -81,7 +76,6 @@ void FNansDialogSystemEd::ShutdownModule()
 			"PropertyEditor"
 		);
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogueCategory");
-		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorTypeSettings");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NDialogFactorSettings");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NCurrentOrAll");
 		PropertyModule.UnregisterCustomPropertyTypeLayout("NFullValue");

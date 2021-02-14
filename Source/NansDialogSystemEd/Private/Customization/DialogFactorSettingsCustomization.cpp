@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -268,7 +268,7 @@ FLinearColor FNDialogFactorSettingsCustomization::GetColor(TSharedPtr<IPropertyH
 		Cat.Name = FGameplayTag::RequestGameplayTag(*CategoryValue);
 		if (!CategoryValue.IsEmpty() && Cat.Name.IsValid())
 		{
-			Color = Cat.GetColor();
+			Color = FNDialogueCategory::GetColorFromSettings(Cat);
 		}
 	}
 	return Color;

@@ -29,8 +29,6 @@ namespace UnrealBuildTool.Rules
 					"EditorStyle",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
-					"NansFactorsFactoryCore",
-					"NansFactorsFactoryUE4",
 					"NansBehaviorSteps",
 					"NansUMGExtent",
 					"NansCommon",

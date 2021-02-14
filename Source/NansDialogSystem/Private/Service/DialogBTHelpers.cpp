@@ -53,7 +53,7 @@ UDialogHUD* NDialogBTHelpers::GetHUDFromBlackboard(UBehaviorTreeComponent& Owner
 }
 
 UAbilitySystemComponent* NDialogBTHelpers::
-GetABS(UBehaviorTreeComponent& OwnerComp)
+GetGASC(UBehaviorTreeComponent& OwnerComp)
 {
 	auto Char = NInteractiveBTHelpers::GetPlayerCharacter(OwnerComp, __FUNCTION__);
 	if (!IsValid(Char))

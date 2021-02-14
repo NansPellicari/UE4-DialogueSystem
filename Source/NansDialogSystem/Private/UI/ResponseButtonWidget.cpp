@@ -12,7 +12,7 @@ void UResponseButtonWidget::SetResponse(UBTDialogueResponseContainer* DialogueRe
 
 void UResponseButtonWidget::ComputeColor(int32 MaxLevel)
 {
-	FLinearColor BtColor = Response->GetResponse().Category.GetColor();
+	FLinearColor BtColor = FNDialogueCategory::GetColorFromSettings(Response->GetResponse().Category);
 
 	FVector vBaseColor = FVector(BaseColor.R, BaseColor.G, BaseColor.B);
 	FVector vBtColor = FVector(BtColor.R, BtColor.G, BtColor.B);

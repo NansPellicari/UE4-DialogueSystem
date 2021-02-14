@@ -27,12 +27,13 @@ struct NANSDIALOGSYSTEM_API FNPoint
 	GENERATED_USTRUCT_BODY()
 
 	FNPoint() {}
-	FNPoint(const FBTDialogueResponse& Response)
+	FNPoint(const FBTDialogueResponse& InResponse)
 	{
-		EffectOnEarned = Response.GetSpawnableEffectOnEarned();
-		Difficulty = Response.Difficulty;
-		Point = Response.Point;
-		Category = Response.Category;
+		EffectOnEarned = InResponse.GetSpawnableEffectOnEarned();
+		Difficulty = InResponse.Difficulty;
+		Point = InResponse.Point;
+		Category = InResponse.Category;
+		Response = InResponse.Text;
 	}
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point")
@@ -43,4 +44,5 @@ struct NANSDIALOGSYSTEM_API FNPoint
 	float Difficulty = 0.f;
 	UPROPERTY(BlueprintReadWrite, Category = "Point")
 	TSubclassOf<UGameplayEffect> EffectOnEarned;
+	FText Response;
 };

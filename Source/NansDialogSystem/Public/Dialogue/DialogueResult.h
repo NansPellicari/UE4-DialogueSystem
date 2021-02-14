@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ struct NANSDIALOGSYSTEM_API FDialogueResult
 	int32 Position = -100;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
 	FName BlockName = NAME_None;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
+	FText Response;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
 	int32 Difficulty = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@
 #include "GameplayEffect.h"
 #include "Ability/GA_BaseDialog.h"
 #include "Ability/AttributeSets/DialogAttributeSets.h"
-#include "Attribute/FactorAttribute.h"
 #include "Engine/DeveloperSettings.h"
-#include "NansCoreHelpers/Public/Math/MathTypes.h"
 
 #include "DialogSystemSettings.generated.h"
 
@@ -41,24 +39,34 @@ struct NANSDIALOGSYSTEM_API FNDialogFactorSettings
 };
 
 USTRUCT()
-struct NANSDIALOGSYSTEM_API FNDialogFactorTypeSettings
+struct NANSDIALOGSYSTEM_API FNDialogueDifficultyMagnitudeFactorSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = FactorType)
-	FFactorAttribute Factor;
+	UPROPERTY(EditAnywhere, Category = Difficulty)
+	FGameplayAttribute AttributeValue;
 
-	UPROPERTY(EditAnywhere, Category = FactorType, Meta = (Bitmask, BitmaskEnum = "EFactorType"))
-	int32 Type;
+	UPROPERTY(EditAnywhere, Category = ResponseCategory)
+	FGameplayAttribute MaxAtttributeValue;
+};
 
-	/**
-	 * /!\ A range is mandatory for a difficulty factor.
-	 */
-	UPROPERTY(EditAnywhere, Category = FactorType)
-	bool bHasRange = false;
+USTRUCT()
+struct NANSDIALOGSYSTEM_API FNDialogueDifficultyMagnitudeSettings
+{
+	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = FactorType)
-	FRange Range = FRange(0, 100);
+	UPROPERTY(EditAnywhere)
+	FNDialogueCategory Category;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FNDialogueDifficultyMagnitudeFactorSettings> Attributes;
+
+	static FNDialogueDifficultyMagnitudeSettings* CreateNullInstance()
+	{
+		FNDialogueDifficultyMagnitudeSettings* NullInst = new FNDialogueDifficultyMagnitudeSettings();
+		NullInst->Category.Name = FGameplayTag::EmptyTag;
+		return NullInst;
+	}
 };
 
 USTRUCT()
@@ -83,17 +91,6 @@ struct NANSDIALOGSYSTEM_API FNDialogueCategorySettings
 	 */
 	UPROPERTY(EditDefaultsOnly, Category=GameplayEffect)
 	TSubclassOf<UGameplayEffect> DefaultEffect;
-
-	UPROPERTY(EditAnywhere, Category = ResponseCategory)
-	TArray<FNDialogFactorTypeSettings> Factors;
-
-	static FNDialogueCategorySettings* CreateNullInstance()
-	{
-		FNDialogueCategorySettings* NullInst = new FNDialogueCategorySettings();
-		NullInst->Name = FGameplayTag::EmptyTag;
-		NullInst->Color = FLinearColor::Black;
-		return NullInst;
-	}
 };
 
 /**
@@ -163,10 +160,11 @@ public:
 	FGameplayTag PointMagnitudeTag;
 
 	UPROPERTY(GlobalConfig, EditAnywhere)
-	FFactorAttribute PointsCollector;
-	UPROPERTY(GlobalConfig, EditAnywhere)
 	TArray<FNDialogueCategorySettings> ResponseCategorySettings;
-	UPROPERTY(GlobalConfig, EditAnywhere)
+
+	UPROPERTY(GlobalConfig, EditAnywhere, Category="Difficulty")
+	TArray<FNDialogueDifficultyMagnitudeSettings> DifficultyMagnitudesSettings;
+	UPROPERTY(GlobalConfig, EditAnywhere, Category="Difficulty")
 	TArray<FNDialogFactorSettings> DifficultySettings;
 
 	/** Accessor and initializer **/
@@ -193,27 +191,17 @@ public:
 		return MetaAttributeForPointsEarning;
 	}
 
-	void GetPointsMultipliersConfigs(TMap<FGameplayTag, TArray<FNDialogFactorTypeSettings>>& Confs) const
-	{
-		for (FNDialogueCategorySettings Settings : ResponseCategorySettings)
-		{
-			for (auto& Factor : Settings.Factors)
-			{
-				if (Factor.Type & static_cast<int32>(EFactorType::PointsMultiplier))
-				{
-					if (!Confs.Contains(Settings.Name))
-					{
-						Confs.Add(Settings.Name, {});
-					}
-					Confs.Find(Settings.Name)->Add(Factor);
-				}
-			}
-		}
-	}
-
 	void GetDialogueCategoryConfigs(TArray<FNDialogueCategorySettings>& ShareableNames) const
 	{
 		for (FNDialogueCategorySettings Settings : ResponseCategorySettings)
+		{
+			ShareableNames.Add(Settings);
+		}
+	}
+
+	void GetDialogueDifficultyMagnitudeConfigs(TArray<FNDialogueDifficultyMagnitudeSettings>& ShareableNames) const
+	{
+		for (FNDialogueDifficultyMagnitudeSettings Settings : DifficultyMagnitudesSettings)
 		{
 			ShareableNames.Add(Settings);
 		}

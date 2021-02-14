@@ -17,6 +17,8 @@
 #include "GameplayTags.h"
 #include "BTDialogueTypes.generated.h"
 
+struct FNDialogueDifficultyMagnitudeFactorSettings;
+struct FNDialogueDifficultyMagnitudeSettings;
 UENUM(BlueprintType)
 enum class EResponseDirection : uint8
 {
@@ -29,16 +31,6 @@ enum class EResponseDirection : uint8
 #define TOFLAG(Enum) (1 << static_cast<uint8>(Enum))
 #endif
 
-UENUM(BlueprintType, Meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EFactorType : uint8
-{
-	None = 0 UMETA(Hidden),
-	Difficulty = 0x00000001,
-	PointsMultiplier = 0x00000002,
-};
-
-ENUM_CLASS_FLAGS(EFactorType)
-
 struct FNDialogueCategorySettings;
 struct FNDialogFactorTypeSettings;
 
@@ -50,9 +42,9 @@ struct NANSDIALOGSYSTEM_API FNDialogueCategory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DialogueCategory")
 	FGameplayTag Name;
 
-	FLinearColor GetColor() const;
-	TArray<FNDialogFactorTypeSettings> GetFactors(const int32 Type = 0) const;
-	const FNDialogueCategorySettings& GetConfig() const;
+	static FLinearColor GetColorFromSettings(const FNDialogueCategory& DialogueCategory);
+	static TArray<FNDialogueDifficultyMagnitudeFactorSettings> GetDifficulties(
+		const FNDialogueCategory& DialogueCategory);
 };
 
 /**
