@@ -134,6 +134,8 @@ struct NANSDIALOGSYSTEM_API FNDialogueHistorySearch
 	float FloatValue = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName == ENPropertyValue::CategoryName"))
 	FNDialogueCategory CategoryValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bInversed = false;
 
 	bool IsInt() const
 	{
@@ -212,6 +214,14 @@ struct NANSDIALOGSYSTEM_API FNDialogueHistorySearch
 			);
 		}
 		Str += ENUM_TO_STRING(ENPropertyValue, PropertyName);
+
+		if (bInversed)
+		{
+			Str += FString::Printf(
+				TEXT(" (Inversed)"),
+				*DialogName.ToString()
+			);
+		}
 		return Str;
 	}
 

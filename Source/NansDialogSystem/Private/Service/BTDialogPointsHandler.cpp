@@ -88,7 +88,7 @@ bool UBTDialogPointsHandler::HasResults(const FNDialogueHistorySearch& Search)
 {
 	verify(IsValid(DialogComp));
 	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
-	return Results.Num() > 0;
+	return Search.bInversed ? Results.Num() <= 0 : Results.Num() > 0;
 }
 
 bool UBTDialogPointsHandler::Initialize(

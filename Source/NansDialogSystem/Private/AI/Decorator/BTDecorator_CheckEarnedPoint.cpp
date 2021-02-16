@@ -26,44 +26,78 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 	TArray<FNansConditionOperator>& Operators)
 {
 	int32 Index = 0;
+	TMap<int32, int32> IndexesMatches;
 	for (auto& RespPos : ResponsePositions)
 	{
 		FNDialogueHistorySearch Search, Search2;
 
+
 		Search.DialogName.bIsAll = true;
 		Search2.DialogName.bIsAll = true;
 
-		Search.PropertyName = ENPropertyValue::InitialPoints;
-		Search.Operator = RespPos.Operator;
-		Search.FloatValue = RespPos.CompareTo;
+		Search.PropertyName = ENPropertyValue::CategoryName;
+		Search.Operator = ENansConditionComparator::Equals;
+		Search.CategoryValue = RespPos.PointType;
 
-		Search2.PropertyName = ENPropertyValue::CategoryName;
-		Search2.Operator = ENansConditionComparator::Equals;
-		Search2.CategoryValue = RespPos.PointType;
+		Search2.PropertyName = ENPropertyValue::InitialPoints;
+		Search2.Operator = RespPos.Operator;
+		Search2.FloatValue = RespPos.CompareTo;
 		Searches.Add(Search);
 		Searches.Add(Search2);
-		FNansConditionOperator Operator;
-		Operator.Operand1 = UNansComparator::BuildKeyFromIndex(Index);
-		Operator.Operand2 = UNansComparator::BuildKeyFromIndex(Index + 1);
-		Operator.Operator = ENansConditionOperator::AND;
-		Operator.Inversed = false;
-		Operator.OperatorWithPreviousCondition = ENansConditionOperator::Save;
-		Operator.GroupName = FString("InternGrp") + FString::FromInt(Index) + FString("&") +
-							 FString::FromInt(Index + 1);
-		Operators.Add(Operator);
+
+		ENansConditionOperator OpForInterGrp = ENansConditionOperator::AND;
+		TArray<FNansConditionOperator> NewOperators;
+		int32 OpIdx = 0;
+
+
+		int32 RealIdx = !IndexesMatches.Contains(Index) ? 0 : IndexesMatches[Index];
+		int32 RealNewIdx = RealIdx + 1;
+
+		FString GroupName = FString("InternGrp") + FString::FromInt(RealIdx) + FString("&") +
+							FString::FromInt(RealIdx + 1);
+		NewOperators.Add(FNansConditionOperator());
+		NewOperators[OpIdx].Operand1 = UNansComparator::BuildKeyFromIndex(RealIdx);
+		NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 1);
+		NewOperators[OpIdx].Operator = ENansConditionOperator::AND;
+		NewOperators[OpIdx].Inversed = false;
+		NewOperators[OpIdx].OperatorWithPreviousCondition = ENansConditionOperator::Save;
+		NewOperators[OpIdx].GroupName = GroupName;
+
+		if (RespPos.Operator == ENansConditionComparator::Inferior
+			|| RespPos.Operator == ENansConditionComparator::InferiorOrEquals)
+		{
+			FNDialogueHistorySearch Search3 = Search;
+			Search3.bInversed = true;
+			Searches.Add(Search3);
+			NewOperators.Add(FNansConditionOperator());
+			OpIdx++;
+			NewOperators[OpIdx].Operand1 = GroupName;
+			NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 2);
+			RealNewIdx++;
+			NewOperators[OpIdx].Operator = ENansConditionOperator::OR;
+			NewOperators[OpIdx].OperatorWithPreviousCondition = ENansConditionOperator::Save;
+			NewOperators[OpIdx].GroupName = GroupName + FString("OrInverse");
+		}
+
+		Operators.Append(NewOperators);
+
 		bool IsFirst = true;
 		for (auto& CondOperator : ConditionsOperators)
 		{
-			FString StepOpTo = UNansComparator::BuildKeyFromIndex(Index / 2);
-			CondOperator.Operand1 = CondOperator.Operand1 == StepOpTo ? Operator.GroupName : CondOperator.Operand1;
-			CondOperator.Operand2 = CondOperator.Operand2 == StepOpTo ? Operator.GroupName : CondOperator.Operand2;
+			FString StepOpTo = UNansComparator::BuildKeyFromIndex(Index);
+			CondOperator.Operand1 = CondOperator.Operand1 == StepOpTo
+										? NewOperators[OpIdx].GroupName // always get the last NewOperators
+										: CondOperator.Operand1;
+			CondOperator.Operand2 = CondOperator.Operand2 == StepOpTo
+										? NewOperators[OpIdx].GroupName // always get the last NewOperators
+										: CondOperator.Operand2;
 			if (IsFirst)
 			{
 				CondOperator.OperatorWithPreviousCondition = ENansConditionOperator::Save;
 			}
 			IsFirst = false;
 		}
-		Index += 2;
+		IndexesMatches.Add(++Index, ++RealNewIdx);
 	}
 	Operators.Append(ConditionsOperators);
 }

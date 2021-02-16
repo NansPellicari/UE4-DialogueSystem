@@ -311,7 +311,6 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 	PointsHandler->AddPoints(FNPoint(DialogueResponse->GetResponse()), DialogueResponse->DisplayOrder);
 
 	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text);
-	// Blackboard->SetValueAsObject(ResponseContainerName, DialogueResponse);
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -400,10 +399,14 @@ FString UBTTask_Responses::DisplayStaticResponses(
 			Arguments.Add(TEXT("difficulty"), Response.Difficulty);
 			Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
 			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
+			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
+								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+								   : FText::FromString(TEXT("No effect"));
+			Arguments.Add(TEXT("effect"), EffectName);
 			ReturnDesc += FText::Format(
 					LOCTEXT(
 						"NodeResponsesDetails",
-						"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, category: {category}"
+						"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, category: {category}\n\tEffect: {effect}"
 					),
 					Arguments
 				)

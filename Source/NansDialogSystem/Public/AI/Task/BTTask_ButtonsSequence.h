@@ -106,6 +106,10 @@ public:
 	// TODO maybe player should earns more points if he sets 2*2letters in order, should not be the same as BDOS
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	int32 LevelCoefficient = 3;
+	/**
+	 * When you need to retrieved these, use GetResponsesForPoint() instead.
+	 * It add the category set here for each button.
+	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	TArray<FBTButtonSequenceResponse> ResponsesForPoint;
 
@@ -119,6 +123,7 @@ public:
 	// if points passed is 3, returned response is "response 2"
 	FBTButtonSequenceResponse GetResponseForPoints(int32 Points)
 	{
+		Default.Category = Category;
 		if (ResponsesForPoint.Num() <= 0) return Default;
 
 		FBTButtonSequenceResponse Response = Default;
@@ -132,7 +137,19 @@ public:
 			Response = Resp;
 		}
 		return Response;
-	};
+	}
+
+	TArray<FBTButtonSequenceResponse> GetResponsesForPoint()
+	{
+		TArray<FBTButtonSequenceResponse> AllResponses;
+		AllResponses.Add(Default);
+		for (FBTButtonSequenceResponse Response : ResponsesForPoint)
+		{
+			Response.Category = Category;
+			AllResponses.Add(Response);
+		}
+		return AllResponses;
+	}
 };
 
 static TMap<FString, TMap<int32, FString>> StaticButtonSequenceDescs;

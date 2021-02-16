@@ -120,11 +120,12 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 
 	ButtonsSlot = Cast<UPanelWidget>(DialogHUD->FindWidget(ButtonsSlotName));
 
-	if (!ensure(ButtonsSlot != nullptr))
+	if (!ensure(IsValid(ButtonsSlot)))
 	{
 		EDITOR_ERROR(
 			"DialogSystem",
-			LOCTEXT("WrongButtonsSlotName", "The ButtonsSlotName set doesn't exists in HUD in ")
+			FText::Format(LOCTEXT("WrongButtonsSlotName", "The ButtonsSlotName {0} set doesn't exists in HUD in "),
+				FText::FromName(ButtonsSlotName))
 		);
 		return EBTNodeResult::Aborted;
 	}
@@ -421,28 +422,31 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 			.ToString();
 		Desc += "\n\n";
 		Desc += LOCTEXT("TaskButtonSequenceSequenceResponseTitle", "Responses for points:").ToString();
-		Arguments.Empty();
-		Arguments.Add(TEXT("default"), Sequence.Default.Response);
-		FString Text =
-			FText::Format(
-				LOCTEXT("TaskButtonSequenceSequenceDefaultResponse", "[-1] \"{default}\""),
-				Arguments
-			).ToString();
-		Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
 
-		for (FBTButtonSequenceResponse Response : Sequence.ResponsesForPoint)
+		Arguments.Empty();
+		FString Text;
+
+		for (FBTButtonSequenceResponse Response : Sequence.GetResponsesForPoint())
 		{
 			Response.Category = Sequence.Category;
-			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
-								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
-								   : FText::FromString(TEXT("No effect"));
 			FFormatNamedArguments RespArguments;
 			RespArguments.Add(TEXT("response"), Response.Response);
 			RespArguments.Add(TEXT("point"), Response.ForPoint);
+			Text =
+				FText::Format(
+					LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\""),
+					RespArguments
+				).ToString();
+			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
+
+			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
+								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+								   : FText::FromString(TEXT("No effect"));
+			RespArguments.Reset();
 			RespArguments.Add(TEXT("effect"), EffectName);
 			Text =
 				FText::Format(
-					LOCTEXT("TaskButtonSequenceSequenceResponse", "[{point}] \"{response}\" Effect: {effect}"),
+					LOCTEXT("TaskButtonSequenceSequenceResponse", "Effect: {effect}\n"),
 					RespArguments
 				).ToString();
 			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
