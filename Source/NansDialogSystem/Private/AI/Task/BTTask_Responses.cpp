@@ -285,7 +285,8 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 
 	PointsHandler->AddPoints(FNPoint(ResponseContainer->GetResponse()), ResponseContainer->DisplayOrder);
 
-	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text);
+	// TODO maybe instead of empty title should output a readable Response.Category
+	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -310,7 +311,8 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 
 	PointsHandler->AddPoints(FNPoint(DialogueResponse->GetResponse()), DialogueResponse->DisplayOrder);
 
-	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text);
+	// TODO maybe instead of empty title should output a readable Response.Category
+	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 

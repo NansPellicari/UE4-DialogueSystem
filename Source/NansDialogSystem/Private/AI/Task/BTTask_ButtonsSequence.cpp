@@ -371,15 +371,9 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 		Point.EffectOnEarned = Resp.GetSpawnableEffectOnEarned();
 		Point.Difficulty = static_cast<float>(Sequence.LevelCoefficient);
 
-		// UBTDialogueResponseContainer* ResponseContainer =
-		// 	NewObject<UBTDialogueResponseContainer>(OwnerComponent, UBTDialogueResponseContainer::StaticClass());
-		// ResponseContainer->SetResponse(Response);
-		// ResponseContainer->DisplayOrder = SequenceIndex;
-		// Blackboard->SetValueAsObject(ResponseContainerKey, ResponseContainer);
-
 		PointsHandler->AddPoints(Point, SequenceIndex);
 
-		DialogHUD->OnResponse.Broadcast(Resp.Response);
+		DialogHUD->OnResponse.Broadcast(Resp.Response, FText::GetEmpty());
 		RemoveButtons(*OwnerComponent);
 		return;
 	}

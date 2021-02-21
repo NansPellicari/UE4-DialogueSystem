@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Aborted;
 	}
 
-	HUD->OnQuestion.Broadcast(Message);
+	HUD->OnQuestion.Broadcast(Message, Title);
 	HUD->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
 
 	return EBTNodeResult::InProgress;
