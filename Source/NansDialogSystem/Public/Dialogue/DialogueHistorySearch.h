@@ -78,7 +78,7 @@ struct NANSDIALOGSYSTEM_API FNAllOrName
 		FString Str = bIsAll ? TEXT("All") : Value;
 		if (bLastOnly)
 		{
-			Str = TEXT("(last Only)") + Str;
+			Str = TEXT("(last Only) ") + Str;
 		}
 		return Str;
 	}

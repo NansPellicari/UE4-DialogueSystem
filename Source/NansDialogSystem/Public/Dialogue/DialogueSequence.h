@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,5 +39,10 @@ struct NANSDIALOGSYSTEM_API FDialogueSequence
 	void AddResult(FDialogueResult Result)
 	{
 		Results.Add(Result);
+	}
+
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("Name: %s, Owner: %s, Id: %s"), *Name.ToString(), *Owner, *Id);
 	}
 };

@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectExtension.h"
+#include "NansDialogSystemLog.h"
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Dialogue/DialogueHistorySearch.h"
 #include "Kismet/GameplayStatics.h"
@@ -82,8 +83,16 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 	FDialogueSequence* CurrentSequence = CurrentSequenceIndex > -1
 											 ? &CurrentHistory->Sequences[CurrentSequenceIndex]
 											 : &CurrentHistory->Sequences.Last();
+	FString Decals = "";
+	if (bDebugSearch)
+	{
+		UE_LOG(LogDialogSystem, Display, TEXT(">>>>> START DEBUG: Search results >>>>>"));
+		UE_LOG(LogDialogSystem, Display, TEXT("Search: %s"), *Search.ToString());
+	}
+	Decals += "  ";
 	for (const FDialogueHistory& History : DialogueHistories)
 	{
+		if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s|History| %s"), *Decals, *History.ToString());
 		if (
 			!Search.LevelName.bIsAll &&
 			!Search.LevelName.bIsCurrent &&
@@ -101,8 +110,25 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 		// 	continue;
 		// }
 
+		const int32 LastSequenceIdx = History.Sequences.Num() - 1;
+		int32 SequenceIdx = -1;
+		Decals += "  ";
 		for (const FDialogueSequence& Sequence : History.Sequences)
 		{
+			SequenceIdx++;
+			if (bDebugSearch)
+			{
+				UE_LOG(LogDialogSystem, Display, TEXT("%s|Sequence|"), *Decals);
+				UE_LOG(LogDialogSystem, Display, TEXT("%s  - %s"), *Decals, *Sequence.ToString());
+				UE_LOG(
+					LogDialogSystem,
+					Display,
+					TEXT("%s  - Index: %i, Last Index: %i"),
+					*Decals,
+					SequenceIdx,
+					LastSequenceIdx
+				)
+			}
 			if (
 				!Search.SequenceName.bIsAll &&
 				!Search.SequenceName.bIsCurrent &&
@@ -116,6 +142,16 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Sequence.Name != CurrentSequence->Name
 			)
 			{
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%shas not the same name"), *Decals);
+				continue;
+			}
+			if (
+				Search.SequenceName.bIsCurrent &&
+				Sequence.Name == CurrentSequence->Name &&
+				LastSequenceIdx > SequenceIdx
+			)
+			{
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sIs not the last"), *Decals);
 				continue;
 			}
 			if (
@@ -124,6 +160,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Search.OwnerName.Value != Sequence.Owner
 			)
 			{
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sDo not belong to the same user"), *Decals);
 				continue;
 			}
 			if (
@@ -131,23 +168,42 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Sequence.Owner != CurrentSequence->Owner
 			)
 			{
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sDo not belong to the same user"), *Decals);
 				continue;
 			}
 
-			int32 LastIdx = Sequence.Results.Num() - 1;
-			int32 Idx = 0;
+			Decals += "  ";
+			const int32 LastBlockIdx = Sequence.Results.Num() - 1;
+			int32 BlockIdx = -1;
 			for (const FDialogueResult& Block : Sequence.Results)
 			{
+				++BlockIdx;
+				if (bDebugSearch)
+				{
+					UE_LOG(LogDialogSystem, Display, TEXT("%s|Block|"), *Decals);
+					UE_LOG(LogDialogSystem, Display, TEXT("%s  - %s"), *Decals, *Block.ToString());
+					UE_LOG(
+						LogDialogSystem,
+						Display,
+						TEXT("%s  - Index: %i, Last Index: %i"),
+						*Decals,
+						BlockIdx,
+						LastBlockIdx
+					)
+				}
+
 				if (
 					!Search.DialogName.bIsAll &&
 					!Search.DialogName.Value.IsEmpty() &&
 					Search.DialogName.Value != Block.BlockName.ToString()
 				)
 				{
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sName is not compatible"), *Decals);
 					continue;
 				}
-				if (Search.DialogName.bLastOnly && LastIdx > Idx)
+				if (Search.DialogName.bLastOnly && LastBlockIdx > BlockIdx)
 				{
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sIs not the last one"), *Decals);
 					continue;
 				}
 				bool bSuccess = false;
@@ -162,6 +218,14 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 						Block.CategoryName.ToString(),
 						Search.CategoryValue.Name.ToString()
 					);
+					if (bDebugSearch) UE_LOG(
+						LogDialogSystem,
+						Warning,
+						TEXT("%sIs %s category: %i"),
+						*Decals,
+						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						bSuccess
+					)
 				}
 				if (!bSuccess && Search.IsName())
 				{
@@ -170,6 +234,14 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 						Block.BlockName.ToString(),
 						Search.NameValue.ToString()
 					);
+					if (bDebugSearch) UE_LOG(
+						LogDialogSystem,
+						Warning,
+						TEXT("%sIs %s name: %i"),
+						*Decals,
+						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						bSuccess
+					)
 				}
 				if (!bSuccess && Search.IsFloat())
 				{
@@ -180,6 +252,17 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 							: Block.MitigatedPointsEarned,
 						Search.FloatValue
 					);
+					if (bDebugSearch) UE_LOG(
+						LogDialogSystem,
+						Warning,
+						TEXT("%sIs %s %s: %i"),
+						*Decals,
+						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						Search.PropertyName == ENPropertyValue::InitialPoints
+						? TEXT("InitialPoints")
+						: TEXT("MitigatedPointsEarned"),
+						bSuccess
+					)
 				}
 				if (!bSuccess && Search.IsInt())
 				{
@@ -190,15 +273,30 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 							: Block.Position,
 						Search.IntValue
 					);
+					if (bDebugSearch) UE_LOG(
+						LogDialogSystem,
+						Warning,
+						TEXT("%sIs %s %s: %i"),
+						*Decals,
+						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						Search.PropertyName == ENPropertyValue::Difficulty
+						? TEXT("Difficulty")
+						: TEXT("Position"),
+						bSuccess
+					)
 				}
 
 				if (bSuccess)
 				{
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("Is success"));
 					Results.Add(Block);
 				}
-				Idx++;
 			}
 		}
+	}
+	if (bDebugSearch)
+	{
+		UE_LOG(LogDialogSystem, Display, TEXT("<<<<< END <<<<<<"),);
 	}
 	return Results;
 }

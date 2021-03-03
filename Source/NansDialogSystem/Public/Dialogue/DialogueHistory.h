@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,4 +30,9 @@ struct NANSDIALOGSYSTEM_API FDialogueHistory
 	// FString LevelId;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueHistory")
 	TArray<FDialogueSequence> Sequences;
+
+	FString ToString() const
+	{
+		return LevelName;
+	}
 };

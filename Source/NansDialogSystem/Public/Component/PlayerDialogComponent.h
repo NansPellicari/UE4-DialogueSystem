@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddResponse(const FDialogueResult& Result);
 	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search);
+	UPROPERTY(EditAnywhere, Category=PlayerDialogComponent)
+	bool bDebugSearch = false;
 
 protected:
 	virtual void BeginPlay() override;

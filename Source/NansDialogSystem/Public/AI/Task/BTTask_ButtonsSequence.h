@@ -29,7 +29,7 @@ class NButtonSequenceMovementManager;
 class UBTTask_Countdown;
 
 /**
- * Dialogue Reponse Struct
+ * Dialogue Response Struct
  */
 USTRUCT(BlueprintType)
 struct NANSDIALOGSYSTEM_API FBTButtonSequenceResponse
@@ -61,7 +61,6 @@ public:
 
 	/** this is given by FBTButtonSequence to easily use GetSpawnableEffectOnEarned() */
 	FNDialogueCategory Category;
-
 	TSubclassOf<UGameplayEffect> GetSpawnableEffectOnEarned() const;
 };
 
@@ -85,7 +84,7 @@ public:
 	 * Or IAJA:
 	 *      fr: Interpretation Analyse Jugement Agression
 	 *      en: Interpretation Analysis Judgment Aggression
-	 *      Easyer = only 12 combinations
+	 *      Easier = only 12 combinations
 	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	FText ButtonSequence;
@@ -96,7 +95,7 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	EResponseDirection Direction = EResponseDirection::NONE;
 
-	// This allow to divid the number of found letters in order
+	// This allow to divide the number of found letters in order
 	// with this coefficient to compute earned points.
 	// So when all letters are in order, the max value earnable is this number.
 	// eg.  if we set levelCoefficient of 3 for the sequence OSBD:
@@ -114,21 +113,23 @@ public:
 	TArray<FBTButtonSequenceResponse> ResponsesForPoint;
 
 	// Takes every time the last defined response:
-	// eg. I created this list reponses:
+	// eg. I created this list responses:
 	// - default response is "response default"
 	// - for point 1 = "response 1"
 	// - for point 3 = "response 2"
 	// if points passed is 0, returned response is "response default"
 	// if points passed is 2, returned response is "response 1"
 	// if points passed is 3, returned response is "response 2"
-	FBTButtonSequenceResponse GetResponseForPoints(int32 Points)
+	FBTButtonSequenceResponse GetResponseForPoints(const int32 Points)
 	{
 		Default.Category = Category;
 		if (ResponsesForPoint.Num() <= 0) return Default;
 
 		FBTButtonSequenceResponse Response = Default;
 
-		for (FBTButtonSequenceResponse Resp : ResponsesForPoint)
+		TArray<FBTButtonSequenceResponse> Responses = GetResponsesForPoint();
+
+		for (const FBTButtonSequenceResponse Resp : Responses)
 		{
 			if (Points < Resp.ForPoint)
 			{
@@ -159,7 +160,7 @@ struct StaticButtonSequenceDescriptions
 public:
 	static void SetDescription(const FBTButtonSequence& Sequence, FString Desc)
 	{
-		FString SequenceStr = Sequence.ButtonSequence.ToString();
+		const FString SequenceStr = Sequence.ButtonSequence.ToString();
 		TMap<int32, FString>& DescMap = StaticButtonSequenceDescs.FindOrAdd(SequenceStr);
 		DescMap.Add(Sequence.LevelCoefficient, Desc);
 	}
@@ -167,7 +168,7 @@ public:
 	static FString GetDescription(const FBTButtonSequence& Sequence)
 	{
 		FString* StaticDesc = nullptr;
-		FString SequenceStr = Sequence.ButtonSequence.ToString();
+		const FString SequenceStr = Sequence.ButtonSequence.ToString();
 		TMap<int32, FString>* StaticLevelDesc = StaticButtonSequenceDescs.Find(SequenceStr);
 
 		if (StaticLevelDesc == nullptr)

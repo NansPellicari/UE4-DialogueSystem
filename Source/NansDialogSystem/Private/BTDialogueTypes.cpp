@@ -22,7 +22,10 @@
 FLinearColor FNDialogueCategory::GetColorFromSettings(const FNDialogueCategory& DialogueCategory)
 {
 	static TMap<FGameplayTag, FLinearColor> ColorsCached;
-	FLinearColor Color;
+	if (UDialogSystemSettings::Get()->bFlushColorCache)
+	{
+		ColorsCached.Empty();
+	}
 
 	if (!ColorsCached.Contains(DialogueCategory.Name))
 	{
@@ -42,7 +45,8 @@ FLinearColor FNDialogueCategory::GetColorFromSettings(const FNDialogueCategory& 
 	return ColorsCached.FindRef(DialogueCategory.Name);
 }
 
-TArray<FNDialogueDifficultyMagnitudeFactorSettings> FNDialogueCategory::GetDifficulties(const FNDialogueCategory& DialogueCategory)
+TArray<FNDialogueDifficultyMagnitudeFactorSettings> FNDialogueCategory::GetDifficulties(
+	const FNDialogueCategory& DialogueCategory)
 {
 	const FGameplayTag Name = DialogueCategory.Name;
 	ensureMsgf(Name.IsValid(), TEXT("You should set a name before getting the config of a FNDialogueCategory."));

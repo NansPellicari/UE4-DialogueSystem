@@ -60,6 +60,9 @@ public:
 	void OnEndDisplayResponse();
 
 protected:
+	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
+	bool bShowDialogueDetails = true;
+
 	UPROPERTY(VisibleAnywhere, Category = "HUD")
 	FName UINameKey = NAME_None;
 
@@ -76,7 +79,7 @@ protected:
 	FName ResponseContainerName = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Service")
-	FName PointsHandlerKeyName  = FName("PointsHandler");;
+	FName PointsHandlerKeyName = FName("PointsHandler");;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	TArray<FBTDialogueResponse> ReponsesUP;
@@ -122,5 +125,6 @@ private:
 	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);
 	FString DisplayStaticResponses(
 		const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const;
+	FString DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position, bool Reverse) const;
 	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
 };

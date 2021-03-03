@@ -55,6 +55,17 @@ struct NANSDIALOGSYSTEM_API FBTDialogueResponse
 {
 	GENERATED_USTRUCT_BODY()
 
+	FBTDialogueResponse() {}
+
+	FBTDialogueResponse(
+		FNDialogueCategory InCategory,
+		FText InText,
+		int32 InPoint
+	) :
+		Text(InText),
+		Point(InPoint),
+		Category(InCategory) { }
+
 public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = true))
 	FText Text;

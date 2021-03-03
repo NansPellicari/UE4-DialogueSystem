@@ -26,10 +26,10 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 {
 	for (auto& RespPos : ResponsePositions)
 	{
-		FNDialogueHistorySearch Search, Search2;
+		FNDialogueHistorySearch Search;
 
 		Search.DialogName.SetValue(FString("Step") + FString::FromInt(RespPos.Step));
-		Search.DialogName.bLastOnly = true;
+		Search.DialogName.bLastOnly = !RespPos.bInEveryInstances;
 
 		Search.PropertyName = ENPropertyValue::SentencePosition;
 		Search.Operator = RespPos.Operator;
@@ -89,8 +89,9 @@ FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 		const FResponsePositionCondition Condition = ResponsePositionConditions[Index];
 
 		ReturnDesc += FString::Printf(
-			TEXT("\n%s Step %d, response %s %d"),
+			TEXT("\n%s (%s) Step %d, response %s %d"),
 			*UNansComparator::BuildKeyFromIndex(Index),
+			Condition.bInEveryInstances ? TEXT("all") : TEXT("last only"),
 			Condition.Step,
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.Position

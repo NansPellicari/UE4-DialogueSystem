@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -52,8 +52,7 @@ UDialogHUD* NDialogBTHelpers::GetHUDFromBlackboard(UBehaviorTreeComponent& Owner
 	return Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
 }
 
-UAbilitySystemComponent* NDialogBTHelpers::
-GetGASC(UBehaviorTreeComponent& OwnerComp)
+UAbilitySystemComponent* NDialogBTHelpers::GetGASC(UBehaviorTreeComponent& OwnerComp)
 {
 	auto Char = NInteractiveBTHelpers::GetPlayerCharacter(OwnerComp, __FUNCTION__);
 	if (!IsValid(Char))

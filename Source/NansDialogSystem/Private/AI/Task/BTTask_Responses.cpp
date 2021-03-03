@@ -106,7 +106,7 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		return EBTNodeResult::Aborted;
 	}
 
-	if (!ensure(ResponseButtonWidget != NULL && !ResponseButtonWidget->GetClass()->GetFullName().IsEmpty()))
+	if (!ensure(ResponseButtonWidget && !ResponseButtonWidget->GetClass()->GetFullName().IsEmpty()))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongResponseButtonWidget", "Need to set a ResponseButtonWidget in "));
 		return EBTNodeResult::Aborted;
@@ -245,7 +245,7 @@ void UBTTask_Responses::CreateButtons()
 
 void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel)
 {
-	FString UniqName = UNTextLibrary::UniqueString(Response.Text);
+	const FString UniqName = UNTextLibrary::UniqueString(Response.Text);
 
 	UResponseButtonWidget* ButtonWidget = CreateWidget<UResponseButtonWidget>(GetWorld(), ResponseButtonWidget);
 
@@ -281,7 +281,6 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 	}
 
 	UBTDialogueResponseContainer* ResponseContainer = ButtonWidget->GetResponse();
-	// Blackboard->SetValueAsObject(ResponseContainerName, ResponseContainer);
 
 	PointsHandler->AddPoints(FNPoint(ResponseContainer->GetResponse()), ResponseContainer->DisplayOrder);
 
@@ -330,34 +329,28 @@ FString UBTTask_Responses::GetStaticDescription() const
 		DisplayStaticResponses(
 			ReponsesUP,
 			Position,
-			LOCTEXT("CNVNodeResponsesTitle", "[ UP Responses ]\n").ToString(),
+			LOCTEXT("UpResponsesTitle", "[ UP Responses ]\n").ToString(),
 			true
 		);
+	Position = 0;
 	if (MiddleResponse.IsEmpty() == false)
 	{
-		Position = 0;
-		ReturnDesc += "\n----------------------\n";
-		ReturnDesc += LOCTEXT("CNVNodeResponsesTitle", "[ Middle Response ]\n").ToString();
-		FFormatNamedArguments Arguments;
-		Arguments.Add(TEXT("category"), FText::FromString(MiddleResponseCategory.Name.ToString()));
-		Arguments.Add(TEXT("response"), MiddleResponse);
-		Arguments.Add(TEXT("level"), MiddleResponsePoint);
-		Arguments.Add(TEXT("position"), Position++);
-		ReturnDesc += FText::Format(
-				LOCTEXT(
-					"CNVNodeMiddleResponse",
-					"\t- \"{response}\"\n\tPosition: {position}, lvl: {level}, category: {category}"
+		ReturnDesc +=
+			DisplayStaticResponses(
+				TArray<FBTDialogueResponse>(
+					{FBTDialogueResponse(MiddleResponseCategory, MiddleResponse, MiddleResponsePoint)}
 				),
-				Arguments
-			)
-			.ToString();
-		ReturnDesc += "\n----------------------\n";
+				Position,
+				LOCTEXT("MiddleResponsesTitle", "[ Middle Responses ]\n").ToString(),
+				false
+			);
 	}
+	Position = 1;
 	ReturnDesc +=
 		DisplayStaticResponses(
 			ReponsesDOWN,
 			Position,
-			LOCTEXT("CNVNodeResponsesTitle", "[ DOWN Responses ]\n").ToString(),
+			LOCTEXT("DownResponsesTitle", "[ DOWN Responses ]\n").ToString(),
 			false
 		);
 
@@ -383,6 +376,35 @@ FString UBTTask_Responses::GetStaticDescription() const
 	return ReturnDesc;
 }
 
+FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position,
+	bool Reverse) const
+{
+	FString ReturnDesc;
+	const FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
+	ReturnDesc += FString::Printf(TEXT("%s"), *Text);
+	if (bShowDialogueDetails)
+	{
+		FFormatNamedArguments Arguments;
+		Arguments.Add(TEXT("point"), Response.Point);
+		Arguments.Add(TEXT("difficulty"), Response.Difficulty);
+		Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
+		Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
+		const FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
+									 ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+									 : FText::FromString(TEXT("No effect"));
+		Arguments.Add(TEXT("effect"), EffectName);
+		ReturnDesc += FText::Format(
+				LOCTEXT(
+					"NodeResponsesDetails",
+					"\n\tPosition: {position}, difficulty: {difficulty}, point: {point}, category: {category}\n\tEffect: {effect}"
+				),
+				Arguments
+			)
+			.ToString();
+	}
+	return ReturnDesc;
+}
+
 FString UBTTask_Responses::DisplayStaticResponses(
 	const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const
 {
@@ -394,25 +416,7 @@ FString UBTTask_Responses::DisplayStaticResponses(
 		for (int8 i = 0; i < Responses.Num(); ++i)
 		{
 			FBTDialogueResponse Response = Responses[i];
-			FFormatNamedArguments Arguments;
-			FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
-			Arguments.Add(TEXT("response"), FText::FromString(Text));
-			Arguments.Add(TEXT("level"), Response.Point);
-			Arguments.Add(TEXT("difficulty"), Response.Difficulty);
-			Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
-			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
-			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
-								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
-								   : FText::FromString(TEXT("No effect"));
-			Arguments.Add(TEXT("effect"), EffectName);
-			ReturnDesc += FText::Format(
-					LOCTEXT(
-						"NodeResponsesDetails",
-						"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, category: {category}\n\tEffect: {effect}"
-					),
-					Arguments
-				)
-				.ToString();
+			ReturnDesc += DisplayStaticResponse(Response, Position, Reverse);
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";
 		}
 		ReturnDesc += "----------------------\n";

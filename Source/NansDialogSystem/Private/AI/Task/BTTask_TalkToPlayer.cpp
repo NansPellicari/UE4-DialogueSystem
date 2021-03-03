@@ -14,9 +14,6 @@
 #include "AI/Task/BTTask_TalkToPlayer.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/Button.h"
-#include "Components/TextBlock.h"
-#include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
@@ -65,11 +62,11 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 	FString ReturnDesc;
 	if (Message.IsEmptyOrWhitespace())
 	{
-		ReturnDesc += "\n\nNo Message\n";
+		ReturnDesc += "\nNo Message\n";
 	}
 	else
 	{
-		ReturnDesc += "\n\n" + UNTextLibrary::StringToLines("\"" + Message.ToString() + "\"", 50, "\t");
+		ReturnDesc += "\n" + UNTextLibrary::StringToLines("\"" + Message.ToString() + "\"", 50, "\t");
 	}
 	ReturnDesc += "\n\UINameKey: " + UINameKey.ToString();
 

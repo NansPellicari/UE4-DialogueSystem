@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,14 @@ struct NANSDIALOGSYSTEM_API FResponsePositionCondition
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
 	int32 Step;
+
+	/**
+	 * If checked will compare on each responses given in the desired step.
+	 * it can be usefull if you plan to redo several times a step.
+	 * Otherwise it will checked only the last results.
+	 */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
+	bool bInEveryInstances;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
 	ENansConditionComparator Operator;

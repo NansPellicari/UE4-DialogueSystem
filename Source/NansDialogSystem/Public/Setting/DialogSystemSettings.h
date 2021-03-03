@@ -159,7 +159,9 @@ public:
 	UPROPERTY(GlobalConfig, EditAnywhere)
 	FGameplayTag PointMagnitudeTag;
 
-	UPROPERTY(GlobalConfig, EditAnywhere)
+	UPROPERTY(GlobalConfig, EditAnywhere, Category="Response")
+	bool bFlushColorCache = false;
+	UPROPERTY(GlobalConfig, EditAnywhere, Category="Response")
 	TArray<FNDialogueCategorySettings> ResponseCategorySettings;
 
 	UPROPERTY(GlobalConfig, EditAnywhere, Category="Difficulty")
