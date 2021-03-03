@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,15 @@
 #include "AI/Task/BTTask_Responses.h"
 
 #include "BTDialogueResponseContainer.h"
+#include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/Button.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
+#include "Service/BTDialogPointsHandler.h"
+#include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Setting/InteractiveSettings.h"
 #include "UI/DialogHUD.h"
@@ -68,18 +71,29 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
 		return EBTNodeResult::Aborted;
 	}
-	DialogHUD = GetHUDFromBlackboard(OwnerComp);
-	if (!IsValid(DialogHUD))
+	PointsHandler = Cast<UBTDialogPointsHandler>(
+		Blackboard->GetValueAsObject(PointsHandlerKeyName)
+	);
+
+	if (!IsValid(PointsHandler))
 	{
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotPointsHandler", "Set a UBTDialogPointsHandler in "));
 		return EBTNodeResult::Aborted;
 	}
-	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
 
+	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
+	if (!IsValid(DialogHUD))
+	{
+		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
+		return EBTNodeResult::Aborted;
+	}
 	if (!ensure(DialogHUD != nullptr))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
 		return EBTNodeResult::Aborted;
 	}
+
+	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
 
 	ResponsesSlot = Cast<UPanelWidget>(DialogHUD->FindWidget(ResponsesSlotName));
 
@@ -92,7 +106,7 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		return EBTNodeResult::Aborted;
 	}
 
-	if (!ensure(ResponseButtonWidget != NULL && !ResponseButtonWidget->GetClass()->GetFullName().IsEmpty()))
+	if (!ensure(ResponseButtonWidget && !ResponseButtonWidget->GetClass()->GetFullName().IsEmpty()))
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongResponseButtonWidget", "Need to set a ResponseButtonWidget in "));
 		return EBTNodeResult::Aborted;
@@ -208,14 +222,14 @@ void UBTTask_Responses::CreateButtons()
 		// reverse loop to set the right display order
 		for (int8 i = ReponsesUP.Num() - 1; i >= 0; --i)
 		{
-			CreateButton(ReponsesUP[i], Index++, ++Position, ReponsesUP.Last().Level);
+			CreateButton(ReponsesUP[i], Index++, ++Position, ReponsesUP.Last().Point);
 		}
 	}
 
 	Position = 0;
 	FBTDialogueResponse MiddleDialogueResponse;
 	MiddleDialogueResponse.Category = MiddleResponseCategory;
-	MiddleDialogueResponse.Level = MiddleResponsePoint;
+	MiddleDialogueResponse.Point = MiddleResponsePoint;
 	MiddleDialogueResponse.Text = MiddleResponse;
 	MiddleResponseIndex = Index++;
 	CreateButton(MiddleDialogueResponse, MiddleResponseIndex, Position, 1);
@@ -224,14 +238,14 @@ void UBTTask_Responses::CreateButtons()
 	{
 		for (int8 i = 0; i < ReponsesDOWN.Num(); ++i)
 		{
-			CreateButton(ReponsesDOWN[i], Index++, ++Position, ReponsesDOWN.Last().Level);
+			CreateButton(ReponsesDOWN[i], Index++, ++Position, ReponsesDOWN.Last().Point);
 		}
 	}
 }
 
 void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel)
 {
-	FString UniqName = UNTextLibrary::UniqueString(Response.Text);
+	const FString UniqName = UNTextLibrary::UniqueString(Response.Text);
 
 	UResponseButtonWidget* ButtonWidget = CreateWidget<UResponseButtonWidget>(GetWorld(), ResponseButtonWidget);
 
@@ -267,9 +281,11 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 	}
 
 	UBTDialogueResponseContainer* ResponseContainer = ButtonWidget->GetResponse();
-	Blackboard->SetValueAsObject(ResponseContainerName, ResponseContainer);
 
-	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text);
+	PointsHandler->AddPoints(FNPoint(ResponseContainer->GetResponse()), ResponseContainer->DisplayOrder);
+
+	// TODO maybe instead of empty title should output a readable Response.Category
+	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -288,12 +304,14 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 	{
 		FBTDialogueResponse Response = DialogueResponse->GetResponse();
 		Response.Category = MiddleResponseCategory;
-		Response.Level = 0;
+		Response.Point = 0;
 		DialogueResponse->SetResponse(Response);
 	}
 
-	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text);
-	Blackboard->SetValueAsObject(ResponseContainerName, DialogueResponse);
+	PointsHandler->AddPoints(FNPoint(DialogueResponse->GetResponse()), DialogueResponse->DisplayOrder);
+
+	// TODO maybe instead of empty title should output a readable Response.Category
+	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -311,34 +329,28 @@ FString UBTTask_Responses::GetStaticDescription() const
 		DisplayStaticResponses(
 			ReponsesUP,
 			Position,
-			LOCTEXT("CNVNodeResponsesTitle", "[ UP Responses ]\n").ToString(),
+			LOCTEXT("UpResponsesTitle", "[ UP Responses ]\n").ToString(),
 			true
 		);
+	Position = 0;
 	if (MiddleResponse.IsEmpty() == false)
 	{
-		Position = 0;
-		ReturnDesc += "\n----------------------\n";
-		ReturnDesc += LOCTEXT("CNVNodeResponsesTitle", "[ Middle Response ]\n").ToString();
-		FFormatNamedArguments Arguments;
-		Arguments.Add(TEXT("category"), FText::FromString(MiddleResponseCategory.Name.ToString()));
-		Arguments.Add(TEXT("response"), MiddleResponse);
-		Arguments.Add(TEXT("level"), MiddleResponsePoint);
-		Arguments.Add(TEXT("position"), Position++);
-		ReturnDesc += FText::Format(
-				LOCTEXT(
-					"CNVNodeMiddleResponse",
-					"\t- \"{response}\"\n\tPosition: {position}, lvl: {level}, category: {category}"
+		ReturnDesc +=
+			DisplayStaticResponses(
+				TArray<FBTDialogueResponse>(
+					{FBTDialogueResponse(MiddleResponseCategory, MiddleResponse, MiddleResponsePoint)}
 				),
-				Arguments
-			)
-			.ToString();
-		ReturnDesc += "\n----------------------\n";
+				Position,
+				LOCTEXT("MiddleResponsesTitle", "[ Middle Responses ]\n").ToString(),
+				false
+			);
 	}
+	Position = 1;
 	ReturnDesc +=
 		DisplayStaticResponses(
 			ReponsesDOWN,
 			Position,
-			LOCTEXT("CNVNodeResponsesTitle", "[ DOWN Responses ]\n").ToString(),
+			LOCTEXT("DownResponsesTitle", "[ DOWN Responses ]\n").ToString(),
 			false
 		);
 
@@ -364,6 +376,35 @@ FString UBTTask_Responses::GetStaticDescription() const
 	return ReturnDesc;
 }
 
+FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position,
+	bool Reverse) const
+{
+	FString ReturnDesc;
+	const FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
+	ReturnDesc += FString::Printf(TEXT("%s"), *Text);
+	if (bShowDialogueDetails)
+	{
+		FFormatNamedArguments Arguments;
+		Arguments.Add(TEXT("point"), Response.Point);
+		Arguments.Add(TEXT("difficulty"), Response.Difficulty);
+		Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
+		Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
+		const FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
+									 ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+									 : FText::FromString(TEXT("No effect"));
+		Arguments.Add(TEXT("effect"), EffectName);
+		ReturnDesc += FText::Format(
+				LOCTEXT(
+					"NodeResponsesDetails",
+					"\n\tPosition: {position}, difficulty: {difficulty}, point: {point}, category: {category}\n\tEffect: {effect}"
+				),
+				Arguments
+			)
+			.ToString();
+	}
+	return ReturnDesc;
+}
+
 FString UBTTask_Responses::DisplayStaticResponses(
 	const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const
 {
@@ -375,46 +416,12 @@ FString UBTTask_Responses::DisplayStaticResponses(
 		for (int8 i = 0; i < Responses.Num(); ++i)
 		{
 			FBTDialogueResponse Response = Responses[i];
-			FFormatNamedArguments Arguments;
-			FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
-			Arguments.Add(TEXT("response"), FText::FromString(Text));
-			Arguments.Add(TEXT("level"), Response.Level);
-			Arguments.Add(TEXT("difficulty"), Response.DifficultyLevel);
-			Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
-			Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
-			ReturnDesc += FText::Format(
-					LOCTEXT(
-						"NodeResponsesDetails",
-						"{response}\n\tPosition: {position}, difficulty: {difficulty}, lvl: {level}, category: {category}"
-					),
-					Arguments
-				)
-				.ToString();
+			ReturnDesc += DisplayStaticResponse(Response, Position, Reverse);
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";
 		}
 		ReturnDesc += "----------------------\n";
 	}
 	return ReturnDesc;
-}
-
-UDialogHUD* UBTTask_Responses::GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp)
-{
-	const auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	if (!IsValid(PlayerHUD))
-	{
-		return nullptr;
-	}
-	const FName UIName = Blackboard->GetValueAsName(UINameKey);
-	if (!PlayerHUD->IsDisplayed(UIName))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(LOCTEXT("WrongHUDName", "The HUD {0} is not currently displayed "), FText::FromName(UIName))
-		);
-		return nullptr;
-	}
-
-	return Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
 }
 
 void UBTTask_Responses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) {}

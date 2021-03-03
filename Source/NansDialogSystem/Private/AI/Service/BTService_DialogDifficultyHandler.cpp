@@ -1,4 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "AI/Service/BTService_DialogDifficultyHandler.h"
 
@@ -16,7 +27,7 @@ UBTService_DialogDifficultyHandler::UBTService_DialogDifficultyHandler(const FOb
 {
 	NodeName = "Dialog Difficulty Handler";
 
-	bNotifyTick = true;
+	bNotifyTick = false;
 	bTickIntervals = true;
 	bNotifyBecomeRelevant = true;
 	bNotifyCeaseRelevant = false;
@@ -26,12 +37,14 @@ void UBTService_DialogDifficultyHandler::OnBecomeRelevant(UBehaviorTreeComponent
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	BTDialogDifficultyHandler = Cast<UBTDialogDifficultyHandler>(BlackboardComp->GetValueAsObject(DifficultyHandlerKeyName));
+	BTDialogDifficultyHandler = Cast<UBTDialogDifficultyHandler>(
+		BlackboardComp->GetValueAsObject(DifficultyHandlerKeyName)
+	);
 
 	if (BTDialogDifficultyHandler == nullptr)
 	{
 		BTDialogDifficultyHandler = NewObject<UBTDialogDifficultyHandler>(&OwnerComp);
-		BTDialogDifficultyHandler->Initialize();
+		BTDialogDifficultyHandler->Initialize(OwnerComp);
 		BlackboardComp->SetValueAsObject(DifficultyHandlerKeyName, BTDialogDifficultyHandler);
 	}
 }

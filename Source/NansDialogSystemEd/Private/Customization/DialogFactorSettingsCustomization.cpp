@@ -1,17 +1,29 @@
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "Customization/DialogFactorSettingsCustomization.h"
 
-#include "Editor/PropertyEditor/Private/PropertyEditorHelpers.h"
 #include "IDetailChildrenBuilder.h"
+#include "PropertyCustomizationHelpers.h"
+#include "SGraphPin.h"
+#include "SlateBasics.h"
+#include "SNameComboBox.h"
+#include "Editor/PropertyEditor/Private/PropertyEditorHelpers.h"
 #include "NansDialogSystem/Public/BTDialogueTypes.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
-#include "PropertyCustomizationHelpers.h"
 #include "PropertyEditor/Public/DetailLayoutBuilder.h"
 #include "PropertyEditor/Public/DetailWidgetRow.h"
 #include "PropertyEditor/Public/PropertyHandle.h"
-#include "SGraphPin.h"
-#include "SNameComboBox.h"
-#include "SlateBasics.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SWidget.h"
 #include "Widgets/Text/SInlineEditableTextBlock.h"
@@ -44,48 +56,66 @@ void FNDialogFactorSettingsCustomization::CustomizeChildren(TSharedRef<IProperty
 	TSharedPtr<IPropertyHandle> RhRangeProperty =
 		StructPropertyHandle->GetChildHandle(GET_MEMBER_NAME_CHECKED(FNDialogFactorSettings, RangeTo));
 
-	check(CategoryProperty.IsValid() && MultiplierProperty.IsValid() && LhRangeProperty.IsValid() && RhRangeProperty.IsValid());
+	check(
+		CategoryProperty.IsValid() && MultiplierProperty.IsValid() && LhRangeProperty.IsValid() && RhRangeProperty.
+		IsValid()
+	);
 
 	const TSharedPtr<IPropertyHandleArray> ParentArrayHandle = StructPropertyHandle->GetParentHandle()->AsArray();
 
 	TSharedRef<SWidget> RemoveButton =
-		(ParentArrayHandle.IsValid()
-				? PropertyCustomizationHelpers::MakeDeleteButton(
-					  FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::RemoveButton_OnClick),
-					  LOCTEXT("RemoveToolTip", "Removes Dialog Factor"))
-				: SNullWidget::NullWidget);
+	(ParentArrayHandle.IsValid()
+		 ? PropertyCustomizationHelpers::MakeDeleteButton(
+			 FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::RemoveButton_OnClick),
+			 LOCTEXT("RemoveToolTip", "Removes Dialog Factor")
+		 )
+		 : SNullWidget::NullWidget);
 
 	TSharedRef<SWidget> AddButton =
-		(ParentArrayHandle.IsValid() ? PropertyCustomizationHelpers::MakeAddButton(
-										   FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::AddButton_OnClick),
-										   LOCTEXT("AddToolTip", "Add a Dialog Factor"))
-									 : SNullWidget::NullWidget);
+	(ParentArrayHandle.IsValid()
+		 ? PropertyCustomizationHelpers::MakeAddButton(
+			 FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::AddButton_OnClick),
+			 LOCTEXT("AddToolTip", "Add a Dialog Factor")
+		 )
+		 : SNullWidget::NullWidget);
 
 	TSharedRef<SWidget> UpButton =
-		(ParentArrayHandle.IsValid()
-				? MakeUpButton(FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::UpButton_OnClick),
-					  LOCTEXT("UpToolTip", "Up to the list Factor"),
-					  MakeAttributeLambda([=] { return StructPropertyHandle->GetIndexInArray() > 0; }))
-				: SNullWidget::NullWidget);
+	(ParentArrayHandle.IsValid()
+		 ? MakeUpButton(
+			 FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::UpButton_OnClick),
+			 LOCTEXT("UpToolTip", "Up to the list Factor"),
+			 MakeAttributeLambda([=] { return StructPropertyHandle->GetIndexInArray() > 0; })
+		 )
+		 : SNullWidget::NullWidget);
 
 	TSharedRef<SWidget> DownButton =
-		(ParentArrayHandle.IsValid()
-				? MakeDownButton(FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::DownButton_OnClick),
-					  LOCTEXT("DownToolTip", "Down to the list Factor"),
-					  MakeAttributeLambda([=] {
-						  if (ParentArrayHandle.IsValid())
-						  {
-							  uint32 NumEls;
-							  ParentArrayHandle->GetNumElements(NumEls);
-							  return (uint32) StructPropertyHandle->GetIndexInArray() < NumEls - 1;
-						  }
-						  return false;
-					  }))
-				: SNullWidget::NullWidget);
+	(ParentArrayHandle.IsValid()
+		 ? MakeDownButton(
+			 FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::DownButton_OnClick),
+			 LOCTEXT("DownToolTip", "Down to the list Factor"),
+			 MakeAttributeLambda(
+				 [=]
+				 {
+					 if (ParentArrayHandle.IsValid())
+					 {
+						 uint32 NumEls;
+						 ParentArrayHandle->GetNumElements(NumEls);
+						 return static_cast<uint32>(StructPropertyHandle->GetIndexInArray()) < NumEls - 1;
+					 }
+					 return false;
+				 }
+			 )
+		 )
+		 : SNullWidget::NullWidget);
 
 	CategoryProperty->GetChildHandle(FName("Name"))
-		->SetOnPropertyValueChanged(
-			FSimpleDelegate::CreateSP(this, &FNDialogFactorSettingsCustomization::OnCategoryChanged, CategoryProperty));
+					->SetOnPropertyValueChanged(
+						FSimpleDelegate::CreateSP(
+							this,
+							&FNDialogFactorSettingsCustomization::OnCategoryChanged,
+							CategoryProperty
+						)
+					);
 
 	BgColor = GetColor(CategoryProperty);
 
@@ -230,11 +260,15 @@ FLinearColor FNDialogFactorSettingsCustomization::GetColor(TSharedPtr<IPropertyH
 	{
 		FString CategoryValue;
 		CategoryHandle->GetChildHandle(FName("Name"))->GetValueAsFormattedString(CategoryValue);
-		FNResponseCategory Cat;
-		Cat.Name = FName(*CategoryValue);
-		if (!CategoryValue.IsEmpty() && Cat.Name != NAME_None)
+		// Because it's in format (TagName="My.Tag")
+		CategoryValue.Split("=", nullptr, &CategoryValue);
+		CategoryValue = CategoryValue.LeftChop(2);
+		CategoryValue = CategoryValue.RightChop(1);
+		FNDialogueCategory Cat;
+		Cat.Name = FGameplayTag::RequestGameplayTag(*CategoryValue);
+		if (!CategoryValue.IsEmpty() && Cat.Name.IsValid())
 		{
-			Color = Cat.GetColor();
+			Color = FNDialogueCategory::GetColorFromSettings(Cat);
 		}
 	}
 	return Color;
@@ -245,16 +279,25 @@ TSharedRef<SWidget> FNDialogFactorSettingsCustomization::MakeUpButton(
 {
 	return SNew(SButton)
 		.ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
-		.OnClicked_Lambda([OnClicked]() -> FReply {
-			OnClicked.ExecuteIfBound();
-			return FReply::Handled();
-		})
+		.OnClicked_Lambda(
+							[OnClicked]() -> FReply
+							{
+								OnClicked.ExecuteIfBound();
+								return FReply::Handled();
+							}
+						)
 		.Text(LOCTEXT("UpButtonLabel", "Up"))
-		.ToolTipText(OptionalToolTipText.Get().IsEmpty() ? LOCTEXT("UpButtonToolTipText", "Ups Element") : OptionalToolTipText)
+		.ToolTipText(
+							OptionalToolTipText.Get().IsEmpty()
+								? LOCTEXT("UpButtonToolTipText", "Ups Element")
+								: OptionalToolTipText
+						)
 		.ContentPadding(4.0f)
 		.IsEnabled(IsEnabled)
 		.ForegroundColor(FSlateColor::UseForeground())
-		.IsFocusable(false)[SNew(SImage).Image(FEditorStyle::GetBrush("ArrowUp")).ColorAndOpacity(FSlateColor::UseForeground())];
+		.IsFocusable(false)[SNew(SImage).Image(FEditorStyle::GetBrush("ArrowUp")).ColorAndOpacity(
+								FSlateColor::UseForeground()
+							)];
 }
 
 TSharedRef<SWidget> FNDialogFactorSettingsCustomization::MakeDownButton(
@@ -262,16 +305,25 @@ TSharedRef<SWidget> FNDialogFactorSettingsCustomization::MakeDownButton(
 {
 	return SNew(SButton)
 		.ButtonStyle(FEditorStyle::Get(), "HoverHintOnly")
-		.OnClicked_Lambda([OnClicked]() -> FReply {
-			OnClicked.ExecuteIfBound();
-			return FReply::Handled();
-		})
+		.OnClicked_Lambda(
+							[OnClicked]() -> FReply
+							{
+								OnClicked.ExecuteIfBound();
+								return FReply::Handled();
+							}
+						)
 		.Text(LOCTEXT("DownButtonLabel", "Down"))
-		.ToolTipText(OptionalToolTipText.Get().IsEmpty() ? LOCTEXT("DownButtonToolTipText", "Downs Element") : OptionalToolTipText)
+		.ToolTipText(
+							OptionalToolTipText.Get().IsEmpty()
+								? LOCTEXT("DownButtonToolTipText", "Downs Element")
+								: OptionalToolTipText
+						)
 		.ContentPadding(4.0f)
 		.IsEnabled(IsEnabled)
 		.ForegroundColor(FSlateColor::UseForeground())
-		.IsFocusable(false)[SNew(SImage).Image(FEditorStyle::GetBrush("ArrowDown")).ColorAndOpacity(FSlateColor::UseForeground())];
+		.IsFocusable(false)[SNew(SImage).Image(FEditorStyle::GetBrush("ArrowDown")).ColorAndOpacity(
+								FSlateColor::UseForeground()
+							)];
 }
 
 void FNDialogFactorSettingsCustomization::DownButton_OnClick()
@@ -284,7 +336,7 @@ void FNDialogFactorSettingsCustomization::DownButton_OnClick()
 		int32 Index = StructHandle->GetIndexInArray();
 
 		FPropertyAccess::Result Res =
-			ParentArrayHandle->MoveElementTo(Index, Index + 2);	   // +2 is weird, but this is how it works!
+			ParentArrayHandle->MoveElementTo(Index, Index + 2); // +2 is weird, but this is how it works!
 	}
 }
 

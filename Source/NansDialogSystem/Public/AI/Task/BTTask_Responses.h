@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 #include "BTTask_Responses.generated.h"
 
+class UBTDialogPointsHandler;
 class UDialogHUD;
 class UPanelWidget;
 class UResponseButtonWidget;
@@ -59,6 +60,9 @@ public:
 	void OnEndDisplayResponse();
 
 protected:
+	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
+	bool bShowDialogueDetails = true;
+
 	UPROPERTY(VisibleAnywhere, Category = "HUD")
 	FName UINameKey = NAME_None;
 
@@ -74,11 +78,14 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	FName ResponseContainerName = FName("ResponseContainer");
 
+	UPROPERTY(EditInstanceOnly, Category = "Service")
+	FName PointsHandlerKeyName = FName("PointsHandler");;
+
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	TArray<FBTDialogueResponse> ReponsesUP;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	FNResponseCategory MiddleResponseCategory;
+	FNDialogueCategory MiddleResponseCategory;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	FText MiddleResponse;
@@ -106,6 +113,9 @@ protected:
 	UPanelWidget* ResponsesSlot;
 	UPROPERTY()
 	UBTTask_Countdown* CountDownTask;
+	UPROPERTY()
+	UBTDialogPointsHandler* PointsHandler;
+
 	TMap<FString, int32> ListButtonIndexes;
 
 private:
@@ -115,7 +125,6 @@ private:
 	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);
 	FString DisplayStaticResponses(
 		const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const;
-
-	virtual UDialogHUD* GetHUDFromBlackboard(UBehaviorTreeComponent& OwnerComp);
+	FString DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position, bool Reverse) const;
 	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
 };

@@ -1,10 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
 #include "BehaviorTree/BTDecorator.h"
-#include "CoreMinimal.h"
+#include "Dialogue/DialogueHistorySearch.h"
 #include "Service/NansComparatorHelpers.h"
 
 #include "BTDecorator_CheckInStep.generated.h"
@@ -28,13 +40,18 @@ struct NANSDIALOGSYSTEM_API FBTStepCondition
 	int32 Step;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
-	FNResponseCategory CategoryPoint;
+	FNDialogueCategory Category;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	ENansConditionComparator Operator;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	int32 CompareTo;
+
+	static void ToDialogueHistorySearch(const TArray<FBTStepCondition> Steps,
+		TArray<FNansConditionOperator> ConditionsOperators,
+		TArray<FNDialogueHistorySearch>& Searches,
+		TArray<FNansConditionOperator>& Operators);
 };
 
 /**
@@ -59,9 +76,4 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 	virtual FString GetStaticDescription() const override;
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-
-private:
-	UNansComparator* Comparator;
-	bool EvaluateArray(UBTDialogPointsHandler* PointsHandler) const;
-	bool EvaluateCondition(UBTDialogPointsHandler* PointsHandler, FBTStepCondition Condition) const;
 };

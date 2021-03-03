@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,8 @@
 #include "AI/Task/BTTask_TalkToPlayer.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/Button.h"
-#include "Components/TextBlock.h"
-#include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
 #include "Setting/InteractiveSettings.h"
 #include "UI/DialogHUD.h"
@@ -40,30 +38,15 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	OwnerComponent = &OwnerComp;
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
-	const auto PlayerHUD = NInteractiveBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	if (!IsValid(PlayerHUD))
+	HUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
+
+	if (!IsValid(HUD))
 	{
-		return EBTNodeResult::Type::Aborted;
-	}
-	const FName UIName = Blackboard->GetValueAsName(UINameKey);
-	if (!PlayerHUD->IsDisplayed(UIName))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(LOCTEXT("WrongHUDName", "The HUD {0} is not currently displayed "), FText::FromName(UIName))
-		);
+		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 
-	HUD = Cast<UDialogHUD>(PlayerHUD->GetCurrentUIPanel());
-
-	if (!ensure(HUD != nullptr))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
-		return EBTNodeResult::Aborted;
-	}
-
-	HUD->OnQuestion.Broadcast(Message);
+	HUD->OnQuestion.Broadcast(Message, Title);
 	HUD->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
 
 	return EBTNodeResult::InProgress;
@@ -79,11 +62,11 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 	FString ReturnDesc;
 	if (Message.IsEmptyOrWhitespace())
 	{
-		ReturnDesc += "\n\nNo Message\n";
+		ReturnDesc += "\nNo Message\n";
 	}
 	else
 	{
-		ReturnDesc += "\n\n" + UNTextLibrary::StringToLines("\"" + Message.ToString() + "\"", 50, "\t");
+		ReturnDesc += "\n" + UNTextLibrary::StringToLines("\"" + Message.ToString() + "\"", 50, "\t");
 	}
 	ReturnDesc += "\n\UINameKey: " + UINameKey.ToString();
 

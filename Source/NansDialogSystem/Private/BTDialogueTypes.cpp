@@ -1,51 +1,95 @@
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "BTDialogueTypes.h"
 
-#include "NansCoreHelpers/Public/Misc/NansAssertionMacros.h"
+
+#include "Misc/ErrorUtils.h"
 #include "Setting/DialogSystemSettings.h"
 
-FLinearColor FNResponseCategory::GetColor() const
+#define LOCTEXT_NAMESPACE "DialogSystem"
+
+FLinearColor FNDialogueCategory::GetColorFromSettings(const FNDialogueCategory& DialogueCategory)
 {
-	const FNDialogResponseCategorySettings& Config = GetConfig();
-
-	return Config.Color;
-}
-
-TArray<FNDialogFactorTypeSettings> FNResponseCategory::GetFactors(const int32 Type) const
-{
-	const FNDialogResponseCategorySettings& Config = GetConfig();
-	if ((int32) Type == 0) return Config.Factors;
-
-	TArray<FNDialogFactorTypeSettings> OutFactors;
-	for (const auto& Factor : Config.Factors)
+	static TMap<FGameplayTag, FLinearColor> ColorsCached;
+	if (UDialogSystemSettings::Get()->bFlushColorCache)
 	{
-		if (Type & Factor.Type)
+		ColorsCached.Empty();
+	}
+
+	if (!ColorsCached.Contains(DialogueCategory.Name))
+	{
+		TArray<FNDialogueCategorySettings> Settings;
+		UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
+		for (auto Set : Settings)
 		{
-			OutFactors.Add(Factor);
+			if (Set.Name == DialogueCategory.Name)
+			{
+				ColorsCached.Add(Set.Name, Set.Color);
+				break;
+			}
 		}
 	}
-	return OutFactors;
+	if (!ColorsCached.Contains(DialogueCategory.Name)) return {};
+
+	return ColorsCached.FindRef(DialogueCategory.Name);
 }
 
-const FNDialogResponseCategorySettings& FNResponseCategory::GetConfig() const
+TArray<FNDialogueDifficultyMagnitudeFactorSettings> FNDialogueCategory::GetDifficulties(
+	const FNDialogueCategory& DialogueCategory)
 {
-	ensureMsgf(Name != NAME_None, TEXT("You should set a name before getting the config of a FNResponseCategory."));
-	static TMap<FName, FNDialogResponseCategorySettings> SettingsByName;
-	FNDialogResponseCategorySettings& OutSetting = *FNDialogResponseCategorySettings::CreateNullInstance();
-	if (SettingsByName.Contains(Name))
+	const FGameplayTag Name = DialogueCategory.Name;
+	ensureMsgf(Name.IsValid(), TEXT("You should set a name before getting the config of a FNDialogueCategory."));
+	static TMap<FGameplayTag, FNDialogueDifficultyMagnitudeSettings> SettingsByName;
+
+	if (!SettingsByName.Contains(Name))
 	{
-		OutSetting = SettingsByName.FindRef(Name);
-		return OutSetting;
-	}
-	TArray<FNDialogResponseCategorySettings> Settings;
-	UDialogSystemSettings::Get()->GetResponseCategoryConfigs(Settings);
-	for (auto& Setting : Settings)
-	{
-		if (Setting.Name == Name)
+		TArray<FNDialogueDifficultyMagnitudeSettings> Settings;
+		UDialogSystemSettings::Get()->GetDialogueDifficultyMagnitudeConfigs(Settings);
+		for (auto& Setting : Settings)
 		{
-			SettingsByName.Add(Name, Setting);
-			OutSetting = SettingsByName.FindRef(Name);
-			break;
+			if (Setting.Category.Name == Name)
+			{
+				SettingsByName.Add(Name, Setting);
+				break;
+			}
 		}
 	}
-	return OutSetting;
+	if (!SettingsByName.Contains(Name)) return {};
+
+	return SettingsByName.FindRef(DialogueCategory.Name).Attributes;
 }
+
+
+TSubclassOf<UGameplayEffect> FBTDialogueResponse::GetSpawnableEffectOnEarned() const
+{
+	auto GEffect = EffectOnEarned;
+	if (!IsValid(GEffect))
+	{
+		for (const auto& CatSet : UDialogSystemSettings::Get()->ResponseCategorySettings)
+		{
+			if (CatSet.Name == Category.Name)
+			{
+				GEffect = CatSet.DefaultEffect;
+				break;
+			}
+		}
+		if (!IsValid(GEffect))
+		{
+			return nullptr;
+		}
+	}
+	return GEffect;
+}
+
+#undef LOCTEXT_NAMESPACE

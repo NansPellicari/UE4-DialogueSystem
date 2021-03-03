@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = true))
 	FText Message;
+	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = false))
+	FText Title = FText::GetEmpty();
 
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 		EBTNodeResult::Type TaskResult) override;
