@@ -45,7 +45,13 @@ struct NANSDIALOGSYSTEM_API FNDialogueCategory
 	static FLinearColor GetColorFromSettings(const FNDialogueCategory& DialogueCategory);
 	static TArray<FNDialogueDifficultyMagnitudeFactorSettings> GetDifficulties(
 		const FNDialogueCategory& DialogueCategory);
+
+	FORCEINLINE friend uint32 GetTypeHash(const FNDialogueCategory& Var)
+	{
+		return GetTypeHash(Var.Name.GetTagName());
+	}
 };
+
 
 /**
  * It is a params struct used in BehaviorTree UI to set a button data.
@@ -55,7 +61,7 @@ struct NANSDIALOGSYSTEM_API FBTDialogueResponse
 {
 	GENERATED_USTRUCT_BODY()
 
-	FBTDialogueResponse() {}
+	FBTDialogueResponse() { }
 
 	FBTDialogueResponse(
 		FNDialogueCategory InCategory,
@@ -66,9 +72,11 @@ struct NANSDIALOGSYSTEM_API FBTDialogueResponse
 		Point(InPoint),
 		Category(InCategory) { }
 
-public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = true))
 	FText Text;
+	// It is used for button sequence only now.
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = false))
+	FText AltText;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	int32 Point = 0;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
@@ -93,11 +101,4 @@ public:
 	TSubclassOf<UGameplayEffect> EffectOnEarned;
 
 	TSubclassOf<UGameplayEffect> GetSpawnableEffectOnEarned() const;
-
-	static FBTDialogueResponse CreateNullObject()
-	{
-		FBTDialogueResponse Response = FBTDialogueResponse();
-		Response.Text = NSLOCTEXT("DialogSystem", "DefaultDialogueResponseText", "Euh...");
-		return Response;
-	}
 };

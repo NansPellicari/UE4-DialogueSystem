@@ -1,4 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "Service/ButtonSequenceMovementManager.h"
 
@@ -12,7 +23,8 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-void NButtonSequenceMovementManager::Initialize(UPanelWidget* _ButtonsSlot, float _Velocity, UWheelButtonWidget* _WheelButton)
+void NButtonSequenceMovementManager::Initialize(UPanelWidget* _ButtonsSlot, float _Velocity,
+	UWheelButtonWidget* _WheelButton)
 {
 	if (!ensureMsgf(_ButtonsSlot != nullptr, TEXT("The ButtonsSlotName set doesn't exists in HUD")))
 	{
@@ -54,9 +66,9 @@ void NButtonSequenceMovementManager::Reset()
 
 void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 {
-	FGeometry CachedGeometry = ButtonsSlot->GetCachedGeometry();
-	FVector2D CanvasSize = CachedGeometry.GetLocalSize();
-	float MaxDistPerSec = 1000.f;
+	const FGeometry CachedGeometry = ButtonsSlot->GetCachedGeometry();
+	const FVector2D CanvasSize = CachedGeometry.GetLocalSize();
+	const float MaxDistPerSec = 1000.f;
 	float MultiplierClock = (DeltaSeconds * VelocityClock * MaxDistPerSec);
 	float MultiplierAntiClock = (DeltaSeconds * VelocityAntiClock * MaxDistPerSec);
 	float MultiplierNeutral = (DeltaSeconds * 0.2f * MaxDistPerSec);
@@ -81,15 +93,23 @@ void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 				for (TPair<FString, UCanvasPanelSlot*> Bt : OverlappedBt)
 				{
 					FVector2D BtOverPos = Bt.Value->GetPosition();
-					FVector2D BtOverSize = Bt.Value->GetSize();
+					const FVector2D BtOverSize = Bt.Value->GetSize();
 
 					FVector2D TempOverPos;
 					FVector2D Direction = BtOverPos - Centroid;
-					FVector2D Dist = (Direction) + BtOverPos;
+					const FVector2D Dist = (Direction) + BtOverPos;
 					TempOverPos.X =
-						FMath::Clamp<float>(Dist.X * (Direction.GetSafeNormal().X * BtOverSize.X), 0, CanvasSize.X - BtOverSize.X);
+						FMath::Clamp<float>(
+							Dist.X * (Direction.GetSafeNormal().X * BtOverSize.X),
+							0,
+							CanvasSize.X - BtOverSize.X
+						);
 					TempOverPos.Y =
-						FMath::Clamp<float>(Dist.Y * (Direction.GetSafeNormal().Y * BtOverSize.Y), 0, CanvasSize.Y - BtOverSize.Y);
+						FMath::Clamp<float>(
+							Dist.Y * (Direction.GetSafeNormal().Y * BtOverSize.Y),
+							0,
+							CanvasSize.Y - BtOverSize.Y
+						);
 					ButtonsPositions.Add(Bt.Key, TempOverPos);
 				}
 			}
@@ -108,8 +128,8 @@ void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 		}
 
 		FVector2D Distance = *AimPos - BtPos;
-		float Multiplier = Button->Direction == EResponseDirection::UP ? MultiplierClock : MultiplierAntiClock;
-		Multiplier = Button->Direction == EResponseDirection::NONE ? MultiplierNeutral : Multiplier;
+		float Multiplier = Button->InfluencedBy == EResponseDirection::UP ? MultiplierClock : MultiplierAntiClock;
+		Multiplier = Button->InfluencedBy == EResponseDirection::NONE ? MultiplierNeutral : Multiplier;
 		FVector2D NewTrajectory = Distance.GetSafeNormal() * Multiplier;
 
 		ButtonSlot->SetPosition(BtPos + NewTrajectory);
@@ -118,7 +138,7 @@ void NButtonSequenceMovementManager::MoveButtons(float DeltaSeconds)
 
 void NButtonSequenceMovementManager::PlaceButtons()
 {
-	int32 MaxTentative = 10;
+	const int32 MaxTentative = 10;
 	ComputeForbiddenZone();
 
 	TMap<FString, UCanvasPanelSlot*> OverlappedBt;
@@ -156,8 +176,8 @@ bool NButtonSequenceMovementManager::InButtonsZone(const int32 Position,
 	UCanvasPanelSlot* ButtonSlot = Cast<UCanvasPanelSlot>(Button->Slot);
 	if (ButtonSlot == nullptr) return false;
 
-	FVector2D Pos = ButtonSlot->GetPosition();
-	FVector2D Size = ButtonSlot->GetSize();
+	const FVector2D Pos = ButtonSlot->GetPosition();
+	const FVector2D Size = ButtonSlot->GetSize();
 
 	TArray<FVector2D> Positions;
 	Positions.Add(Pos);
@@ -203,8 +223,8 @@ bool NButtonSequenceMovementManager::InZone(
 		return false;
 	}
 
-	bool XInZone = Pos.X + Size.X >= Zone[0].X && Pos.X <= Zone[1].X;
-	bool YInZone = Pos.Y + Size.Y >= Zone[0].Y && Pos.Y <= Zone[1].Y;
+	const bool XInZone = Pos.X + Size.X >= Zone[0].X && Pos.X <= Zone[1].X;
+	const bool YInZone = Pos.Y + Size.Y >= Zone[0].Y && Pos.Y <= Zone[1].Y;
 
 	return XInZone && YInZone;
 }
@@ -212,9 +232,9 @@ bool NButtonSequenceMovementManager::InZone(
 FVector2D NButtonSequenceMovementManager::FindRandomCoordInSlot(UButtonSequenceWidget* Button) const
 {
 	UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(Button->Slot);
-	FGeometry CachedGeometry = ButtonsSlot->GetCachedGeometry();
-	FVector2D CanvasSize = CachedGeometry.GetLocalSize();
-	FVector2D SlotSize = Slot->GetSize();
+	const FGeometry CachedGeometry = ButtonsSlot->GetCachedGeometry();
+	const FVector2D CanvasSize = CachedGeometry.GetLocalSize();
+	const FVector2D SlotSize = Slot->GetSize();
 	FVector2D NewPos;
 
 	NewPos.X = FMath::Clamp<float>(FMath::FRand() * CanvasSize.X, 0, CanvasSize.X - SlotSize.X);
@@ -224,14 +244,14 @@ FVector2D NButtonSequenceMovementManager::FindRandomCoordInSlot(UButtonSequenceW
 	// If this random coordinate IsInZone we translate it out of the zone's boundaries
 	if (IsInZone)
 	{
-		bool BeforeYAvailable = ForbiddenZone[0].Y > SlotSize.Y;
-		bool AfterYAvailable = CanvasSize.Y - ForbiddenZone[1].Y > SlotSize.Y;
-		bool BeforeXAvailable = ForbiddenZone[0].X > SlotSize.X;
-		bool AfterXAvailable = CanvasSize.X - ForbiddenZone[1].X > SlotSize.X;
-		float DistanceXEndBoundary = ForbiddenZone[1].X - (NewPos.X + SlotSize.X);
-		float DistanceYEndBoundary = ForbiddenZone[1].Y - (NewPos.Y + SlotSize.Y);
-		float DistanceXBeginBoundary = NewPos.X - ForbiddenZone[0].X;
-		float DistanceYBeginBoundary = NewPos.Y - ForbiddenZone[0].Y;
+		const bool BeforeYAvailable = ForbiddenZone[0].Y > SlotSize.Y;
+		const bool AfterYAvailable = CanvasSize.Y - ForbiddenZone[1].Y > SlotSize.Y;
+		const bool BeforeXAvailable = ForbiddenZone[0].X > SlotSize.X;
+		const bool AfterXAvailable = CanvasSize.X - ForbiddenZone[1].X > SlotSize.X;
+		const float DistanceXEndBoundary = ForbiddenZone[1].X - (NewPos.X + SlotSize.X);
+		const float DistanceYEndBoundary = ForbiddenZone[1].Y - (NewPos.Y + SlotSize.Y);
+		const float DistanceXBeginBoundary = NewPos.X - ForbiddenZone[0].X;
+		const float DistanceYBeginBoundary = NewPos.Y - ForbiddenZone[0].Y;
 
 		// Closer of the bottom boundary of the zone
 		if (DistanceYEndBoundary < DistanceYBeginBoundary)
@@ -268,11 +288,12 @@ void NButtonSequenceMovementManager::ComputeForbiddenZone()
 		return;
 	}
 
-	FGeometry GeoWheel = WheelButton->GetCachedGeometry();
-	FVector2D NormalCoord = FVector2D(0, 0);
-	FVector2D InitCoord = GeoWheel.GetLocalPositionAtCoordinates(NormalCoord);
+	const FGeometry GeoWheel = WheelButton->GetCachedGeometry();
+	const FVector2D NormalCoord = FVector2D(0, 0);
+	const FVector2D InitCoord = GeoWheel.GetLocalPositionAtCoordinates(NormalCoord);
 
-	if (ForbiddenZone.Num() > 0 && ForbiddenZone[0] == InitCoord && ForbiddenZone[1] == InitCoord + GeoWheel.GetLocalSize())
+	if (ForbiddenZone.Num() > 0 && ForbiddenZone[0] == InitCoord && ForbiddenZone[1] == InitCoord + GeoWheel.
+		GetLocalSize())
 	{
 		return;
 	}

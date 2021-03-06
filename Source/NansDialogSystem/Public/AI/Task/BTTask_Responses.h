@@ -63,20 +63,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
 	bool bShowDialogueDetails = true;
 
+	/** This is just here to indicate this values for developers, it is set in the developer's settings */
 	UPROPERTY(VisibleAnywhere, Category = "HUD")
 	FName UINameKey = NAME_None;
-
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	TSubclassOf<UResponseButtonWidget> ResponseButtonWidget;
-
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	FName ResponsesSlotName = FName("ResponsesSlot");
-
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	FName ButtonAfterName = FName("ButtonAfter");
-
-	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	FName ResponseContainerName = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Service")
 	FName PointsHandlerKeyName = FName("PointsHandler");;
@@ -115,8 +104,6 @@ protected:
 	UBTTask_Countdown* CountDownTask;
 	UPROPERTY()
 	UBTDialogPointsHandler* PointsHandler;
-
-	TMap<FString, int32> ListButtonIndexes;
 
 private:
 	int32 MiddleResponseIndex = -1;

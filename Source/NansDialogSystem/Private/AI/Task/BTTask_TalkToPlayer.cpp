@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Aborted;
 	}
 
-	HUD->OnQuestion.Broadcast(Message, Title);
+	HUD->SetNPCText(Message, Title);
 	HUD->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
 
 	return EBTNodeResult::InProgress;

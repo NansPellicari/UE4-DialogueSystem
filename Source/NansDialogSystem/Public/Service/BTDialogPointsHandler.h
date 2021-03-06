@@ -47,8 +47,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
 	void Clear();
-	bool HasResults(const FNDialogueHistorySearch& Search);
-	bool HasResults(const TArray<FNDialogueHistorySearch> Searches, TArray<FNansConditionOperator> ConditionsOperators);
+	bool HasResults(const FNDialogueHistorySearch& Search) const;
+	bool HasResults(const TArray<FNDialogueHistorySearch> Searches, TArray<FNansConditionOperator> ConditionsOperators) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
 	int32 GetDialogPoints(FNDialogueCategory Category) const;
 

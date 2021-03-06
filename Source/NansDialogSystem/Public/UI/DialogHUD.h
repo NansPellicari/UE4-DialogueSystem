@@ -14,10 +14,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+
+#include "WheelButtonWidget.h"
+#include "Components/Button.h"
 #include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "DialogHUD.generated.h"
 
+class UWheelProgressBarWidget;
+struct FResponseButtonBuilderData;
+class UResponseButtonWidget;
 class UPanelWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogHUDEvent);
@@ -29,6 +36,12 @@ enum class EDialogMessageType : uint8
 {
 	Question,
 	Response,
+};
+
+struct NTextData
+{
+	FText Text;
+	FText Title;
 };
 
 /**
@@ -52,22 +65,78 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event")
 	FDialogHUDEvent OnEndDisplayQuestion;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
+	int32 CountVisibleResponses() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
+	int32 CountResponses() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
+	TArray<UResponseButtonWidget*> GetResponsesButttons() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category="Response")
+	void SetNPCText(const FText& InText, const FText& InTitle);
+	virtual void SetNPCText_Implementation(const FText& InText, const FText& InTitle);
+
+	UFUNCTION(BlueprintNativeEvent, Category="Response")
+	void SetPlayerText(const FText& InText, const FText& InTitle);
+	virtual void SetPlayerText_Implementation(const FText& InText, const FText& InTitle);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
+	void GetCurrentPlayerDialog(FText& OutText, FText& OutTitle);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
+	void GetCurrentNPCDialog(FText& OutText, FText& OutTitle);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Response")
+	void OnRemoveResponse(UResponseButtonWidget* Widget);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Response")
+	void OnAddResponse(UResponseButtonWidget* Widget);
+
+	virtual UResponseButtonWidget* AddNewResponse(FResponseButtonBuilderData& BuilderData);
+	virtual bool RemoveResponses();
+
+	UPanelWidget* GetUINPCBox() const;
+	UPanelWidget* GetResponsesSlot() const;
+	UPanelWidget* GetUIPlayerBox() const;
+	UButton* GetButtonPassPlayerLine() const;
+	UButton* GetButtonPassNPCLine() const;
+	UWheelProgressBarWidget* GetProgressBar() const;
+	void ChangeButtonVisibility(ESlateVisibility Visibility, int32 Index) const;
+	void ChangeButtonsVisibility(ESlateVisibility Visibility) const;
 protected:
 	UPROPERTY(EditAnywhere, Category = "Event")
 	float TimeToDisplay = 2.f;
 	// This to display response for a duration, and send OnEndDisplayResponse when finished
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	virtual void NativeOnInitialized() override;
+	virtual void NativePreConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual void Reset_Implementation() override;
 	UFUNCTION(BlueprintCallable, Category = "Setup")
-	void InitiliazedUI(UPanelWidget* _UIResponseBox, UPanelWidget* _UIQuestionBox);
-	UFUNCTION(BlueprintCallable, Category = "Setup")
 	void DisplayMessage(EDialogMessageType MessageType);
+	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget, OptionalWidget=true))
+	UWheelButtonWidget* WheelButton = nullptr;
+	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget, OptionalWidget=true))
+	UWheelProgressBarWidget* ProgressBar = nullptr;
+public:
+	UWheelButtonWidget* GetWheelButton() const;
+protected:
+	UPROPERTY(BlueprintReadWrite, Category = "Response", meta=(BindWidget))
+	UPanelWidget* UIPlayerBox = nullptr;
+	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget))
+	UPanelWidget* ResponsesSlot = nullptr;
+	UPROPERTY(BlueprintReadWrite, Category = "Question", meta=(BindWidget))
+	UPanelWidget* UINPCBox = nullptr;
+	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget))
+	UButton* ButtonPassPlayerLine = nullptr;
+	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget))
+	UButton* ButtonPassNPCLine = nullptr;
+	UPROPERTY(EditAnywhere, Category = "Response")
+	TSubclassOf<UResponseButtonWidget> ResponseButtonWidget;
 
 private:
 	float TimeDisplayed = 0.f;
-	UPanelWidget* UIResponseBox;
-	UPanelWidget* UIQuestionBox;
-	UFUNCTION()
-	void StartDisplayResponse(FText Response, FText Title);
+	NTextData CurrentNPCDialog;
+	NTextData CurrentPlayerDialog;
 };

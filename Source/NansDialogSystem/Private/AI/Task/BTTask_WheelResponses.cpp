@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 
 #include "AI/Task/BTTask_WheelResponses.h"
 
-#include "BTDialogueResponseContainer.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
@@ -27,8 +26,8 @@
 
 FString UBTTask_WheelResponses::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
-	ReturnDesc += "\nResponses Type Tolerance: " + FString::SanitizeFloat(ResponsesTypeTolerance);
+	FString ReturnDesc = "\nResponses Type Tolerance: " + FString::SanitizeFloat(ResponsesTypeTolerance);
+	ReturnDesc += Super::GetStaticDescription();
 
 	return ReturnDesc;
 }
@@ -82,28 +81,18 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		return;
 	}
 
-	for (const TPair<FString, int32> ResponseIndex : ListButtonIndexes)
-	{
-		UResponseButtonWidget* Button = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(ResponseIndex.Value));
-		if (!ensure(Button != nullptr))
-		{
-			EDITOR_ERROR(
-				"DialogSystem",
-				LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in ")
-			);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
-			return;
-		}
-		Button->SetVisibility(ESlateVisibility::Hidden);
-		UBTDialogueResponseContainer* ResponseContainer = Button->GetResponse();
-		FBTDialogueResponse Response = ResponseContainer->GetResponse();
 
-		const bool UP = (ResponseContainer->InfluencedBy == EResponseDirection::UP &&
+	for (const auto& Button : DialogHUD->GetResponsesButttons())
+	{
+		Button->SetVisibility(ESlateVisibility::Hidden);
+		FBTDialogueResponse Response = Button->GetResponse();
+
+		const bool UP = (Button->InfluencedBy == EResponseDirection::UP &&
 						 DifficultyHandler->GetDifficultyLevel(Response) <= ClockwiseWheelReach);
-		const bool DOWN = (ResponseContainer->InfluencedBy == EResponseDirection::DOWN &&
+		const bool DOWN = (Button->InfluencedBy == EResponseDirection::DOWN &&
 						   DifficultyHandler->GetDifficultyLevel(Response) <= CounterClockwiseWheelReach);
 
-		if (UP || DOWN || ResponseContainer->InfluencedBy == EResponseDirection::NONE)
+		if (UP || DOWN || Button->InfluencedBy == EResponseDirection::NONE)
 		{
 			Button->SetVisibility(ESlateVisibility::Visible);
 		}

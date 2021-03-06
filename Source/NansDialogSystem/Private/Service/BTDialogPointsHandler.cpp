@@ -39,61 +39,6 @@ void UBTDialogPointsHandler::Clear()
 	PlayerGASC->CancelAbilities(&UDialogSystemSettings::Get()->TagsForDialogAbility);
 }
 
-bool UBTDialogPointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
-	TArray<FNansConditionOperator> ConditionsOperators)
-{
-	verify(IsValid(DialogComp));
-	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
-	TMap<FString, BoolStruct*> ConditionsResults;
-	int32 Idx = 0;
-	if (Searches.Num() > 0)
-	{
-		for (auto& Search : Searches)
-		{
-			FString SearchKey = UNansComparator::BuildKeyFromIndex(Idx);
-			const bool bResult = HasResults(Search);
-			if (bDebug)
-			{
-				UE_LOG(
-					LogDialogSystem,
-					Display,
-					TEXT("%s search: %s - results: %i"),
-					*SearchKey,
-					*Search.ToString(),
-					bResult
-				);
-			}
-			ConditionsResults.Add(SearchKey, new BoolStruct(bResult));
-			++Idx;
-			if (HasConditionsOperator == false && bResult == false)
-			{
-				break;
-			}
-		}
-	}
-	if (ConditionsResults.Num() <= 0)
-	{
-		return false;
-	}
-	if (HasConditionsOperator == false)
-	{
-		FString Key = UNansComparator::BuildKeyFromIndex(ConditionsResults.Num() - 1);
-		return ConditionsResults.FindRef(Key)->value;
-	}
-
-	return UNansComparator::EvaluateOperators(ConditionsOperators, ConditionsResults, bDebug);
-}
-
-bool UBTDialogPointsHandler::HasResults(const FNDialogueHistorySearch& Search)
-{
-	verify(IsValid(DialogComp));
-	const bool bOldValue = DialogComp->bDebugSearch;
-	DialogComp->bDebugSearch = bDebug;
-	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
-	DialogComp->bDebugSearch = bOldValue;
-	return Search.bInversed ? Results.Num() <= 0 : Results.Num() > 0;
-}
-
 bool UBTDialogPointsHandler::Initialize(
 	TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
 	FDialogueSequence DialogueSequence)
@@ -129,59 +74,38 @@ bool UBTDialogPointsHandler::Initialize(
 
 void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 {
+	verify(IsValid(DialogComp));
 	int32 Step = IBTStepsHandler::Execute_GetCurrentStep(StepsHandler.GetObject());
-
-	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
-	if (!IsValid(GEffect))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(
-				LOCTEXT("EffectOnEarnedMissing",
-					"No effect on earned is set for point type {0}"),
-				FText::FromString(Point.Category.Name.ToString()))
-		);
-		return;
-	}
 	FString BaseName = TEXT("Step");
 	BaseName.AppendInt(Step);
-	FGameplayEffectContextHandle FxContextHandle = PlayerGASC->MakeEffectContext();
-	FDialogueResult DialogData;
-	DialogData.Difficulty = Point.Difficulty;
-	DialogData.Position = Position;
-	DialogData.CategoryName = Point.Category.Name;
-	DialogData.BlockName = FName(BaseName);
-	DialogData.InitialPoints = Point.Point;
-	DialogData.Response = Point.Response;
-	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
-	FGameplayEffectSpecHandle SpecHandle = PlayerGASC->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
-	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
-	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, UDialogSystemSettings::Get()->TagToIdentifyDialogEffect);
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-		SpecHandle,
-		UDialogSystemSettings::Get()->PointMagnitudeTag,
-		Point.Point
-	);
-	PlayerGASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	DialogComp->AddPoints(Point, Position, FName(BaseName));
 }
 
 int32 UBTDialogPointsHandler::GetDialogPoints(FNDialogueCategory Category) const
 {
 	verify(IsValid(DialogComp));
-	int32 Points = 0;
-	FNDialogueHistorySearch Search;
-	Search.DialogName.bIsAll = true;
-	Search.PropertyName = ENPropertyValue::IsDone;
-	const TArray<FDialogueResult> Results = DialogComp->SearchResults(Search);
+	return DialogComp->GetDialogPoints(Category);
+}
 
-	for (const FDialogueResult& Result : Results)
-	{
-		if (Result.CategoryName == Category.Name)
-		{
-			Points += Result.InitialPoints;
-		}
-	}
-	return Points;
+bool UBTDialogPointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
+	TArray<FNansConditionOperator> ConditionsOperators) const
+{
+	verify(IsValid(DialogComp));
+	const bool bOldValue = DialogComp->bDebugSearch;
+	DialogComp->bDebugSearch = bDebug;
+	const bool Result = DialogComp->HasResultsOnSearches(Searches, ConditionsOperators);
+	DialogComp->bDebugSearch = bOldValue;
+	return Result;
+}
+
+bool UBTDialogPointsHandler::HasResults(const FNDialogueHistorySearch& Search) const
+{
+	verify(IsValid(DialogComp));
+	const bool bOldValue = DialogComp->bDebugSearch;
+	DialogComp->bDebugSearch = bDebug;
+	const bool bItHas = DialogComp->HasResults(Search);
+	DialogComp->bDebugSearch = bOldValue;
+	return bItHas;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,43 +1,36 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #pragma once
 
-#include "BTDialogueTypes.h"
 #include "CoreMinimal.h"
+#include "BTDialogueTypes.h"
+#include "ResponseButtonWidget.h"
+#include "Components/Button.h"
 #include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "ButtonSequenceWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FButtonSequenceEvent, UButtonSequenceWidget*, Button);
-
 /**
  *
  */
-UCLASS(hidecategories = ("Appearance"))
-class NANSDIALOGSYSTEM_API UButtonSequenceWidget : public UNansUserWidget
+UCLASS()
+class NANSDIALOGSYSTEM_API UButtonSequenceWidget : public UResponseButtonWidget
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FButtonSequenceEvent OnBTClicked;
-
-	void SetText(FString _Text);
-	FString GetText() const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
 	FVector2D ButtonDisplaySize = FVector2D(100.f, 100.f);
-
-	UPROPERTY(BlueprintReadOnly, Category = "Display")
-	FLinearColor FinalColor;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Display")
-	EResponseDirection Direction;
-
-protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Widget")
-	FString Text;
-
-	UFUNCTION(BlueprintCallable, Category = "Event")
-	void CallBTClicked();
 };

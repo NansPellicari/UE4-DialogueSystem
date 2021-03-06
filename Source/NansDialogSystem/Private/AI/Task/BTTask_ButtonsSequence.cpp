@@ -13,12 +13,9 @@
 
 #include "AI/Task/BTTask_ButtonsSequence.h"
 
-#include "BTDialogueResponseContainer.h"
 #include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/Button.h"
-#include "Components/CanvasPanelSlot.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/BTDialogPointsHandler.h"
@@ -31,6 +28,7 @@
 #include "UI/ButtonSequenceWidget.h"
 #include "UI/DialogHUD.h"
 #include "UI/InteractiveHUDPlayer.h"
+#include "UI/ResponseButtonWidget.h"
 #include "UI/WheelButtonWidget.h"
 #include "UI/WheelProgressBarWidget.h"
 
@@ -98,6 +96,11 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	OwnerComponent = &OwnerComp;
 	Blackboard = OwnerComp.GetBlackboardComponent();
+	if (UINameKey.IsNone())
+	{
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
+		return EBTNodeResult::Aborted;
+	}
 
 	PointsHandler = Cast<UBTDialogPointsHandler>(
 		Blackboard->GetValueAsObject(PointsHandlerKeyName)
@@ -118,32 +121,15 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 
 	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_ButtonsSequence::OnEndDisplayResponse);
 
-	ButtonsSlot = Cast<UPanelWidget>(DialogHUD->FindWidget(ButtonsSlotName));
+	ButtonsSlot = DialogHUD->GetResponsesSlot();
 
-	if (!ensure(IsValid(ButtonsSlot)))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			FText::Format(LOCTEXT("WrongButtonsSlotName", "The ButtonsSlotName {0} set doesn't exists in HUD in "),
-				FText::FromName(ButtonsSlotName))
-		);
-		return EBTNodeResult::Aborted;
-	}
-
-	if (!ensure(ButtonWidget != NULL && !ButtonWidget->GetClass()->GetFullName().IsEmpty()))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongButtonWidget", "Need to set a ButtonWidget in "));
-		return EBTNodeResult::Aborted;
-	}
-
-	// TODO make wheel name configurable?
-	UWheelButtonWidget* WheelButton = Cast<UWheelButtonWidget>(DialogHUD->FindWidget(FName("WheelButton")));
+	UWheelButtonWidget* WheelButton = DialogHUD->GetWheelButton();
 
 	BTSequenceManager->Initialize(ButtonsSlot, DefaultVelocity, WheelButton);
 	CreateButtons();
 
-	UWheelProgressBarWidget* TimeWidget = Cast<UWheelProgressBarWidget>(DialogHUD->FindWidget("ProgressBar"));
-	if (TimeWidget != nullptr)
+	UWheelProgressBarWidget* TimeWidget = DialogHUD->GetProgressBar();
+	if (IsValid(TimeWidget))
 	{
 		CountDownTask->Initialize(TimeWidget, TimeToResponse);
 		CountDownTask->ExecuteTask(OwnerComp, NodeMemory);
@@ -176,42 +162,22 @@ void UBTTask_ButtonsSequence::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, 
 	SequenceIndex = -1;
 	BTSequenceManager->Reset();
 	DialogHUD->OnEndDisplayResponse.RemoveAll(this);
+	DialogHUD->Reset();
 }
 
 void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)
 {
-	while (ButtonsSlot->GetChildrenCount() > 0)
+	const bool bHasRemoved = DialogHUD->RemoveResponses();
+
+	if (!bHasRemoved)
 	{
-		UUserWidget* Widget = Cast<UUserWidget>(ButtonsSlot->GetChildAt(0));
-
-		// Should be a Weiiiird behavior, but just in case
-		if (!ensure(Widget != nullptr))
-		{
-			EDITOR_ERROR(
-				"DialogSystem",
-				LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in ")
-			);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
-			return;
-		}
-		UButtonSequenceWidget* Button = Cast<UButtonSequenceWidget>(Widget);
-
-		if (Button != nullptr)
-		{
-			Button->OnBTClicked.Clear();
-			DialogHUD->OnRemovedChild.Broadcast(Button);
-			Button->MarkPendingKill();
-		}
-
-		ButtonsSlot->RemoveChildAt(0);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 	}
 }
 
 void UBTTask_ButtonsSequence::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 {
-	auto RespCont = UBTDialogueResponseContainer::CreateNullObject(OwnerComp);
-	PointsHandler->AddPoints(FNPoint(RespCont->GetResponse()), SequenceIndex);
-	// Blackboard->SetValueAsObject(ResponseContainerKey, RespCont);
+	PointsHandler->AddPoints(FNPoint(FBTDialogueResponse()), SequenceIndex);
 	RemoveButtons(*OwnerComp);
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
@@ -229,31 +195,25 @@ void UBTTask_ButtonsSequence::CreateButtons()
 		return;
 	}
 
+	int32 Position = 0;
 	for (FBTButtonSequence Sequence : Sequences)
 	{
 		FString StringSequence = Sequence.ButtonSequence.ToString();
-		bool ColorIsComputed = false;
-		FLinearColor FinalColor;
+		FBTDialogueResponse Response = Sequence.ToDialogueResponse();
 		for (TCHAR Char : StringSequence)
 		{
-			UButtonSequenceWidget* Button =
-				CreateWidget<UButtonSequenceWidget>(GetWorld(), ButtonWidget->GetDefaultObject()->GetClass());
-			Button->SetText(FString("") + Char);
-			Button->OnBTClicked.AddDynamic(this, &UBTTask_ButtonsSequence::OnButtonClick);
-			Button->Direction = Sequence.Direction;
+			Response.AltText = FText::FromString(FString("") + Char);
+			FResponseButtonBuilderData BuilderData;
+			BuilderData.Response = Response;
+			BuilderData.DisplayOrder = Position;
+			BuilderData.MaxPoints = Sequence.LevelCoefficient;
+			BuilderData.InfluencedBy = Sequence.Direction;
 
-			if (ColorIsComputed == false)
-			{
-				FinalColor = FNDialogueCategory::GetColorFromSettings(Sequence.Category);
-				ColorIsComputed = true;
-			}
+			UResponseButtonWidget* ButtonWidget = DialogHUD->AddNewResponse(BuilderData);
 
-			Button->FinalColor = FinalColor;
-			ButtonsSlot->AddChild(Button);
-			DialogHUD->OnAddedChild.Broadcast(Button);
-			UCanvasPanelSlot* Slot = Cast<UCanvasPanelSlot>(Button->Slot);
-			if (Slot == nullptr) continue;
-			Slot->SetSize(Button->ButtonDisplaySize);
+			ButtonWidget->OnBTClicked.AddDynamic(this, &UBTTask_ButtonsSequence::OnButtonClick);
+
+			Position++;
 		}
 	}
 
@@ -324,7 +284,7 @@ const int32 UBTTask_ButtonsSequence::PointsComparedToSequence(const FString& Tri
 	return FMath::FloorToInt((found / static_cast<float>(Tries.Len())) * Sequence.LevelCoefficient);
 }
 
-void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
+void UBTTask_ButtonsSequence::OnButtonClick(UResponseButtonWidget* Button)
 {
 	PlayerTries += Button->GetText();
 	FText SequenceTxt;
@@ -361,19 +321,20 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 			FinishLatentTask(*OwnerComponent, EBTNodeResult::Aborted);
 			return;
 		}
+		auto Response = Button->GetResponse();
 		int32 TotalPoint = GetEarnedPoint();
 		FBTButtonSequence Sequence = Sequences[SequenceIndex];
 		auto Resp = Sequence.GetResponseForPoints(TotalPoint);
 		FNPoint Point;
-		Point.Category = Sequence.Category;
+		Point.Category = Response.Category;
 		Point.Point = TotalPoint;
 		Point.Response = SequenceTxt;
 		Point.EffectOnEarned = Resp.GetSpawnableEffectOnEarned();
-		Point.Difficulty = static_cast<float>(Sequence.LevelCoefficient);
+		Point.Difficulty = static_cast<float>(Response.Difficulty);
 
 		PointsHandler->AddPoints(Point, SequenceIndex);
 
-		DialogHUD->OnResponse.Broadcast(Resp.Response, FText::GetEmpty());
+		DialogHUD->SetPlayerText(Resp.Response, FText::GetEmpty());
 		RemoveButtons(*OwnerComponent);
 		return;
 	}
@@ -382,17 +343,13 @@ void UBTTask_ButtonsSequence::OnButtonClick(UButtonSequenceWidget* Button)
 	// So restart the tries
 	PlayerTries.Empty();
 	SequenceIndex = -1;
-	for (int32 i = 0; i < ButtonsSlot->GetChildrenCount(); ++i)
-	{
-		UButtonSequenceWidget* ButtonFromList = Cast<UButtonSequenceWidget>(ButtonsSlot->GetChildAt(i));
-		if (ButtonFromList == nullptr) continue; // only concerned about button
-		ButtonFromList->SetVisibility(ESlateVisibility::Visible);
-	}
+	DialogHUD->ChangeButtonsVisibility(ESlateVisibility::Visible);
 }
 
 FString UBTTask_ButtonsSequence::GetStaticDescription() const
 {
-	FString Desc = Super::GetStaticDescription();
+	FString Desc = "\nDefault velocity: " + FString::FromInt(DefaultVelocity);
+
 	int32 i = 0;
 	for (FBTButtonSequence Sequence : Sequences)
 	{
@@ -451,22 +408,6 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 		Desc += "\n----------------------";
 		i++;
 	}
-
-	Desc += "\nUINameKey: " + UINameKey.ToString();
-	Desc += "\nResponse Container: " + ResponseContainerKey.ToString();
-
-	Desc += "\nResponse Button Widget: ";
-	if (ButtonWidget != nullptr && !ButtonWidget->GetDefaultObject()->GetClass()->GetFullName().IsEmpty())
-	{
-		Desc += ButtonWidget->GetDefaultObject()->GetClass()->GetName();
-	}
-	else
-	{
-		Desc += "None";
-	}
-
-	Desc += "\nResponses Slot Name: " + ButtonsSlotName.ToString();
-	Desc += "\nDefault velocity: " + FString::FromInt(DefaultVelocity);
 
 	Desc += "\n----------------------\n";
 	Desc += CountDownTask->GetStaticDescription();

@@ -18,6 +18,8 @@
 
 #include "BTDialogueTypes.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
+#include "UI/ResponseButtonWidget.h"
+
 
 #include "BTTask_ButtonsSequence.generated.h"
 
@@ -151,6 +153,19 @@ public:
 		}
 		return AllResponses;
 	}
+
+	FBTDialogueResponse ToDialogueResponse() const
+	{
+		FBTDialogueResponse Response;
+		Response.Category = Category;
+		Response.Text = ButtonSequence;
+		// These should be overrided when the sequence end
+		Response.Difficulty = LevelCoefficient;
+		Response.Point = -1;
+		// Response.bUsedDefaultEffect;
+		// Response.EffectOnEarned;
+		return Response;
+	}
 };
 
 static TMap<FString, TMap<int32, FString>> StaticButtonSequenceDescs;
@@ -209,7 +224,7 @@ public:
 	virtual void BeginDestroy() override;
 
 	UFUNCTION()
-	void OnButtonClick(UButtonSequenceWidget* Button);
+	void OnButtonClick(UResponseButtonWidget* Button);
 
 	UFUNCTION()
 	void OnCountdownEnds(UBehaviorTreeComponent* OwnerComp);
@@ -219,6 +234,7 @@ public:
 
 protected:
 	/**
+	 * This is just here to indicate this values for developers, it is set in the developer's settings
 	 * HUD need to be composed with widget named
 	 * "WheelButton" (UWheelButtonWidget) and "ProgressBar" (UWheelProgressBarWidget)
 	 * to work properly.
@@ -226,20 +242,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "HUD")
 	FName UINameKey = NAME_None;
 
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	TSubclassOf<UButtonSequenceWidget> ButtonWidget;
-
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	FName ButtonsSlotName = FName("ButtonsSlot");
-
-	UPROPERTY(EditInstanceOnly, Category = "HUD")
-	FName ButtonAfterName = FName("ButtonAfter");
-
 	UPROPERTY(EditInstanceOnly, Category = "Service")
 	FName PointsHandlerKeyName = FName("PointsHandler");
-
-	UPROPERTY(EditInstanceOnly, Category = "Responses")
-	FName ResponseContainerKey = FName("ResponseContainer");
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	float DefaultVelocity = 1;

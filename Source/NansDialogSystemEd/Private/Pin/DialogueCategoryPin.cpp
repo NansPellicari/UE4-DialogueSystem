@@ -50,6 +50,7 @@ TSharedRef<SWidget> SNDialogueCategoryPin::GetDefaultValueWidget()
 		.ContentPadding(FMargin(6.0f, 2.0f))
 		.OptionsSource(&CategoryList)
 		.InitiallySelectedItem(InitialSelectedName)
+		.Visibility(this, &SGraphPin::GetDefaultValueVisibility)
 		.OnComboBoxOpening(this, &SNDialogueCategoryPin::OnComboBoxOpening)
 		.OnSelectionChanged(this, &SNDialogueCategoryPin::OnAttributeSelected);
 }
@@ -77,6 +78,7 @@ void SNDialogueCategoryPin::SetPropertyWithName(const FName& Name)
 	check(GraphPinObj);
 	check(GraphPinObj->PinType.PinSubCategoryObject == FNDialogueCategory::StaticStruct());
 
+	if (GraphPinObj->HasAnyConnections()) return;
 	// To set the property we need to use a FString
 	// using this format: (MyPropertyName="My Value")
 	FString PinString = TEXT("(Name=(TagName=\"");
@@ -87,19 +89,7 @@ void SNDialogueCategoryPin::SetPropertyWithName(const FName& Name)
 
 	if (CurrentDefaultValue != PinString)
 	{
-		const FScopedTransaction Transaction(
-			NSLOCTEXT(
-				"GraphEditor",
-				"ChangeDialogueCategorySettingsPinValue",
-				"Change DialogueCategory Settings Pin Value"
-			)
-		);
-		GraphPinObj->Modify();
-
-		if (PinString != GraphPinObj->GetDefaultAsString())
-		{
-			GraphPinObj->GetSchema()->TrySetDefaultValue(*GraphPinObj, PinString);
-		}
+		GraphPinObj->GetSchema()->TrySetDefaultValue(*GraphPinObj, PinString);
 	}
 }
 

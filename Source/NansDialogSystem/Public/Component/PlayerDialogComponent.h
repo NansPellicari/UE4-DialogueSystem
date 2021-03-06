@@ -14,6 +14,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
+#include "BTDialogueTypes.h"
+#include "PointSystemHelpers.h"
 #include "Components/ActorComponent.h"
 #include "Dialogue/DialogueHistory.h"
 
@@ -21,6 +24,7 @@
 
 
 struct FNDialogueHistorySearch;
+struct FNansConditionOperator;
 /**
  * The main Goal of this Component is to save data from dialog session.
  * It is also used to retrieve data on previous or actual session to perform some checks on previously chosen responses. 
@@ -32,16 +36,30 @@ class NANSDIALOGSYSTEM_API UPlayerDialogComponent : public UActorComponent
 
 public:
 	UPlayerDialogComponent();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	void AddSequence(const FDialogueSequence& Sequence);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	void AddResponse(const FDialogueResult& Result);
-	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search);
-	UPROPERTY(EditAnywhere, Category=PlayerDialogComponent)
+	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
+	bool HasResults(const FNDialogueHistorySearch& Search);
+	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
+	bool HasResultsOnSearches(const TArray<FNDialogueHistorySearch> Searches,
+		TArray<FNansConditionOperator> ConditionsOperators);
+	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
+	int32 GetDialogPoints(FNDialogueCategory Category) const;
+	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
+	void AddPoints(FNPoint Point, int32 Position, FName BlockName);
+	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
+	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search) const;
+	UPROPERTY(EditAnywhere, Category="PlayerDialogComponent")
 	bool bDebugSearch = false;
+	UPROPERTY(EditAnywhere, Category="PlayerDialogComponent")
+	bool bDebug = false;
 
 protected:
 	virtual void BeginPlay() override;
+	UPROPERTY()
+	UAbilitySystemComponent* ABSComp;
 	UPROPERTY()
 	TArray<FDialogueHistory> DialogueHistories;
 	int32 CurrentSequenceIndex = -1;

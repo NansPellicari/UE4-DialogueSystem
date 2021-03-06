@@ -1,14 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #include "UI/WheelButtonWidget.h"
 
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Components/Button.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
-#include "EngineGlobals.h"
 #include "Input/Events.h"
 #include "Input/Reply.h"
 #include "Layout/Geometry.h"
@@ -43,40 +52,40 @@ void UWheelButtonWidget::ComputeBaseMetrics(const FGeometry& MyGeometry)
 	if (DraggableButton == nullptr) return;
 	if (Circle == nullptr) return;
 
-	FGeometry ButtonGeometry = DraggableButton->GetCachedGeometry();
-	FVector2D ButtonSize = ButtonGeometry.GetLocalSize();
+	const FGeometry ButtonGeometry = DraggableButton->GetCachedGeometry();
+	const FVector2D ButtonSize = ButtonGeometry.GetLocalSize();
 	ButtonPosition = MyGeometry.AbsoluteToLocal(ButtonGeometry.GetAbsolutePosition());
-	FGeometry CircleGeometry = Circle->GetCachedGeometry();
-	FVector2D CircleSize = CircleGeometry.GetLocalSize();
-	FVector2D CirclePos = MyGeometry.AbsoluteToLocal(CircleGeometry.GetAbsolutePosition());
-	FVector2D MiddleCircle = CircleSize / 2;
+	const FGeometry CircleGeometry = Circle->GetCachedGeometry();
+	const FVector2D CircleSize = CircleGeometry.GetLocalSize();
+	const FVector2D CirclePos = MyGeometry.AbsoluteToLocal(CircleGeometry.GetAbsolutePosition());
+	const FVector2D MiddleCircle = CircleSize / 2;
 	RingRadius = MiddleCircle.X - ((CircleSize.X * RingThicknessRatio) / 2);
 	RingCenter = CirclePos + MiddleCircle - (ButtonSize / 2);
 	RoundDistance = RingRadius * 2 * PI;
 }
 
-void UWheelButtonWidget::GetWheelDistRatio(float& WheelRatioClockwise, float& WheelRatioAntiClockwise)
+void UWheelButtonWidget::GetWheelDistRatio(float& WheelRatioClockwise, float& WheelRatioAntiClockwise) const
 {
 	WheelRatioClockwise = (DragDistanceClockwise / RoundDistance) * MouseVelocityInfluenceRatio;
 	WheelRatioAntiClockwise = (DragDistanceAntiClockwise / RoundDistance) * MouseVelocityInfluenceRatio;
 }
 
-float UWheelButtonWidget::GetRoundDistance()
+float UWheelButtonWidget::GetRoundDistance() const
 {
 	return RoundDistance;
 }
 
-float UWheelButtonWidget::GetDragDistanceClockwise()
+float UWheelButtonWidget::GetDragDistanceClockwise() const
 {
 	return DragDistanceClockwise;
 }
 
-float UWheelButtonWidget::GetDragDistanceAntiClockwise()
+float UWheelButtonWidget::GetDragDistanceAntiClockwise() const
 {
 	return DragDistanceAntiClockwise;
 }
 
-EWheelDirection UWheelButtonWidget::GetDirection()
+EWheelDirection UWheelButtonWidget::GetDirection() const
 {
 	return Direction;
 }
@@ -88,17 +97,18 @@ void UWheelButtonWidget::LimitButtonMovement(FVector2D& DesiredPosition)
 	DesiredPosition = (DistVector * RingRadius) + RingCenter;
 }
 
-FReply UWheelButtonWidget::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply UWheelButtonWidget::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry,
+	const FPointerEvent& InMouseEvent)
 {
 	FReply Event = Super::NativeOnPreviewMouseButtonDown(InGeometry, InMouseEvent);
 
 	if (DraggableButton == nullptr) return FReply::Unhandled();
 
-	FGeometry ButtonGeometry = DraggableButton->GetCachedGeometry();
-	FVector2D ButtonSize = ButtonGeometry.GetLocalSize();
-	FVector2D MousePosButton = ButtonGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	const FGeometry ButtonGeometry = DraggableButton->GetCachedGeometry();
+	const FVector2D ButtonSize = ButtonGeometry.GetLocalSize();
+	const FVector2D MousePosButton = ButtonGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
-	bool MouseIn = MousePosButton <= ButtonSize && MousePosButton >= FVector2D(0, 0);
+	const bool MouseIn = MousePosButton <= ButtonSize && MousePosButton >= FVector2D(0, 0);
 
 	if (!MouseIn || bIsDragging)
 	{
@@ -108,10 +118,26 @@ FReply UWheelButtonWidget::NativeOnPreviewMouseButtonDown(const FGeometry& InGeo
 	return FReply::Handled().DetectDrag(TakeWidget(), FKey(EKeys::LeftMouseButton));
 }
 
+void UWheelButtonWidget::DoMoveWheel(const float ButtonDistance,
+	const EWheelDirection InDirection/*, bool bByDrag= false*/)
+{
+	Direction = InDirection;
+	DragDistanceAntiClockwise += Direction == EWheelDirection::Anticlockwise ? ButtonDistance : 0;
+	DragDistanceClockwise += Direction == EWheelDirection::Clockwise ? ButtonDistance : 0;
+
+	OnMovement.Broadcast(this, Direction);
+	OnMovementCpp.Broadcast(this, Direction);
+
+	// TODO should be great to reverse engineering the position of the DraggableButton when the turn is made programatically
+	// if (!bByDrag)
+	// {
+	// }
+}
+
 bool UWheelButtonWidget::NativeOnDragOver(
 	const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	bool Ret = Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
+	const bool Ret = Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
 
 	if (DraggableButton == nullptr) return false;
 	if (Circle == nullptr) return false;
@@ -128,22 +154,15 @@ bool UWheelButtonWidget::NativeOnDragOver(
 		return false;
 	}
 
-	FVector2D OldPos = RingCenter - ButtonPosition;
-	FVector2D NewPos = RingCenter - DesiredPosition;
+	const FVector2D OldPos = RingCenter - ButtonPosition;
+	const FVector2D NewPos = RingCenter - DesiredPosition;
 
-	float Angle = FMath::Atan2(OldPos.X, OldPos.Y) - FMath::Atan2(NewPos.X, NewPos.Y);
-	float Dist = FVector2D::Distance(ButtonPosition, DesiredPosition);
+	const float Angle = FMath::Atan2(OldPos.X, OldPos.Y) - FMath::Atan2(NewPos.X, NewPos.Y);
+	const float Dist = FVector2D::Distance(ButtonPosition, DesiredPosition);
 
-	// A real positive angle is Anticlockwise, there is a bug here
-	Direction = Angle > 0 ? EWheelDirection::Clockwise : EWheelDirection::Anticlockwise;
-
-	DragDistanceAntiClockwise += Direction == EWheelDirection::Anticlockwise ? Dist : 0;
-	DragDistanceClockwise += Direction == EWheelDirection::Clockwise ? Dist : 0;
-
-	OnMovement.Broadcast(this, Direction);
-	OnMovementCpp.Broadcast(this, Direction);
-
+	DoMoveWheel(Dist, Angle > 0 ? EWheelDirection::Clockwise : EWheelDirection::Anticlockwise);
 	LastButtonPosition = ButtonPosition;
+
 	return Ret;
 }
 
@@ -179,4 +198,20 @@ void UWheelButtonWidget::ResetDistance()
 {
 	DragDistanceAntiClockwise = 0;
 	DragDistanceClockwise = 0;
+}
+
+void UWheelButtonWidget::DoTurnWheel(float TurnNumber)
+{
+	float TotalDist = RoundDistance * TurnNumber;
+	Direction = EWheelDirection::Clockwise;
+	if (FMath::IsNegativeFloat(TotalDist))
+	{
+		TotalDist *= -1;
+		Direction = EWheelDirection::Anticlockwise;
+	}
+
+	DoMoveWheel(TotalDist, Direction);
+	// Direction = EWheelDirection::None;
+	OnStopMovement.Broadcast();
+	OnStopMovementCpp.Broadcast();
 }

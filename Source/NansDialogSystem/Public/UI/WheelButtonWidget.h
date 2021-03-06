@@ -1,3 +1,16 @@
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #pragma once
 // Fill out your copyright notice in the Description page of Project Settings.
 
@@ -52,12 +65,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 	void ResetDistance();
+	/**
+	 * Negative values are CounterClockwise
+	 * Positive values are Clockwise
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+	void DoTurnWheel(float TurnNumber);
 
-	void GetWheelDistRatio(float& WheelRatioClockwise, float& WheelRatioAntiClockwise);
+	void GetWheelDistRatio(float& WheelRatioClockwise, float& WheelRatioAntiClockwise) const;
 
-	float GetRoundDistance();
-	float GetDragDistanceClockwise();
-	float GetDragDistanceAntiClockwise();
+	float GetRoundDistance() const;
+	float GetDragDistanceClockwise() const;
+	float GetDragDistanceAntiClockwise() const;
 
 	bool GetResetDistanceOnDrop()
 	{
@@ -68,7 +87,7 @@ public:
 	{
 		return MouseVelocityInfluenceRatio;
 	};
-	EWheelDirection GetDirection();
+	EWheelDirection GetDirection() const;
 
 	virtual FReply
 	NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -80,6 +99,8 @@ public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 protected:
+	void DoMoveWheel(float ButtonDistance, EWheelDirection Direction/*, bool bByDrag = false*/);
+
 	UPROPERTY(BlueprintReadWrite, Category = "Distance")
 	float RoundDistance;
 
@@ -98,10 +119,10 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Distance")
 	float RingRadius;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Distance")
+	UPROPERTY(BlueprintReadWrite, Category = "Widget", meta=(BindWidget))
 	class UImage* DraggableButton = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Widget")
+	UPROPERTY(BlueprintReadWrite, Category = "Widget", meta=(BindWidget))
 	class UImage* Circle = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Widget")

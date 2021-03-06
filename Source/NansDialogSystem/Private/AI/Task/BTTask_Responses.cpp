@@ -13,11 +13,9 @@
 
 #include "AI/Task/BTTask_Responses.h"
 
-#include "BTDialogueResponseContainer.h"
 #include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Components/Button.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
@@ -71,6 +69,7 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
 		return EBTNodeResult::Aborted;
 	}
+
 	PointsHandler = Cast<UBTDialogPointsHandler>(
 		Blackboard->GetValueAsObject(PointsHandlerKeyName)
 	);
@@ -87,33 +86,13 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
-	if (!ensure(DialogHUD != nullptr))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
-		return EBTNodeResult::Aborted;
-	}
 
 	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
 
-	ResponsesSlot = Cast<UPanelWidget>(DialogHUD->FindWidget(ResponsesSlotName));
+	ResponsesSlot = DialogHUD->GetResponsesSlot();
 
-	if (!ensure(ResponsesSlot != nullptr))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			LOCTEXT("WrongResponsesSlotName", "The ResponsesSlotName set doesn't exists in HUD in ")
-		);
-		return EBTNodeResult::Aborted;
-	}
-
-	if (!ensure(ResponseButtonWidget && !ResponseButtonWidget->GetClass()->GetFullName().IsEmpty()))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongResponseButtonWidget", "Need to set a ResponseButtonWidget in "));
-		return EBTNodeResult::Aborted;
-	}
-
-	UWheelProgressBarWidget* TimeWidget = Cast<UWheelProgressBarWidget>(DialogHUD->FindWidget("ProgressBar"));
-	if (TimeWidget != nullptr)
+	UWheelProgressBarWidget* TimeWidget = DialogHUD->GetProgressBar();
+	if (IsValid(TimeWidget))
 	{
 		CountDownTask->Initialize(TimeWidget, TimeToResponse);
 		CountDownTask->ExecuteTask(OwnerComp, NodeMemory);
@@ -148,16 +127,6 @@ void UBTTask_Responses::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
-	if (!ensure(ResponsesSlot != nullptr))
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			LOCTEXT("WrongResponsesSlotName", "The ResponsesSlotName set not exists in HUD in ")
-		);
-		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
-		return;
-	}
-
 	CountDownTask->TickTask(OwnerComp, NodeMemory, DeltaSeconds);
 
 	ReceiveOnTick(OwnerComp, NodeMemory, DeltaSeconds);
@@ -173,39 +142,13 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 	CountDownTask->OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 	MiddleResponseIndex = -1;
 
-	if (ResponsesSlot == nullptr)
+	const bool bHasRemoved = DialogHUD->RemoveResponses();
+
+	if (!bHasRemoved)
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("NoResponseSlot", "No responses slot in "));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 		return;
 	}
-
-	while (ResponsesSlot->GetChildrenCount() > 0)
-	{
-		UUserWidget* Widget = Cast<UUserWidget>(ResponsesSlot->GetChildAt(0));
-
-		if (Widget == nullptr)
-		{
-			EDITOR_ERROR(
-				"DialogSystem",
-				LOCTEXT("WrongWidgetInResponsesSlot", "A Wrong object type is in the responses slot in ")
-			);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
-			return;
-		}
-		UResponseButtonWidget* Button = Cast<UResponseButtonWidget>(Widget);
-
-		if (Button != nullptr)
-		{
-			Button->OnBTClicked.Clear();
-			DialogHUD->OnRemovedChild.Broadcast(Button);
-			Button->MarkPendingKill();
-		}
-
-		ResponsesSlot->RemoveChildAt(0);
-	}
-
-	ListButtonIndexes.Empty();
 
 	if (DialogHUD == nullptr) return;
 
@@ -245,31 +188,21 @@ void UBTTask_Responses::CreateButtons()
 
 void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel)
 {
-	const FString UniqName = UNTextLibrary::UniqueString(Response.Text);
+	FResponseButtonBuilderData BuilderData;
+	BuilderData.Response = Response;
+	BuilderData.DisplayOrder = Position;
+	BuilderData.MaxPoints = MaxLevel;
+	BuilderData.InfluencedBy = Position > 0 ? EResponseDirection::DOWN : EResponseDirection::UP;
 
-	UResponseButtonWidget* ButtonWidget = CreateWidget<UResponseButtonWidget>(GetWorld(), ResponseButtonWidget);
-
+	UResponseButtonWidget* ButtonWidget = DialogHUD->AddNewResponse(BuilderData);
 	if (!ensure(ButtonWidget != nullptr))
 	{
 		FinishLatentAbort(*OwnerComponent);
 		return;
 	}
-
-	UBTDialogueResponseContainer* ResponseContainer =
-		NewObject<UBTDialogueResponseContainer>(
-			static_cast<UObject*>(OwnerComponent),
-			UBTDialogueResponseContainer::StaticClass()
-		);
-	ResponseContainer->SetResponse(Response);
-	ResponseContainer->DisplayOrder = Position;
-	ResponseContainer->InfluencedBy = Position > 0 ? EResponseDirection::DOWN : EResponseDirection::UP;
-	ButtonWidget->SetResponse(ResponseContainer);
-
+	// TODO Change this and instead listen DialogHUD->OnResponse (with more params)
+	// TODO should be listen by dialog HUD instead, see OnButtonClicked to see what event this should listen
 	ButtonWidget->OnBTClicked.AddDynamic(this, &UBTTask_Responses::OnButtonClicked);
-	ButtonWidget->ComputeColor(MaxLevel);
-	ListButtonIndexes.Add(UniqName, Index);
-	ResponsesSlot->AddChild(ButtonWidget);
-	DialogHUD->OnAddedChild.Broadcast(ButtonWidget);
 }
 
 void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
@@ -280,38 +213,40 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 		return;
 	}
 
-	UBTDialogueResponseContainer* ResponseContainer = ButtonWidget->GetResponse();
+	const FBTDialogueResponse Response = ButtonWidget->GetResponse();
 
-	PointsHandler->AddPoints(FNPoint(ResponseContainer->GetResponse()), ResponseContainer->DisplayOrder);
+	PointsHandler->AddPoints(FNPoint(Response), ButtonWidget->DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
-	DialogHUD->OnResponse.Broadcast(ButtonWidget->GetResponse()->GetResponse().Text, FText::GetEmpty());
+	// TODO Should be call by dialog HUD itself
+	DialogHUD->SetPlayerText(Response.Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
 void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 {
 	UResponseButtonWidget* ButtonWidget = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(MiddleResponseIndex));
-	UBTDialogueResponseContainer* DialogueResponse = UBTDialogueResponseContainer::CreateNullObject(OwnerComp);
+	FBTDialogueResponse Response;
+	int32 DisplayOrder = 0;
 
 	// TODO set a random value depending on the response setting + weighting with player class level
 	// eg. More chance to have a random CSV response if player is better in CNV: this to push the frustration up
 	if (ButtonWidget != nullptr)
 	{
-		DialogueResponse = ButtonWidget->GetResponse();
+		Response = ButtonWidget->GetResponse();
+		DisplayOrder = ButtonWidget->DisplayOrder;
 	}
 	else
 	{
-		FBTDialogueResponse Response = DialogueResponse->GetResponse();
 		Response.Category = MiddleResponseCategory;
 		Response.Point = 0;
-		DialogueResponse->SetResponse(Response);
 	}
 
-	PointsHandler->AddPoints(FNPoint(DialogueResponse->GetResponse()), DialogueResponse->DisplayOrder);
+	PointsHandler->AddPoints(FNPoint(Response), DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
-	DialogHUD->OnResponse.Broadcast(DialogueResponse->GetResponse().Text, FText::GetEmpty());
+	// TODO Should be call by dialog HUD itself
+	DialogHUD->SetPlayerText(Response.Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -353,21 +288,6 @@ FString UBTTask_Responses::GetStaticDescription() const
 			LOCTEXT("DownResponsesTitle", "[ DOWN Responses ]\n").ToString(),
 			false
 		);
-
-	ReturnDesc += "\nUINameKey: " + UINameKey.ToString();
-	ReturnDesc += "\nResponse Container: " + ResponseContainerName.ToString();
-	ReturnDesc += "\nResponse Button Widget: ";
-	if (ResponseButtonWidget != nullptr && !ResponseButtonWidget->GetDefaultObject()->GetClass()->GetFullName().
-																  IsEmpty())
-	{
-		ReturnDesc += ResponseButtonWidget->GetDefaultObject()->GetClass()->GetName();
-	}
-	else
-	{
-		ReturnDesc += "None";
-	}
-
-	ReturnDesc += "\nResponses Slot Name: " + ResponsesSlotName.ToString();
 
 	ReturnDesc += "\n----------------------\n";
 	ReturnDesc += CountDownTask->GetStaticDescription();

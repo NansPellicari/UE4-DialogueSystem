@@ -40,7 +40,7 @@ void FNDialogueCategoryCustomization::CustomizeHeader(TSharedRef<IPropertyHandle
 	Val.Split("=", nullptr, &Val);
 	Val = Val.LeftChop(2);
 	Val = Val.RightChop(1);
-	FName NameSelected = FName(*Val);
+	const FName NameSelected = FName(*Val);
 
 	TArray<FNDialogueCategorySettings> Settings;
 	UDialogSystemSettings::Get()->GetDialogueCategoryConfigs(Settings);
@@ -80,13 +80,18 @@ void FNDialogueCategoryCustomization::OnAttributeSelected(TSharedPtr<FName> Sele
 	{
 		FString TagString = TEXT("(");
 		TagString += TEXT("TagName=\"");
-		TagString += Selection->ToString();
+		TagString += *Selection.Get() != NAME_None ? Selection->ToString() : "";
 		TagString += TEXT("\"");
 		TagString += TEXT(")");
-		FPropertyAccess::Result Result = NameProperty->SetValueFromFormattedString(TagString);
-		// FString StrResult = Result == FPropertyAccess::Fail ? "Fail" : "Success";
-		// StrResult = Result == FPropertyAccess::MultipleValues ? "MultipleValues" : StrResult;
-		// UE_LOG(LogTemp, Warning, TEXT("%s: %s - access: %s"), ANSI_TO_TCHAR(__FUNCTION__), *Selection->ToString(), *StrResult);
+		FString ActualValue;
+		NameProperty->GetValueAsFormattedString(ActualValue);
+		if (TagString != ActualValue)
+		{
+			FPropertyAccess::Result Result = NameProperty->SetValueFromFormattedString(TagString);
+			// FString StrResult = Result == FPropertyAccess::Fail ? "Fail" : "Success";
+			// StrResult = Result == FPropertyAccess::MultipleValues ? "MultipleValues" : StrResult;
+			// UE_LOG(LogTemp, Warning, TEXT("%s: %s - access: %s"), ANSI_TO_TCHAR(__FUNCTION__), *Selection->ToString(), *StrResult);
+		}
 	}
 }
 

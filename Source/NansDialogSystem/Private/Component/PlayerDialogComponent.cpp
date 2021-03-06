@@ -13,9 +13,13 @@
 
 #include "NansDialogSystem/Public/Component/PlayerDialogComponent.h"
 
+
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectExtension.h"
 #include "NansDialogSystemLog.h"
+#include "NDSFunctionLibrary.h"
+#include "PointSystemHelpers.h"
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Dialogue/DialogueHistorySearch.h"
 #include "Kismet/GameplayStatics.h"
@@ -24,19 +28,17 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-
 UPlayerDialogComponent::UPlayerDialogComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
-
 
 void UPlayerDialogComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	if (!IsValid(GetOwner())) return;
 	AActor* OwnerActor = Cast<AActor>(GetOwner());
-	auto ABSComp = Cast<UAbilitySystemComponent>(
+	ABSComp = Cast<UAbilitySystemComponent>(
 		OwnerActor->GetComponentByClass(UAbilitySystemComponent::StaticClass())
 	);
 	if (!IsValid(ABSComp))
@@ -74,15 +76,117 @@ void UPlayerDialogComponent::AddResponse(const FDialogueResult& Result)
 	DialogueHistories.Last().Sequences.Last().Results.Add(Result);
 }
 
-TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHistorySearch& Search)
+bool UPlayerDialogComponent::HasResults(const FNDialogueHistorySearch& Search)
+{
+	const TArray<FDialogueResult> Results = SearchResults(Search);
+	return Search.bInversed ? Results.Num() <= 0 : Results.Num() > 0;
+}
+
+bool UPlayerDialogComponent::HasResultsOnSearches(const TArray<FNDialogueHistorySearch> Searches,
+	TArray<FNansConditionOperator> ConditionsOperators)
+{
+	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
+	TMap<FString, BoolStruct*> ConditionsResults;
+	int32 Idx = 0;
+	if (Searches.Num() > 0)
+	{
+		for (auto& Search : Searches)
+		{
+			FString SearchKey = UNansComparator::BuildKeyFromIndex(Idx);
+			const bool bResult = HasResults(Search);
+			if (bDebugSearch)
+			{
+				UE_LOG(
+					LogDialogSystem,
+					Display,
+					TEXT("%s search: %s - results: %i"),
+					*SearchKey,
+					*Search.ToString(),
+					bResult
+				);
+			}
+			ConditionsResults.Add(SearchKey, new BoolStruct(bResult));
+			++Idx;
+			if (HasConditionsOperator == false && bResult == false)
+			{
+				break;
+			}
+		}
+	}
+	if (ConditionsResults.Num() <= 0)
+	{
+		return false;
+	}
+	if (HasConditionsOperator == false)
+	{
+		const FString Key = UNansComparator::BuildKeyFromIndex(ConditionsResults.Num() - 1);
+		return ConditionsResults.FindRef(Key)->value;
+	}
+
+	return UNansComparator::EvaluateOperators(ConditionsOperators, ConditionsResults, bDebugSearch);
+}
+
+int32 UPlayerDialogComponent::GetDialogPoints(FNDialogueCategory Category) const
+{
+	int32 Points = 0;
+	FNDialogueHistorySearch Search;
+	Search.DialogName.bIsAll = true;
+	Search.PropertyName = ENPropertyValue::IsDone;
+	const TArray<FDialogueResult> Results = SearchResults(Search);
+
+	for (const FDialogueResult& Result : Results)
+	{
+		if (Result.CategoryName == Category.Name)
+		{
+			Points += Result.InitialPoints;
+		}
+	}
+	return Points;
+}
+
+void UPlayerDialogComponent::AddPoints(FNPoint Point, int32 Position, FName BlockName)
+{
+	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
+	if (!IsValid(GEffect))
+	{
+		EDITOR_ERROR(
+			"DialogSystem",
+			FText::Format(
+				LOCTEXT("EffectOnEarnedMissing",
+					"No effect on earned is set for point type {0}"),
+				FText::FromString(Point.Category.Name.ToString()))
+		);
+		return;
+	}
+	FGameplayEffectContextHandle FxContextHandle = ABSComp->MakeEffectContext();
+	FDialogueResult DialogData;
+	DialogData.Difficulty = Point.Difficulty;
+	DialogData.Position = Position;
+	DialogData.CategoryName = Point.Category.Name;
+	DialogData.BlockName = BlockName;
+	DialogData.InitialPoints = Point.Point;
+	DialogData.Response = Point.Response;
+	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
+	FGameplayEffectSpecHandle SpecHandle = ABSComp->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
+	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
+	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, UDialogSystemSettings::Get()->TagToIdentifyDialogEffect);
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
+		SpecHandle,
+		UDialogSystemSettings::Get()->PointMagnitudeTag,
+		Point.Point
+	);
+	ABSComp->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+}
+
+TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHistorySearch& Search) const
 {
 	TArray<FDialogueResult> Results;
-	FDialogueHistory* CurrentHistory = CurrentHistoryIndex > -1
-										   ? &DialogueHistories[CurrentHistoryIndex]
-										   : &DialogueHistories.Last();
-	FDialogueSequence* CurrentSequence = CurrentSequenceIndex > -1
-											 ? &CurrentHistory->Sequences[CurrentSequenceIndex]
-											 : &CurrentHistory->Sequences.Last();
+	const FDialogueHistory* CurrentHistory = CurrentHistoryIndex > -1
+												 ? &DialogueHistories[CurrentHistoryIndex]
+												 : &DialogueHistories.Last();
+	const FDialogueSequence* CurrentSequence = CurrentSequenceIndex > -1
+												   ? &CurrentHistory->Sequences[CurrentSequenceIndex]
+												   : &CurrentHistory->Sequences.Last();
 	FString Decals = "";
 	if (bDebugSearch)
 	{
@@ -142,7 +246,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Sequence.Name != CurrentSequence->Name
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%shas not the same name"), *Decals);
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>has not the same name"), *Decals);
 				continue;
 			}
 			if (
@@ -151,7 +255,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				LastSequenceIdx > SequenceIdx
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sIs not the last"), *Decals);
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Is not the last"), *Decals);
 				continue;
 			}
 			if (
@@ -160,7 +264,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Search.OwnerName.Value != Sequence.Owner
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sDo not belong to the same user"), *Decals);
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Do not belong to the same user"), *Decals);
 				continue;
 			}
 			if (
@@ -168,7 +272,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				Sequence.Owner != CurrentSequence->Owner
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sDo not belong to the same user"), *Decals);
+				if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Do not belong to the same user"), *Decals);
 				continue;
 			}
 
@@ -198,12 +302,12 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					Search.DialogName.Value != Block.BlockName.ToString()
 				)
 				{
-					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sName is not compatible"), *Decals);
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Name is not compatible"), *Decals);
 					continue;
 				}
 				if (Search.DialogName.bLastOnly && LastBlockIdx > BlockIdx)
 				{
-					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("%sIs not the last one"), *Decals);
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Is not the last one"), *Decals);
 					continue;
 				}
 				bool bSuccess = false;
@@ -220,8 +324,8 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					);
 					if (bDebugSearch) UE_LOG(
 						LogDialogSystem,
-						Warning,
-						TEXT("%sIs %s category: %i"),
+						Display,
+						TEXT("%s>Is %s category: %i"),
 						*Decals,
 						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
 						bSuccess
@@ -236,8 +340,8 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					);
 					if (bDebugSearch) UE_LOG(
 						LogDialogSystem,
-						Warning,
-						TEXT("%sIs %s name: %i"),
+						Display,
+						TEXT("%s>Is %s name: %i"),
 						*Decals,
 						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
 						bSuccess
@@ -254,8 +358,8 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					);
 					if (bDebugSearch) UE_LOG(
 						LogDialogSystem,
-						Warning,
-						TEXT("%sIs %s %s: %i"),
+						Display,
+						TEXT("%s>Is %s %s: %i"),
 						*Decals,
 						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
 						Search.PropertyName == ENPropertyValue::InitialPoints
@@ -275,8 +379,8 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 					);
 					if (bDebugSearch) UE_LOG(
 						LogDialogSystem,
-						Warning,
-						TEXT("%sIs %s %s: %i"),
+						Display,
+						TEXT("%s>Is %s %s: %i"),
 						*Decals,
 						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
 						Search.PropertyName == ENPropertyValue::Difficulty
@@ -288,7 +392,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 
 				if (bSuccess)
 				{
-					if (bDebugSearch) UE_LOG(LogDialogSystem, Warning, TEXT("Is success"));
+					if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT(">>Is success"));
 					Results.Add(Block);
 				}
 			}

@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Dialogue/DialogueSequence.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/PlayerController.h"
 #include "NansBehaviorSteps/Public/BTStepsHandler.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
@@ -65,6 +64,7 @@ void UBTService_DialogPointsHandler::OnBecomeRelevant(UBehaviorTreeComponent& Ow
 		}
 		FDialogueSequence NewDialogueSequence;
 		NewDialogueSequence.Name = OwnerComp.GetCurrentTree()->GetFName();
+		// TODO use the new Protagonist name
 		NewDialogueSequence.Owner = ActorOwner->GetPathName();
 
 		TScriptInterface<IBTStepsHandler> BTStepsHandler;
