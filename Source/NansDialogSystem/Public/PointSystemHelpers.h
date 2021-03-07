@@ -14,7 +14,7 @@
 #pragma once
 
 #include "BTDialogueTypes.h"
-#include "NansCommon/Public/Service/NansComparatorHelpers.h"
+#include "Misc/NansComparatorHelpers.h"
 
 #include "PointSystemHelpers.generated.h"
 

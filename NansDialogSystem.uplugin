@@ -32,10 +32,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "NansTimelineSystem",
-			"Enabled": true
-		},
-		{
 			"Name": "NansUE4Utilities",
 			"Enabled": true
 		},
@@ -48,7 +44,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "NansCommon",
+			"Name": "NansUMGExtent",
 			"Enabled": true
 		},
 		{

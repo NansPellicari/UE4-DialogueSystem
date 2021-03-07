@@ -16,7 +16,7 @@
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTDecorator.h"
 #include "Dialogue/DialogueHistorySearch.h"
-#include "Service/NansComparatorHelpers.h"
+#include "Misc/NansComparatorHelpers.h"
 
 #include "BTDecorator_CheckResponsePosition.generated.h"
 

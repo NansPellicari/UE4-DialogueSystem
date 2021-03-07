@@ -22,7 +22,7 @@
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
-#include "Service/NansArrayUtils.h"
+#include "Misc/NansArrayUtils.h"
 #include "Setting/DialogSystemSettings.h"
 #include "Setting/InteractiveSettings.h"
 #include "UI/ButtonSequenceWidget.h"

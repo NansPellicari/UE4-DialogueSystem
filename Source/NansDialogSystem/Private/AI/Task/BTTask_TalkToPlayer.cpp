@@ -60,6 +60,12 @@ void UBTTask_TalkToPlayer::OnQuestionEnd()
 FString UBTTask_TalkToPlayer::GetStaticDescription() const
 {
 	FString ReturnDesc;
+	if (!Title.IsEmptyOrWhitespace())
+	{
+		ReturnDesc += "\n" + UNTextLibrary::StringToLines("\"" + Title.ToString() + "\"", 50, "\t");
+		ReturnDesc += "\n";
+	}
+
 	if (Message.IsEmptyOrWhitespace())
 	{
 		ReturnDesc += "\nNo Message\n";
@@ -68,7 +74,6 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 	{
 		ReturnDesc += "\n" + UNTextLibrary::StringToLines("\"" + Message.ToString() + "\"", 50, "\t");
 	}
-	ReturnDesc += "\n\UINameKey: " + UINameKey.ToString();
 
 	return ReturnDesc;
 }

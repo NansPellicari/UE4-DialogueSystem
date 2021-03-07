@@ -14,10 +14,10 @@
 #include "AI/Decorator/BTDecorator_CheckDialogueResults.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/DialogBTHelpers.h"
-#include "Service/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 

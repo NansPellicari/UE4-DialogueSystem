@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #include "BTDialogueTypes.h"
 #include "BehaviorTree/BTDecorator.h"
 #include "Dialogue/DialogueHistorySearch.h"
-#include "Service/NansComparatorHelpers.h"
+#include "Misc/NansComparatorHelpers.h"
 
 #include "BTDecorator_CheckInStep.generated.h"
 

@@ -17,7 +17,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
-#include "Service/NansComparator.h"
+#include "Misc/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 

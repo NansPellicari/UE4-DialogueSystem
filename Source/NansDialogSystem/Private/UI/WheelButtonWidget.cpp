@@ -211,7 +211,7 @@ void UWheelButtonWidget::DoTurnWheel(float TurnNumber)
 	}
 
 	DoMoveWheel(TotalDist, Direction);
-	// Direction = EWheelDirection::None;
+	Direction = EWheelDirection::None;
 	OnStopMovement.Broadcast();
 	OnStopMovementCpp.Broadcast();
 }

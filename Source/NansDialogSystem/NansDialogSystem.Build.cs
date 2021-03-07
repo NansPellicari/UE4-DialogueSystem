@@ -31,10 +31,8 @@ namespace UnrealBuildTool.Rules
 					"GameplayTags",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
-					"NansTimelineSystemUE4",
 					"NansBehaviorSteps",
 					"NansUMGExtent",
-					"NansCommon", // TODO should remove this dependencies
 					"Interactive"
 				}
 			);

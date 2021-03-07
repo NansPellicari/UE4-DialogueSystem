@@ -16,9 +16,9 @@
 #include "CoreMinimal.h"
 
 #include "BTDialogueTypes.h"
-#include "NansCommon/Public/Service/NansComparatorHelpers.h"
+#include "Misc/NansComparator.h"
+#include "Misc/NansComparatorHelpers.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
-#include "Service/NansComparator.h"
 
 #include "DialogueHistorySearch.generated.h"
 
