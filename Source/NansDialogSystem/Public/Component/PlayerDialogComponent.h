@@ -16,6 +16,7 @@
 #include "CoreMinimal.h"
 
 #include "BTDialogueTypes.h"
+#include "BTStepsLibrary.h"
 #include "PointSystemHelpers.h"
 #include "Components/ActorComponent.h"
 #include "Dialogue/DialogueHistory.h"
@@ -25,6 +26,7 @@
 
 struct FNDialogueHistorySearch;
 struct FNansConditionOperator;
+
 /**
  * The main Goal of this Component is to save data from dialog session.
  * It is also used to retrieve data on previous or actual session to perform some checks on previously chosen responses. 
@@ -48,7 +50,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
 	int32 GetDialogPoints(FNDialogueCategory Category) const;
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
-	void AddPoints(FNPoint Point, int32 Position, FName BlockName);
+	void AddPoints(FNPoint Point, int32 Position, FBTStep Step);
 	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search) const;
 	UPROPERTY(EditAnywhere, Category="PlayerDialogComponent")

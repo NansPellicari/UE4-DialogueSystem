@@ -13,26 +13,28 @@
 
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 
+#include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
-#include "Misc/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
 
-void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> Steps,
+void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> StepConditions,
 	TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
 	TArray<FNansConditionOperator>& Operators)
 {
 	int32 Index = 0;
-	for (auto& Step : Steps)
+	for (auto& StepCondition : StepConditions)
 	{
 		FNDialogueHistorySearch Search, Search2;
-		if (Step.isDone)
+		if (StepCondition.isDone)
 		{
-			Search.DialogName.SetValue(FString("Step") + FString::FromInt(Step.Step));
-			Search2.DialogName.SetValue(FString("Step") + FString::FromInt(Step.Step));
+			FNStep Step(StepCondition.Step, StepCondition.StepLabel);
+			Search.DialogName.SetValue(Step.GetLabel().ToString());
+			Search2.DialogName.SetValue(Step.GetLabel().ToString());
 		}
 		else
 		{
@@ -41,12 +43,12 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 			Search2.DialogName.bIsAll = true;
 		}
 		Search.PropertyName = ENPropertyValue::InitialPoints;
-		Search.Operator = Step.Operator;
-		Search.FloatValue = Step.CompareTo;
+		Search.Operator = StepCondition.Operator;
+		Search.FloatValue = StepCondition.CompareTo;
 
 		Search2.PropertyName = ENPropertyValue::CategoryName;
 		Search2.Operator = ENansConditionComparator::Equals;
-		Search2.CategoryValue = Step.Category;
+		Search2.CategoryValue = StepCondition.Category;
 		Searches.Add(Search);
 		Searches.Add(Search2);
 		FNansConditionOperator Operator;
@@ -122,9 +124,9 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 		FBTStepCondition Condition = StepConditions[Index];
 
 		ReturnDesc += FString::Printf(
-			TEXT("\n%s: Step %d is Done [%s] - %s %s %d"),
+			TEXT("\n%s: Step [%s] is Done [%s] - %s %s %d"),
 			*UNansComparator::BuildKeyFromIndex(Index),
-			Condition.Step,
+			*(!Condition.StepLabel.IsNone() ? Condition.StepLabel.ToString() : FString::FromInt(Condition.Step)),
 			Condition.isDone ? "x" : " ",
 			*Condition.Category.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),

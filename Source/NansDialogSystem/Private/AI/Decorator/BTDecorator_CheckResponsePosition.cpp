@@ -13,10 +13,12 @@
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
+
+#include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
-#include "Misc/NansComparator.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -28,7 +30,8 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 	{
 		FNDialogueHistorySearch Search;
 
-		Search.DialogName.SetValue(FString("Step") + FString::FromInt(RespPos.Step));
+		FNStep Step(RespPos.Step, RespPos.StepLabel);
+		Search.DialogName.SetValue(Step.GetLabel().ToString());
 		Search.DialogName.bLastOnly = !RespPos.bInEveryInstances;
 
 		Search.PropertyName = ENPropertyValue::SentencePosition;
@@ -89,10 +92,10 @@ FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 		const FResponsePositionCondition Condition = ResponsePositionConditions[Index];
 
 		ReturnDesc += FString::Printf(
-			TEXT("\n%s (%s) Step %d, response %s %d"),
+			TEXT("\n%s (%s) Step [%s], response %s %d"),
 			*UNansComparator::BuildKeyFromIndex(Index),
 			Condition.bInEveryInstances ? TEXT("all") : TEXT("last only"),
-			Condition.Step,
+			*(!Condition.StepLabel.IsNone() ? Condition.StepLabel.ToString() : FString::FromInt(Condition.Step)),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.Position
 		);

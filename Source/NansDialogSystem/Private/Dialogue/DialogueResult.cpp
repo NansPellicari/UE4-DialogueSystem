@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ FString FDialogueResult::ToString() const
 	Args.Add(InitialPoints);
 	Args.Add(CategoryName.ToString());
 	return FString::Format(
-		TEXT(" Position: {0}, BlockName: {1}, Difficulty: {2}, InitialPoints: {3}, CategoryName: {4}"),
+		TEXT(" Position: {0}, BlockName: [{1}], Difficulty: {2}, InitialPoints: {3}, CategoryName: {4}"),
 		Args
 	);
 }

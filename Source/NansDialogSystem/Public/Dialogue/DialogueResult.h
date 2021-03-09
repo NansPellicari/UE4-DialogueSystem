@@ -18,6 +18,36 @@
 #include "DialogueResult.generated.h"
 
 USTRUCT(BlueprintType)
+struct FBlockName
+{
+	GENERATED_BODY()
+	FBlockName() {}
+	FBlockName(const int32& InId, const FName& InName) : Name(InName), Id(InId) {}
+	FName Name = NAME_None;
+	int32 Id = 0;
+
+	bool operator==(const FString& RHS) const { return Name.ToString() == RHS || GetNameFromId().ToString() == RHS; }
+	bool operator!=(const FString& RHS) const { return !(*this == RHS); }
+
+	FName GetName() const
+	{
+		return Name;
+	}
+
+	FName GetNameFromId() const
+	{
+		FString Str = FString("Step");
+		Str += FString::FromInt(Id);
+		return FName(Str);
+	}
+
+	FString ToString() const
+	{
+		return FString::Printf(TEXT("id: %d, name: %s"), Id, *Name.ToString());
+	}
+};
+
+USTRUCT(BlueprintType)
 struct NANSDIALOGSYSTEM_API FDialogueResult
 {
 	GENERATED_USTRUCT_BODY()
@@ -27,7 +57,7 @@ struct NANSDIALOGSYSTEM_API FDialogueResult
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
 	int32 Position = -100;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
-	FName BlockName = NAME_None;
+	FBlockName BlockName;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")
 	FText Response;
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "DialogueResult")

@@ -144,7 +144,7 @@ int32 UPlayerDialogComponent::GetDialogPoints(FNDialogueCategory Category) const
 	return Points;
 }
 
-void UPlayerDialogComponent::AddPoints(FNPoint Point, int32 Position, FName BlockName)
+void UPlayerDialogComponent::AddPoints(FNPoint Point, int32 Position, FBTStep Step)
 {
 	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
 	if (!IsValid(GEffect))
@@ -163,7 +163,7 @@ void UPlayerDialogComponent::AddPoints(FNPoint Point, int32 Position, FName Bloc
 	DialogData.Difficulty = Point.Difficulty;
 	DialogData.Position = Position;
 	DialogData.CategoryName = Point.Category.Name;
-	DialogData.BlockName = BlockName;
+	DialogData.BlockName = FBlockName(Step.Id, Step.GetLabel());
 	DialogData.InitialPoints = Point.Point;
 	DialogData.Response = Point.Response;
 	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
@@ -299,7 +299,7 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				if (
 					!Search.DialogName.bIsAll &&
 					!Search.DialogName.Value.IsEmpty() &&
-					Search.DialogName.Value != Block.BlockName.ToString()
+					Block.BlockName != Search.DialogName.Value
 				)
 				{
 					if (bDebugSearch) UE_LOG(LogDialogSystem, Display, TEXT("%s>Name is not compatible"), *Decals);
@@ -335,9 +335,14 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 				{
 					bSuccess = UNansComparator::EvaluateComparator<FString>(
 						Search.Operator,
-						Block.BlockName.ToString(),
+						Block.BlockName.GetNameFromId().ToString(),
 						Search.NameValue.ToString()
 					);
+					bSuccess = bSuccess || UNansComparator::EvaluateComparator<FString>(
+								   Search.Operator,
+								   Block.BlockName.GetName().ToString(),
+								   Search.NameValue.ToString()
+							   );
 					if (bDebugSearch) UE_LOG(
 						LogDialogSystem,
 						Display,

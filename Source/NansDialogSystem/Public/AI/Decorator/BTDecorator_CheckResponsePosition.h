@@ -34,6 +34,9 @@ struct NANSDIALOGSYSTEM_API FResponsePositionCondition
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
 	int32 Step;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
+	FName StepLabel = NAME_None;
+
 	/**
 	 * If checked will compare on each responses given in the desired step.
 	 * it can be usefull if you plan to redo several times a step.

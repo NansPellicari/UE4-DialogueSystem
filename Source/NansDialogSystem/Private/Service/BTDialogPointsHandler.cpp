@@ -16,12 +16,12 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AIController.h"
 #include "BTDialogueTypes.h"
+#include "BTStepsLibrary.h"
 #include "NansDialogSystemLog.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Dialogue/DialogueSequence.h"
 #include "Kismet/GameplayStatics.h"
-#include "NansBehaviorSteps/Public/BTStepsHandler.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialogBTHelpers.h"
 #include "Setting/DialogSystemSettings.h"
@@ -40,7 +40,7 @@ void UBTDialogPointsHandler::Clear()
 }
 
 bool UBTDialogPointsHandler::Initialize(
-	TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
+	UBTStepsHandlerContainer* InStepsHandler, UBehaviorTreeComponent& OwnerComp,
 	FDialogueSequence DialogueSequence)
 {
 	StepsHandler = InStepsHandler;
@@ -75,10 +75,8 @@ bool UBTDialogPointsHandler::Initialize(
 void UBTDialogPointsHandler::AddPoints(FNPoint Point, int32 Position)
 {
 	verify(IsValid(DialogComp));
-	int32 Step = IBTStepsHandler::Execute_GetCurrentStep(StepsHandler.GetObject());
-	FString BaseName = TEXT("Step");
-	BaseName.AppendInt(Step);
-	DialogComp->AddPoints(Point, Position, FName(BaseName));
+	const FBTStep Step = UBTStepsLibrary::GetCurrent(StepsHandler);
+	DialogComp->AddPoints(Point, Position, Step);
 }
 
 int32 UBTDialogPointsHandler::GetDialogPoints(FNDialogueCategory Category) const

@@ -15,6 +15,7 @@
 
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
+#include "BTStepsHandlerContainer.h"
 #include "PointSystemHelpers.h"
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 #include "Component/PlayerDialogComponent.h"
@@ -24,7 +25,6 @@
 struct FDialogueSequence;
 struct FNDialogFactorSettings;
 class UNFactorsFactoryClientAdapter;
-class IBTStepsHandler;
 class UBehaviorTreeComponent;
 
 UCLASS(BlueprintType)
@@ -37,7 +37,7 @@ public:
 
 
 	UBTDialogPointsHandler() {}
-	bool Initialize(TScriptInterface<IBTStepsHandler> InStepsHandler, UBehaviorTreeComponent& OwnerComp,
+	bool Initialize(UBTStepsHandlerContainer* InStepsHandler, UBehaviorTreeComponent& OwnerComp,
 		FDialogueSequence DialogueSequence);
 
 	virtual void BeginDestroy() override;
@@ -48,13 +48,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
 	void Clear();
 	bool HasResults(const FNDialogueHistorySearch& Search) const;
-	bool HasResults(const TArray<FNDialogueHistorySearch> Searches, TArray<FNansConditionOperator> ConditionsOperators) const;
+	bool HasResults(const TArray<FNDialogueHistorySearch> Searches,
+		TArray<FNansConditionOperator> ConditionsOperators) const;
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
 	int32 GetDialogPoints(FNDialogueCategory Category) const;
 
 protected:
 	UPROPERTY()
-	TScriptInterface<IBTStepsHandler> StepsHandler;
+	UBTStepsHandlerContainer* StepsHandler;
 	UPROPERTY()
 	UAbilitySystemComponent* PlayerGASC;
 	UPROPERTY()

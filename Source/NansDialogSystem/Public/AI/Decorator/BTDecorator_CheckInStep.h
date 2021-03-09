@@ -40,6 +40,9 @@ struct NANSDIALOGSYSTEM_API FBTStepCondition
 	int32 Step;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
+	FName StepLabel = NAME_None;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	FNDialogueCategory Category;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
@@ -48,7 +51,7 @@ struct NANSDIALOGSYSTEM_API FBTStepCondition
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	int32 CompareTo;
 
-	static void ToDialogueHistorySearch(const TArray<FBTStepCondition> Steps,
+	static void ToDialogueHistorySearch(const TArray<FBTStepCondition> StepConditions,
 		TArray<FNansConditionOperator> ConditionsOperators,
 		TArray<FNDialogueHistorySearch>& Searches,
 		TArray<FNansConditionOperator>& Operators);

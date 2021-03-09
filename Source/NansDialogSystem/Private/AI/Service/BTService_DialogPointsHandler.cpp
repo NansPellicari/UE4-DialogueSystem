@@ -19,9 +19,6 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Dialogue/DialogueSequence.h"
 #include "GameFramework/Character.h"
-#include "NansBehaviorSteps/Public/BTStepsHandler.h"
-#include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/DialogBTHelpers.h"
 #include "Service/InteractiveBTHelpers.h"
@@ -51,27 +48,16 @@ void UBTService_DialogPointsHandler::OnBecomeRelevant(UBehaviorTreeComponent& Ow
 		BlackboardComp->SetValueAsObject(PointsHandlerKeyName, BTDialogPointsHandler);
 	}
 
-	UObject* BTSteps = BlackboardComp->GetValueAsObject(StepsKeyName);
+	UBTStepsHandlerContainer* BTSteps = Cast<UBTStepsHandlerContainer>(BlackboardComp->GetValueAsObject(StepsKeyName));
 	if (BTSteps != nullptr && BTDialogPointsHandler != nullptr)
 	{
-		if (!BTSteps->Implements<UBTStepsHandler>())
-		{
-			EDITOR_ERROR(
-				"DialogSystem",
-				LOCTEXT("InvalidStepsHandlerClass", "Invalid class for Steps, should implements IBTStepsHandler")
-			);
-			return;
-		}
 		FDialogueSequence NewDialogueSequence;
 		NewDialogueSequence.Name = OwnerComp.GetCurrentTree()->GetFName();
 		// TODO use the new Protagonist name
 		NewDialogueSequence.Owner = ActorOwner->GetPathName();
 
-		TScriptInterface<IBTStepsHandler> BTStepsHandler;
-		BTStepsHandler.SetObject(BTSteps);
-		BTStepsHandler.SetInterface(Cast<IBTStepsHandler>(BTSteps));
 		BTDialogPointsHandler->Initialize(
-			BTStepsHandler,
+			BTSteps,
 			OwnerComp,
 			NewDialogueSequence
 		);
