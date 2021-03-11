@@ -15,12 +15,14 @@
 
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
+#include "Setting/DialogSystemSettings.h"
 
 #include "BTDialogDifficultyHandler.generated.h"
 
 class UBehaviorTreeComponent;
-struct FNDialogFactorSettings;
+// struct FNDialogFactorSettings;
 class UNFactorsFactoryClientAdapter;
+class UAbilitySystemComponent;
 
 UCLASS()
 class NANSDIALOGSYSTEM_API UBTDialogDifficultyHandler : public UObject
@@ -31,6 +33,7 @@ public:
 	bool bDebug = false;
 
 	void Initialize(UBehaviorTreeComponent& OwnerComp);
+	void Clear();
 
 	UBTDialogDifficultyHandler();
 	float GetDifficultyLevel(const FBTDialogueResponse& Response);

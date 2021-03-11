@@ -13,12 +13,12 @@
 
 #include "AI/Decorator/BTDecorator_CheckResponsePosition.h"
 
-
 #include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
+#include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -38,7 +38,6 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 		Search.Operator = RespPos.Operator;
 		Search.IntValue = RespPos.Position;
 
-
 		Searches.Add(Search);
 	}
 	Operators.Append(ConditionsOperators);
@@ -50,13 +49,14 @@ UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FOb
 	NodeName = "Conditions on response order";
 }
 
-
 bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
+
 	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
-		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (PointsHandler == nullptr)

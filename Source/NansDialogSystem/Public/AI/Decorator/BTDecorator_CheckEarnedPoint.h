@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PointSystemHelpers.h"
 #include "BehaviorTree/BTDecorator.h"
 #include "Dialogue/DialogueHistorySearch.h"
-
 
 #include "BTDecorator_CheckEarnedPoint.generated.h"
 
 class UNansComparator;
 class UBTDialogPointsHandler;
-
 
 /**
 * Condition for point
@@ -48,7 +45,6 @@ struct NANSDIALOGSYSTEM_API FPointCondition
 		TArray<FNansConditionOperator>& Operators);
 };
 
-
 /**
  *
  */
@@ -65,9 +61,6 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
 	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNansConditionOperator> ConditionsOperators;
-
-	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName PointsHandlerKeyName = FName("PointsHandler");
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 	virtual FString GetStaticDescription() const override;

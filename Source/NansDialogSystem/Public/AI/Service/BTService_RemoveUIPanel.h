@@ -15,23 +15,19 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
+#include "BTService_RemoveUIPanel.generated.h"
 
-#include "BTService_ClearDialog.generated.h"
+class AActor;
 
 /**
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTService_ClearDialog : public UBTService
+class NANSDIALOGSYSTEM_API UBTService_RemoveUIPanel : public UBTService
 {
 	GENERATED_BODY()
 
-public:
-	UBTService_ClearDialog(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual FString GetStaticDescription() const override;
+	UBTService_RemoveUIPanel(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-#if WITH_EDITOR
-	virtual FName GetNodeIconName() const override;
-#endif	  // WITH_EDITOR
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

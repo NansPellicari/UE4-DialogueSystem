@@ -18,6 +18,7 @@
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/DialogBTHelpers.h"
+#include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -34,8 +35,10 @@ bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTree
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
+
 	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
-		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (PointsHandler == nullptr)
@@ -50,7 +53,6 @@ bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTree
 
 	return PointsHandler->HasResults(DialogueHistorySearches, ConditionsOperators);
 }
-
 
 FString UBTDecorator_CheckDialogueResults::GetStaticDescription() const
 {

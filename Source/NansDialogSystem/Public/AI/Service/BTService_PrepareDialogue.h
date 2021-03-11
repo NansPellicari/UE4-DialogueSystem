@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
 
 #include "CoreMinimal.h"
 #include "AIModule/Classes/BehaviorTree/Services/BTService_BlueprintBase.h"
+#include "Service/BTDialogDifficultyHandler.h"
 
-#include "BTService_DialogPointsHandler.generated.h"
+#include "BTService_PrepareDialogue.generated.h"
 
 class UBTDialogPointsHandler;
 
@@ -24,21 +25,20 @@ class UBTDialogPointsHandler;
  *
  */
 UCLASS(BlueprintType)
-class NANSDIALOGSYSTEM_API UBTService_DialogPointsHandler : public UBTService_BlueprintBase
+class NANSDIALOGSYSTEM_API UBTService_PrepareDialogue : public UBTService_BlueprintBase
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName PointsHandlerKeyName = FName("PointsHandler");
-
-	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
 	FName StepsKeyName = FName("Steps");
 
 	UPROPERTY(EditInstanceOnly, Category = "Development")
-	bool bDebugHandler = false;
+	bool bDebugPointsHandler = false;
+	UPROPERTY(EditInstanceOnly, Category = "Development")
+	bool bDebugDifficultyHandler = false;
 
-	UBTService_DialogPointsHandler(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UBTService_PrepareDialogue(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual FString GetStaticDescription() const override;
 
@@ -47,6 +47,8 @@ public:
 #endif	  // WITH_EDITOR
 
 protected:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY()
 	UBTDialogPointsHandler* BTDialogPointsHandler;
+	UPROPERTY()
+	UBTDialogDifficultyHandler* BTDialogDifficultyHandler;
 };

@@ -15,9 +15,10 @@
 
 #include "BTDialogueTypes.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
-#include "Misc/NansComparator.h"
+#include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -30,7 +31,6 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 	for (auto& RespPos : ResponsePositions)
 	{
 		FNDialogueHistorySearch Search, Search2;
-
 
 		Search.DialogName.bIsAll = true;
 		Search2.DialogName.bIsAll = true;
@@ -48,7 +48,6 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		ENansConditionOperator OpForInterGrp = ENansConditionOperator::AND;
 		TArray<FNansConditionOperator> NewOperators;
 		int32 OpIdx = 0;
-
 
 		int32 RealIdx = !IndexesMatches.Contains(Index) ? 0 : IndexesMatches[Index];
 		int32 RealNewIdx = RealIdx + 1;
@@ -113,8 +112,10 @@ bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComp
 	uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
+
 	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
-		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (PointsHandler == nullptr)

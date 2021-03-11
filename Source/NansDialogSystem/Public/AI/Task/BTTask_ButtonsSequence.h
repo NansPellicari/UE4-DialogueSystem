@@ -14,17 +14,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BehaviorTree/Tasks/BTTask_Base.h"
+#include "BehaviorTree/BTTaskNode.h"
 
 #include "BTDialogueTypes.h"
+#include "GameplayEffect.h"
+#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "UI/ResponseButtonWidget.h"
-
 
 #include "BTTask_ButtonsSequence.generated.h"
 
 class UBTDialogPointsHandler;
-class UDialogHUD;
+class UDialogueUI;
 class UPanelWidget;
 class UButtonSequenceWidget;
 class NButtonSequenceMovementManager;
@@ -47,7 +48,6 @@ public:
 	/** If true, tasks will use the Default GameplayEffect set in DialogSystemSettings. */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	bool bUsedDefaultEffect = true;
-
 
 	/**
 	* /!\ Note: Be aware that this effect is used to create a GameplayEffectSpec in Tasks to add:
@@ -206,7 +206,7 @@ public:
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTTask_ButtonsSequence : public UBTTask_Base
+class NANSDIALOGSYSTEM_API UBTTask_ButtonsSequence : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
 
@@ -236,14 +236,11 @@ protected:
 	/**
 	 * This is just here to indicate this values for developers, it is set in the developer's settings
 	 * HUD need to be composed with widget named
-	 * "WheelButton" (UWheelButtonWidget) and "ProgressBar" (UWheelProgressBarWidget)
+	 * "WheelButton" (UWheelButtonWidget) and "ProgressBar" (UDialogueProgressBarWidget)
 	 * to work properly.
 	 */
-	UPROPERTY(VisibleAnywhere, Category = "HUD")
+	UPROPERTY(VisibleAnywhere, Category = "UI")
 	FName UINameKey = NAME_None;
-
-	UPROPERTY(EditInstanceOnly, Category = "Service")
-	FName PointsHandlerKeyName = FName("PointsHandler");
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	float DefaultVelocity = 1;
@@ -263,7 +260,7 @@ protected:
 	UPROPERTY()
 	UBlackboardComponent* Blackboard;
 	UPROPERTY()
-	UDialogHUD* DialogHUD;
+	UDialogueUI* DialogueUI;
 	UPROPERTY()
 	UPanelWidget* ButtonsSlot;
 	UPROPERTY()

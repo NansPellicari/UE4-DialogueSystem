@@ -16,16 +16,16 @@
 #include "CoreMinimal.h"
 
 #include "BTDialogueTypes.h"
-#include "BTStepsLibrary.h"
 #include "PointSystemHelpers.h"
 #include "Components/ActorComponent.h"
 #include "Dialogue/DialogueHistory.h"
+#include "NansBehaviorSteps/Public/BTStepsLibrary.h"
 
 #include "PlayerDialogComponent.generated.h"
 
-
 struct FNDialogueHistorySearch;
 struct FNansConditionOperator;
+class UAbilitySystemComponent;
 
 /**
  * The main Goal of this Component is to save data from dialog session.

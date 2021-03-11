@@ -15,21 +15,20 @@
 
 #include "CoreMinimal.h"
 
-
 #include "WheelButtonWidget.h"
 #include "Components/Button.h"
 #include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
-#include "DialogHUD.generated.h"
+#include "DialogueUI.generated.h"
 
-class UWheelProgressBarWidget;
+class UDialogueProgressBarWidget;
 struct FResponseButtonBuilderData;
 class UResponseButtonWidget;
 class UPanelWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogHUDEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogueUIEvent);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDialogHUDMessageEvent, FText, Message, FText, Title);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDialogueUIMessageEvent, FText, Message, FText, Title);
 
 UENUM(BlueprintType)
 enum class EDialogMessageType : uint8
@@ -48,22 +47,22 @@ struct NTextData
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UDialogHUD : public UNansUserWidget
+class NANSDIALOGSYSTEM_API UDialogueUI : public UNansUserWidget
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FDialogHUDMessageEvent OnResponse;
+	FDialogueUIMessageEvent OnResponse;
 
 	UPROPERTY(BlueprintAssignable, Category = "Event")
-	FDialogHUDMessageEvent OnQuestion;
+	FDialogueUIMessageEvent OnQuestion;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event")
-	FDialogHUDEvent OnEndDisplayResponse;
+	FDialogueUIEvent OnEndDisplayResponse;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Event")
-	FDialogHUDEvent OnEndDisplayQuestion;
+	FDialogueUIEvent OnEndDisplayQuestion;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Response")
 	int32 CountVisibleResponses() const;
@@ -100,11 +99,13 @@ public:
 	UPanelWidget* GetUINPCBox() const;
 	UPanelWidget* GetResponsesSlot() const;
 	UPanelWidget* GetUIPlayerBox() const;
+	UWheelButtonWidget* GetWheelButton() const;
 	UButton* GetButtonPassPlayerLine() const;
 	UButton* GetButtonPassNPCLine() const;
-	UWheelProgressBarWidget* GetProgressBar() const;
+	UDialogueProgressBarWidget* GetProgressBar() const;
 	void ChangeButtonVisibility(ESlateVisibility Visibility, int32 Index) const;
 	void ChangeButtonsVisibility(ESlateVisibility Visibility) const;
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Event")
 	float TimeToDisplay = 2.f;
@@ -118,9 +119,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget, OptionalWidget=true))
 	UWheelButtonWidget* WheelButton = nullptr;
 	UPROPERTY(BlueprintReadOnly, Category = "Response", meta=(BindWidget, OptionalWidget=true))
-	UWheelProgressBarWidget* ProgressBar = nullptr;
+	UDialogueProgressBarWidget* ProgressBar = nullptr;
 public:
-	UWheelButtonWidget* GetWheelButton() const;
 protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Response", meta=(BindWidget))
 	UPanelWidget* UIPlayerBox = nullptr;

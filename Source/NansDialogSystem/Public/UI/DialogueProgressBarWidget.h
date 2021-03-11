@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
-#include "WheelProgressBarWidget.generated.h"
+#include "DialogueProgressBarWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProgressBarEnd);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProgressEvent, float, Percent);
@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProgressEvent, float, Percent);
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UWheelProgressBarWidget : public UNansUserWidget
+class NANSDIALOGSYSTEM_API UDialogueProgressBarWidget : public UNansUserWidget
 {
 	GENERATED_BODY()
 

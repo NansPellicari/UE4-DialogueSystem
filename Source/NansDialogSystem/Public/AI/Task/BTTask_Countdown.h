@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
 
 #include "BTTask_Countdown.generated.h"
 
-class UWheelProgressBarWidget;
+class UDialogueProgressBarWidget;
 
 /**
  *
  */
 UCLASS(NotBlueprintable)
-class NANSDIALOGSYSTEM_API UBTTask_Countdown : public UBTTaskNode
+class NANSDIALOGSYSTEM_API UBTTask_Countdown : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
 	UBTTask_Countdown(const FObjectInitializer& objectInitializer);
@@ -37,7 +38,7 @@ public:
 		return CountdownEnds;
 	}
 
-	void Initialize(UWheelProgressBarWidget* _ProgressBar, int32 _TimeToResponse);
+	void Initialize(UDialogueProgressBarWidget* _ProgressBar, int32 _TimeToResponse);
 
 	virtual FString GetStaticDescription() const override;
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
@@ -48,7 +49,7 @@ public:
 
 protected:
 	UPROPERTY()
-	UWheelProgressBarWidget* ProgressBar;
+	UDialogueProgressBarWidget* ProgressBar;
 
 	// If 0: no countdown
 	int32 TimeToResponse = 0;

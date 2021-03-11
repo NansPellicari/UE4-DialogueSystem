@@ -13,19 +13,18 @@
 
 #include "AI/Task/BTTask_TalkToPlayer.h"
 
+#include "NansDialogSystemLog.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/DialogBTHelpers.h"
-#include "Service/InteractiveBTHelpers.h"
-#include "Setting/InteractiveSettings.h"
-#include "UI/DialogHUD.h"
-#include "UI/InteractiveHUDPlayer.h"
+#include "Setting/DialogSystemSettings.h"
+#include "UI/DialogueUI.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-UBTTask_TalkToPlayer::UBTTask_TalkToPlayer(const FObjectInitializer& ObjectInitializer)
+UBTTask_TalkToPlayer::UBTTask_TalkToPlayer(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	const auto Settings = UInteractiveSettings::Get()->BehaviorTreeSettings;
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 
 	if (UINameKey == NAME_None)
 	{
@@ -38,16 +37,25 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 	OwnerComponent = &OwnerComp;
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
-	HUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
+	DialogueUI = NDialogBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
 
-	if (!IsValid(HUD))
+	if (!IsValid(DialogueUI))
 	{
-		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
+		// Error is already manage in NDialogBTHelpers::GetUIFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 
-	HUD->SetNPCText(Message, Title);
-	HUD->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
+	DialogueUI->SetNPCText(Message, Title);
+	DialogueUI->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
+	// TODO add more of these to helps debugging
+	UE_VLOG(
+		OwnerComponent,
+		LogDialogSystem,
+		Log,
+		TEXT("NPC talk to player: title: \"%s\", message: \"%s\""),
+		*Title.ToString(),
+		*Message.ToString()
+	);
 
 	return EBTNodeResult::InProgress;
 }
@@ -81,9 +89,9 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 void UBTTask_TalkToPlayer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 	EBTNodeResult::Type TaskResult)
 {
-	HUD->OnEndDisplayQuestion.RemoveAll(this);
+	DialogueUI->OnEndDisplayQuestion.RemoveAll(this);
 	OwnerComponent = nullptr;
-	HUD = nullptr;
+	DialogueUI = nullptr;
 }
 
 #if WITH_EDITOR

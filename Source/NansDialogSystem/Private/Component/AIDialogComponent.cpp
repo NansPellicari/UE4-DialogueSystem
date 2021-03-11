@@ -1,4 +1,4 @@
-// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AI/Service/BTService_ClearDialog.h"
+#include "Component/AIDialogComponent.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Service/BTDialogDifficultyHandler.h"
@@ -19,52 +19,42 @@
 #include "Service/DialogBTHelpers.h"
 #include "Setting/DialogSystemSettings.h"
 
-#define LOCTEXT_NAMESPACE "DialogSystem"
-
-UBTService_ClearDialog::UBTService_ClearDialog(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+// Sets default values for this component's properties
+UAIDialogComponent::UAIDialogComponent()
 {
-	NodeName = "Clear Dialog";
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// off to improve performance if you don't need them.
+	PrimaryComponentTick.bCanEverTick = false;
 
-	bNotifyTick = false;
-	bTickIntervals = false;
-	bNotifyBecomeRelevant = true;
-	bNotifyCeaseRelevant = false;
+	// ...
 }
 
-void UBTService_ClearDialog::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+// Called when the game starts
+void UAIDialogComponent::BeginPlay()
 {
-	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
-	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
+	Super::BeginPlay();
 
+	// ...
+}
+
+void UAIDialogComponent::OnBTTaskAbort(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
+	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	UBTDialogPointsHandler* BTDialogPointsHandler =
 		Cast<UBTDialogPointsHandler>(BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey));
-	UBTDialogDifficultyHandler* BTDialogDifficultyHandler =
-		Cast<UBTDialogDifficultyHandler>(BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey));
 
 	if (IsValid(BTDialogPointsHandler))
 	{
+		// This will end player's dialog skill
 		BTDialogPointsHandler->Clear();
 	}
+	UBTDialogDifficultyHandler* BTDialogDifficultyHandler =
+		Cast<UBTDialogDifficultyHandler>(BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey));
+
 	if (IsValid(BTDialogDifficultyHandler))
 	{
 		BTDialogDifficultyHandler->Clear();
 	}
 	NDialogBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 }
-
-#if WITH_EDITOR
-FName UBTService_ClearDialog::GetNodeIconName() const
-{
-	// TODO import my own icon
-	return FName("BTEditor.Graph.BTNode.Task.PlaySound.Icon");
-}
-#endif	  // WITH_EDITOR
-
-FString UBTService_ClearDialog::GetStaticDescription() const
-{
-	FString ReturnDesc;
-
-	return ReturnDesc;
-}
-#undef LOCTEXT_NAMESPACE

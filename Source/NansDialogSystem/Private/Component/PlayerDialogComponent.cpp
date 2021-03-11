@@ -13,7 +13,6 @@
 
 #include "NansDialogSystem/Public/Component/PlayerDialogComponent.h"
 
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectExtension.h"
@@ -409,6 +408,5 @@ TArray<FDialogueResult> UPlayerDialogComponent::SearchResults(const FNDialogueHi
 	}
 	return Results;
 }
-
 
 #undef LOCTEXT_NAMESPACE

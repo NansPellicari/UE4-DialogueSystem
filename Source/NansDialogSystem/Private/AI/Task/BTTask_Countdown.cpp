@@ -3,7 +3,7 @@
 #include "AI/Task/BTTask_Countdown.h"
 
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
-#include "UI/WheelProgressBarWidget.h"
+#include "UI/DialogueProgressBarWidget.h"
 
 UBTTask_Countdown::UBTTask_Countdown(const FObjectInitializer& objectInitializer) : Super(objectInitializer)
 {
@@ -12,7 +12,7 @@ UBTTask_Countdown::UBTTask_Countdown(const FObjectInitializer& objectInitializer
 	bNotifyTaskFinished = false;
 }
 
-void UBTTask_Countdown::Initialize(UWheelProgressBarWidget* _ProgressBar, int32 _TimeToResponse)
+void UBTTask_Countdown::Initialize(UDialogueProgressBarWidget* _ProgressBar, int32 _TimeToResponse)
 {
 	ProgressBar = _ProgressBar;
 	TimeToResponse = _TimeToResponse;

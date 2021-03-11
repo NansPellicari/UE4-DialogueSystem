@@ -1,4 +1,4 @@
-// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTService.h"
 
-#include "BTService_ClearDialog.generated.h"
+#include "AI/AITaskAbortAware.h"
+#include "Components/ActorComponent.h"
+#include "AIDialogComponent.generated.h"
 
-/**
- *
- */
-UCLASS()
-class NANSDIALOGSYSTEM_API UBTService_ClearDialog : public UBTService
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class NANSDIALOGSYSTEM_API UAIDialogComponent : public UActorComponent, public IAITaskAbortAware
 {
 	GENERATED_BODY()
 
 public:
-	UBTService_ClearDialog(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual FString GetStaticDescription() const override;
+	// Sets default values for this component's properties
+	UAIDialogComponent();
 
-#if WITH_EDITOR
-	virtual FName GetNodeIconName() const override;
-#endif	  // WITH_EDITOR
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:
+
+	virtual void OnBTTaskAbort(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

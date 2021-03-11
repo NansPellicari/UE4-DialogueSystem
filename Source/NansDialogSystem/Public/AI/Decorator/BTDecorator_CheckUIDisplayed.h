@@ -15,27 +15,22 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTDecorator.h"
-#include "Dialogue/DialogueHistorySearch.h"
-#include "BTDecorator_CheckDialogueResults.generated.h"
 
-class UNansComparator;
-class UBTDialogPointsHandler;
+#include "BTDecorator_CheckUIDisplayed.generated.h"
 
 /**
- *
+ * 
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTDecorator_CheckDialogueResults : public UBTDecorator
+class NANSDIALOGSYSTEM_API UBTDecorator_CheckUIDisplayed : public UBTDecorator
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+public:
+	UBTDecorator_CheckUIDisplayed(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(EditAnywhere, Category = "Condition")
-	TArray<FNDialogueHistorySearch> DialogueHistorySearches;
-
-	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
-	UPROPERTY(EditAnywhere, Category = "Condition")
-	TArray<FNansConditionOperator> ConditionsOperators;
+protected:
+	UPROPERTY(EditInstanceOnly, Category = "HUD")
+	FName UIName = NAME_None;
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	virtual FString GetStaticDescription() const override;
 };

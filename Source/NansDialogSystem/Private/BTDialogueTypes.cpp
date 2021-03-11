@@ -13,7 +13,7 @@
 
 #include "BTDialogueTypes.h"
 
-
+#include "GameplayEffect.h"
 #include "Misc/ErrorUtils.h"
 #include "Setting/DialogSystemSettings.h"
 
@@ -69,7 +69,6 @@ TArray<FNDialogueDifficultyMagnitudeFactorSettings> FNDialogueCategory::GetDiffi
 
 	return SettingsByName.FindRef(DialogueCategory.Name).Attributes;
 }
-
 
 TSubclassOf<UGameplayEffect> FBTDialogueResponse::GetSpawnableEffectOnEarned() const
 {

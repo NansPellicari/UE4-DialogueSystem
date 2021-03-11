@@ -13,13 +13,12 @@
 
 #include "Service/BTDialogDifficultyHandler.h"
 
-
+#include "AbilitySystemComponent.h"
 #include "BTDialogueTypes.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialogBTHelpers.h"
-#include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -33,6 +32,8 @@ void UBTDialogDifficultyHandler::Initialize(UBehaviorTreeComponent& OwnerComp)
 	check(GetWorld());
 	PlayerGASC = NDialogBTHelpers::GetGASC(OwnerComp);
 }
+
+void UBTDialogDifficultyHandler::Clear() {}
 
 float UBTDialogDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& Response)
 {

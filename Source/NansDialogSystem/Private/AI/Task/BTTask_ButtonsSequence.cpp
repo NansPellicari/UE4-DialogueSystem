@@ -16,21 +16,18 @@
 #include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Misc/NansArrayUtils.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/DialogBTHelpers.h"
-#include "Service/InteractiveBTHelpers.h"
-#include "Misc/NansArrayUtils.h"
 #include "Setting/DialogSystemSettings.h"
-#include "Setting/InteractiveSettings.h"
 #include "UI/ButtonSequenceWidget.h"
-#include "UI/DialogHUD.h"
-#include "UI/InteractiveHUDPlayer.h"
+#include "UI/DialogueProgressBarWidget.h"
+#include "UI/DialogueUI.h"
 #include "UI/ResponseButtonWidget.h"
 #include "UI/WheelButtonWidget.h"
-#include "UI/WheelProgressBarWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -49,21 +46,21 @@ TSubclassOf<UGameplayEffect> FBTButtonSequenceResponse::GetSpawnableEffectOnEarn
 		}
 		if (!IsValid(GEffect))
 		{
-			return nullptr;
+			return GEffect;
 		}
 	}
 	return GEffect;
 }
 
-UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer)
 {
 	bNotifyTick = true;
-	bNotifyTaskFinished = true;
 
 	BTSequenceManager = MakeShareable(new NButtonSequenceMovementManager());
 	CountDownTask = ObjectInitializer.CreateDefaultSubobject<UBTTask_Countdown>(this, TEXT("Countdown"));
 	CountDownTask->OnCountdownEnds().AddUObject(this, &UBTTask_ButtonsSequence::OnCountdownEnds);
-	auto Settings = UInteractiveSettings::Get()->BehaviorTreeSettings;
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 
 	if (UINameKey == NAME_None)
 	{
@@ -98,12 +95,13 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	Blackboard = OwnerComp.GetBlackboardComponent();
 	if (UINameKey.IsNone())
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetUIKey", "Set a key value for UI in "));
 		return EBTNodeResult::Aborted;
 	}
 
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 	PointsHandler = Cast<UBTDialogPointsHandler>(
-		Blackboard->GetValueAsObject(PointsHandlerKeyName)
+		Blackboard->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (!IsValid(PointsHandler))
@@ -112,23 +110,23 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 		return EBTNodeResult::Aborted;
 	}
 
-	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
-	if (!IsValid(DialogHUD))
+	DialogueUI = NDialogBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
+	if (!IsValid(DialogueUI))
 	{
-		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
+		// Error is already manage in NDialogBTHelpers::GetUIFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 
-	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_ButtonsSequence::OnEndDisplayResponse);
+	DialogueUI->OnEndDisplayResponse.AddDynamic(this, &UBTTask_ButtonsSequence::OnEndDisplayResponse);
 
-	ButtonsSlot = DialogHUD->GetResponsesSlot();
+	ButtonsSlot = DialogueUI->GetResponsesSlot();
 
-	UWheelButtonWidget* WheelButton = DialogHUD->GetWheelButton();
+	UWheelButtonWidget* WheelButton = DialogueUI->GetWheelButton();
 
 	BTSequenceManager->Initialize(ButtonsSlot, DefaultVelocity, WheelButton);
 	CreateButtons();
 
-	UWheelProgressBarWidget* TimeWidget = DialogHUD->GetProgressBar();
+	UDialogueProgressBarWidget* TimeWidget = DialogueUI->GetProgressBar();
 	if (IsValid(TimeWidget))
 	{
 		CountDownTask->Initialize(TimeWidget, TimeToResponse);
@@ -161,13 +159,13 @@ void UBTTask_ButtonsSequence::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, 
 	TriesStatus = EBTNodeResult::InProgress;
 	SequenceIndex = -1;
 	BTSequenceManager->Reset();
-	DialogHUD->OnEndDisplayResponse.RemoveAll(this);
-	DialogHUD->Reset();
+	DialogueUI->OnEndDisplayResponse.RemoveAll(this);
+	DialogueUI->Reset();
 }
 
 void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)
 {
-	const bool bHasRemoved = DialogHUD->RemoveResponses();
+	const bool bHasRemoved = DialogueUI->RemoveResponses();
 
 	if (!bHasRemoved)
 	{
@@ -209,7 +207,7 @@ void UBTTask_ButtonsSequence::CreateButtons()
 			BuilderData.MaxPoints = Sequence.LevelCoefficient;
 			BuilderData.InfluencedBy = Sequence.Direction;
 
-			UResponseButtonWidget* ButtonWidget = DialogHUD->AddNewResponse(BuilderData);
+			UResponseButtonWidget* ButtonWidget = DialogueUI->AddNewResponse(BuilderData);
 
 			ButtonWidget->OnBTClicked.AddDynamic(this, &UBTTask_ButtonsSequence::OnButtonClick);
 
@@ -334,7 +332,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UResponseButtonWidget* Button)
 
 		PointsHandler->AddPoints(Point, SequenceIndex);
 
-		DialogHUD->SetPlayerText(Resp.Response, FText::GetEmpty());
+		DialogueUI->SetPlayerText(Resp.Response, FText::GetEmpty());
 		RemoveButtons(*OwnerComponent);
 		return;
 	}
@@ -343,7 +341,7 @@ void UBTTask_ButtonsSequence::OnButtonClick(UResponseButtonWidget* Button)
 	// So restart the tries
 	PlayerTries.Empty();
 	SequenceIndex = -1;
-	DialogHUD->ChangeButtonsVisibility(ESlateVisibility::Visible);
+	DialogueUI->ChangeButtonsVisibility(ESlateVisibility::Visible);
 }
 
 FString UBTTask_ButtonsSequence::GetStaticDescription() const

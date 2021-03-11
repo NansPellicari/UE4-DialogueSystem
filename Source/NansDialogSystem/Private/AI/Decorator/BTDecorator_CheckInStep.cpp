@@ -18,9 +18,9 @@
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialogPointsHandler.h"
+#include "Setting/DialogSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
-
 
 void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> StepConditions,
 	TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
@@ -87,8 +87,9 @@ UBTDecorator_CheckInStep::UBTDecorator_CheckInStep(const FObjectInitializer& Obj
 bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 	UBTDialogPointsHandler* PointsHandler = Cast<UBTDialogPointsHandler>(
-		BlackboardComp->GetValueAsObject(PointsHandlerKeyName)
+		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (PointsHandler == nullptr)

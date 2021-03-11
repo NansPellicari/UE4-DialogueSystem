@@ -14,28 +14,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTDecorator.h"
-#include "Dialogue/DialogueHistorySearch.h"
-#include "BTDecorator_CheckDialogueResults.generated.h"
+#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 
-class UNansComparator;
-class UBTDialogPointsHandler;
+#include "BTTask_RemoveUIPanel.generated.h"
 
 /**
- *
+ * Remove the UI set by a previous BTTask_CreateUIPanel node.
+ * Don't forget to parameter DialogSystem in project settings.
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTDecorator_CheckDialogueResults : public UBTDecorator
+class NANSDIALOGSYSTEM_API UBTTask_RemoveUIPanel : public UBTTask_NotifyAIOnAbort
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+protected:
 
-	UPROPERTY(EditAnywhere, Category = "Condition")
-	TArray<FNDialogueHistorySearch> DialogueHistorySearches;
-
-	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
-	UPROPERTY(EditAnywhere, Category = "Condition")
-	TArray<FNansConditionOperator> ConditionsOperators;
-
-	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual FString GetStaticDescription() const override;
+
+#if WITH_EDITOR
+	virtual FName GetNodeIconName() const override;
+#endif	  // WITH_EDITOR
 };

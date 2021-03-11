@@ -26,11 +26,11 @@
 void NButtonSequenceMovementManager::Initialize(UPanelWidget* _ButtonsSlot, float _Velocity,
 	UWheelButtonWidget* _WheelButton)
 {
-	if (!ensureMsgf(_ButtonsSlot != nullptr, TEXT("The ButtonsSlotName set doesn't exists in HUD")))
+	if (!ensureMsgf(_ButtonsSlot != nullptr, TEXT("The ButtonsSlotName set doesn't exists in UI")))
 	{
 		return;
 	}
-	if (!ensureMsgf(_WheelButton != nullptr, TEXT("The WheelButtonName set doesn't exists in HUD")))
+	if (!ensureMsgf(_WheelButton != nullptr, TEXT("The WheelButtonName set doesn't exists in UI")))
 	{
 		return;
 	}

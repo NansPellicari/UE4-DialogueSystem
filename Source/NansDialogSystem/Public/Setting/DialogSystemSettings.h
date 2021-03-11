@@ -24,6 +24,25 @@
 #include "DialogSystemSettings.generated.h"
 
 USTRUCT()
+struct FDialogBehaviorTreeSettings
+{
+	GENERATED_BODY()
+
+	UPROPERTY(config, EditAnywhere, Category= "Task|CreateUI" )
+	FName DefaultUIName = FName("UIForAI");
+	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	FName UINameKey = FName("CurrentUIName");
+	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	FName PreviousUINameKey = FName("PreviousUIName");
+	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	FName PreviousUIClassKey = FName("PreviousUIClass");
+	UPROPERTY(config, EditAnywhere, Category= "Task|Points" )
+	FName PointsHandlerKey = FName("PointsHandler");
+	UPROPERTY(config, EditAnywhere, Category= "Task|Points" )
+	FName DifficultyHandlerKey = FName("DifficultyHandler");
+};
+
+USTRUCT()
 struct NANSDIALOGSYSTEM_API FNDialogFactorSettings
 {
 	GENERATED_USTRUCT_BODY()
@@ -168,6 +187,13 @@ public:
 	TArray<FNDialogueDifficultyMagnitudeSettings> DifficultyMagnitudesSettings;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category="Difficulty")
 	TArray<FNDialogFactorSettings> DifficultySettings;
+
+	/**
+	* This is used by BTTask_CreateHUD & BTTask_RemoveHUD,
+	* it will set a default name to the UI created for the DialogueUI container. 
+	*/
+	UPROPERTY(config, EditAnywhere, Category= "AI" )
+	FDialogBehaviorTreeSettings BehaviorTreeSettings;
 
 	/** Accessor and initializer **/
 	static const UDialogSystemSettings* Get()

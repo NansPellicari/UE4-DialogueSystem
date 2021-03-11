@@ -13,12 +13,13 @@
 
 #pragma once
 
-#include "GameplayEffect.h"
 #include "GameplayTags.h"
 #include "BTDialogueTypes.generated.h"
 
 struct FNDialogueDifficultyMagnitudeFactorSettings;
 struct FNDialogueDifficultyMagnitudeSettings;
+class UGameplayEffect;
+
 UENUM(BlueprintType)
 enum class EResponseDirection : uint8
 {
@@ -52,7 +53,6 @@ struct NANSDIALOGSYSTEM_API FNDialogueCategory
 	}
 };
 
-
 /**
  * It is a params struct used in BehaviorTree UI to set a button data.
  */
@@ -75,7 +75,7 @@ struct NANSDIALOGSYSTEM_API FBTDialogueResponse
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = true))
 	FText Text;
 	// It is used for button sequence only now.
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = false))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Response", meta = (MultiLine = false))
 	FText AltText;
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response")
 	int32 Point = 0;

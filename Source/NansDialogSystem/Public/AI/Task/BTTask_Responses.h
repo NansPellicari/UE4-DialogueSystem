@@ -15,15 +15,16 @@
 
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
-#include "AI/BehaviorTree/Tasks/BTTask_Base.h"
+#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_Responses.generated.h"
 
 class UBTDialogPointsHandler;
-class UDialogHUD;
+class UDialogueUI;
 class UPanelWidget;
 class UResponseButtonWidget;
-class UWheelProgressBarWidget;
+class UDialogueProgressBarWidget;
 class UBTTask_Countdown;
 
 /**
@@ -31,7 +32,7 @@ class UBTTask_Countdown;
  * "OnTaskFinished"
  */
 UCLASS(Abstract)
-class NANSDIALOGSYSTEM_API UBTTask_Responses : public UBTTask_Base
+class NANSDIALOGSYSTEM_API UBTTask_Responses : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
 
@@ -64,11 +65,8 @@ protected:
 	bool bShowDialogueDetails = true;
 
 	/** This is just here to indicate this values for developers, it is set in the developer's settings */
-	UPROPERTY(VisibleAnywhere, Category = "HUD")
+	UPROPERTY(VisibleAnywhere, Category = "UI")
 	FName UINameKey = NAME_None;
-
-	UPROPERTY(EditInstanceOnly, Category = "Service")
-	FName PointsHandlerKeyName = FName("PointsHandler");;
 
 	UPROPERTY(EditInstanceOnly, Category = "Responses")
 	TArray<FBTDialogueResponse> ReponsesUP;
@@ -97,7 +95,7 @@ protected:
 	UPROPERTY()
 	UBlackboardComponent* Blackboard;
 	UPROPERTY()
-	UDialogHUD* DialogHUD;
+	UDialogueUI* DialogueUI;
 	UPROPERTY()
 	UPanelWidget* ResponsesSlot;
 	UPROPERTY()
@@ -111,7 +109,7 @@ private:
 	void CreateButtons();
 	void CreateButton(FBTDialogueResponse Response, int8 Index, int32 Position, int32 MaxLevel);
 	FString DisplayStaticResponses(
-		const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const;
-	FString DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position, bool Reverse) const;
+		const TArray<FBTDialogueResponse>& Responses, FString Title, bool Reverse, int32 ForcePosition = -1000) const;
+	FString DisplayStaticResponse(const FBTDialogueResponse& Response, int32 Position) const;
 	virtual void ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
 };

@@ -21,12 +21,10 @@
 #include "Runtime/UMG/Public/Components/PanelWidget.h"
 #include "Service/BTDialogPointsHandler.h"
 #include "Service/DialogBTHelpers.h"
-#include "Service/InteractiveBTHelpers.h"
-#include "Setting/InteractiveSettings.h"
-#include "UI/DialogHUD.h"
-#include "UI/InteractiveHUDPlayer.h"
+#include "Setting/DialogSystemSettings.h"
+#include "UI/DialogueProgressBarWidget.h"
+#include "UI/DialogueUI.h"
 #include "UI/ResponseButtonWidget.h"
-#include "UI/WheelProgressBarWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -37,7 +35,7 @@ UBTTask_Responses::UBTTask_Responses(const FObjectInitializer& objectInitializer
 
 	CountDownTask = objectInitializer.CreateDefaultSubobject<UBTTask_Countdown>(this, TEXT("Countdown"));
 	CountDownTask->OnCountdownEnds().AddUObject(this, &UBTTask_Responses::OnCountdownEnds);
-	const auto Settings = UInteractiveSettings::Get()->BehaviorTreeSettings;
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 
 	if (UINameKey == NAME_None)
 	{
@@ -66,12 +64,13 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 	Blackboard = OwnerComp.GetBlackboardComponent();
 	if (UINameKey.IsNone())
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetHUDKey", "Set a key value for HUD in "));
+		EDITOR_ERROR("DialogSystem", LOCTEXT("NotSetUIKey", "Set a key value for UI in "));
 		return EBTNodeResult::Aborted;
 	}
 
+	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 	PointsHandler = Cast<UBTDialogPointsHandler>(
-		Blackboard->GetValueAsObject(PointsHandlerKeyName)
+		Blackboard->GetValueAsObject(Settings.PointsHandlerKey)
 	);
 
 	if (!IsValid(PointsHandler))
@@ -80,18 +79,18 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 		return EBTNodeResult::Aborted;
 	}
 
-	DialogHUD = NDialogBTHelpers::GetHUDFromBlackboard(OwnerComp, Blackboard);
-	if (!IsValid(DialogHUD))
+	DialogueUI = NDialogBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
+	if (!IsValid(DialogueUI))
 	{
-		// Error is already manage in NDialogBTHelpers::GetHUDFromBlackboard()
+		// Error is already manage in NDialogBTHelpers::GetUIFromBlackboard()
 		return EBTNodeResult::Aborted;
 	}
 
-	DialogHUD->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
+	DialogueUI->OnEndDisplayResponse.AddDynamic(this, &UBTTask_Responses::OnEndDisplayResponse);
 
-	ResponsesSlot = DialogHUD->GetResponsesSlot();
+	ResponsesSlot = DialogueUI->GetResponsesSlot();
 
-	UWheelProgressBarWidget* TimeWidget = DialogHUD->GetProgressBar();
+	UDialogueProgressBarWidget* TimeWidget = DialogueUI->GetProgressBar();
 	if (IsValid(TimeWidget))
 	{
 		CountDownTask->Initialize(TimeWidget, TimeToResponse);
@@ -109,7 +108,7 @@ void UBTTask_Responses::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if (ResponseStatus == EBTNodeResult::Succeeded)
 	{
-		// Wait for DialogHUD ending display response
+		// Wait for DialogueUI ending display response
 		return;
 	}
 
@@ -120,9 +119,9 @@ void UBTTask_Responses::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 		return;
 	}
 
-	if (!ensure(DialogHUD != nullptr))
+	if (!ensure(IsValid(DialogueUI)))
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
+		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongUIType", "The UI set is not valid (UDialogueUI is expected) in "));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 		return;
 	}
@@ -142,7 +141,7 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 	CountDownTask->OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 	MiddleResponseIndex = -1;
 
-	const bool bHasRemoved = DialogHUD->RemoveResponses();
+	const bool bHasRemoved = DialogueUI->RemoveResponses();
 
 	if (!bHasRemoved)
 	{
@@ -150,10 +149,10 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 		return;
 	}
 
-	if (DialogHUD == nullptr) return;
+	if (DialogueUI == nullptr) return;
 
-	DialogHUD->OnEndDisplayResponse.RemoveAll(this);
-	DialogHUD->Reset();
+	DialogueUI->OnEndDisplayResponse.RemoveAll(this);
+	DialogueUI->Reset();
 }
 
 void UBTTask_Responses::CreateButtons()
@@ -194,14 +193,14 @@ void UBTTask_Responses::CreateButton(FBTDialogueResponse Response, int8 Index, i
 	BuilderData.MaxPoints = MaxLevel;
 	BuilderData.InfluencedBy = Position > 0 ? EResponseDirection::DOWN : EResponseDirection::UP;
 
-	UResponseButtonWidget* ButtonWidget = DialogHUD->AddNewResponse(BuilderData);
+	UResponseButtonWidget* ButtonWidget = DialogueUI->AddNewResponse(BuilderData);
 	if (!ensure(ButtonWidget != nullptr))
 	{
 		FinishLatentAbort(*OwnerComponent);
 		return;
 	}
-	// TODO Change this and instead listen DialogHUD->OnResponse (with more params)
-	// TODO should be listen by dialog HUD instead, see OnButtonClicked to see what event this should listen
+	// TODO Change this and instead listen DialogueUI->OnResponse (with more params)
+	// TODO should be listen by DialogueUI instead, see OnButtonClicked to see what event this should listen
 	ButtonWidget->OnBTClicked.AddDynamic(this, &UBTTask_Responses::OnButtonClicked);
 }
 
@@ -218,8 +217,8 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 	PointsHandler->AddPoints(FNPoint(Response), ButtonWidget->DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
-	// TODO Should be call by dialog HUD itself
-	DialogHUD->SetPlayerText(Response.Text, FText::GetEmpty());
+	// TODO Should be call by DialogueUI itself
+	DialogueUI->SetPlayerText(Response.Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -245,8 +244,8 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 	PointsHandler->AddPoints(FNPoint(Response), DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
-	// TODO Should be call by dialog HUD itself
-	DialogHUD->SetPlayerText(Response.Text, FText::GetEmpty());
+	// TODO Should be call by dialog UI itself
+	DialogueUI->SetPlayerText(Response.Text, FText::GetEmpty());
 	ResponseStatus = EBTNodeResult::Succeeded;
 }
 
@@ -259,15 +258,12 @@ void UBTTask_Responses::OnEndDisplayResponse()
 FString UBTTask_Responses::GetStaticDescription() const
 {
 	FString ReturnDesc;
-	int32 Position = 0;
 	ReturnDesc +=
 		DisplayStaticResponses(
 			ReponsesUP,
-			Position,
 			LOCTEXT("UpResponsesTitle", "[ UP Responses ]\n").ToString(),
 			true
 		);
-	Position = 0;
 	if (MiddleResponse.IsEmpty() == false)
 	{
 		ReturnDesc +=
@@ -275,16 +271,14 @@ FString UBTTask_Responses::GetStaticDescription() const
 				TArray<FBTDialogueResponse>(
 					{FBTDialogueResponse(MiddleResponseCategory, MiddleResponse, MiddleResponsePoint)}
 				),
-				Position,
 				LOCTEXT("MiddleResponsesTitle", "[ Middle Responses ]\n").ToString(),
-				false
+				false,
+				0
 			);
 	}
-	Position = 1;
 	ReturnDesc +=
 		DisplayStaticResponses(
 			ReponsesDOWN,
-			Position,
 			LOCTEXT("DownResponsesTitle", "[ DOWN Responses ]\n").ToString(),
 			false
 		);
@@ -296,11 +290,11 @@ FString UBTTask_Responses::GetStaticDescription() const
 	return ReturnDesc;
 }
 
-FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Response, int32& Position,
-	bool Reverse) const
+FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Response, int32 Position) const
 {
 	FString ReturnDesc;
-	const FString Text = UNTextLibrary::StringToLines("- \"" + Response.Text.ToString() + "\"", 60, "\t");
+	const FString Str = FString::Printf(TEXT("[%i]"), Position);
+	const FString Text = UNTextLibrary::StringToLines(Str + " \"" + Response.Text.ToString() + "\"", 60, "\t");
 	ReturnDesc += FString::Printf(TEXT("%s"), *Text);
 	if (bShowDialogueDetails)
 	{
@@ -308,7 +302,6 @@ FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Resp
 		Arguments.Add(TEXT("point"), Response.Point);
 		Arguments.Add(TEXT("difficulty"), Response.Difficulty);
 		Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
-		Arguments.Add(TEXT("position"), Reverse ? --Position : Position++);
 		const FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
 									 ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
 									 : FText::FromString(TEXT("No effect"));
@@ -316,7 +309,7 @@ FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Resp
 		ReturnDesc += FText::Format(
 				LOCTEXT(
 					"NodeResponsesDetails",
-					"\n\tPosition: {position}, difficulty: {difficulty}, point: {point}, category: {category}\n\tEffect: {effect}"
+					"\n\tdifficulty: {difficulty}, point: {point}, category: {category}\n\tEffect: {effect}"
 				),
 				Arguments
 			)
@@ -326,18 +319,24 @@ FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Resp
 }
 
 FString UBTTask_Responses::DisplayStaticResponses(
-	const TArray<FBTDialogueResponse>& Responses, int32& Position, FString Title, bool Reverse) const
+	const TArray<FBTDialogueResponse>& Responses, FString Title, bool Reverse, int32 ForcePosition) const
 {
 	FString ReturnDesc;
 	if (Responses.Num() > 0)
 	{
 		ReturnDesc += "\n----------------------\n";
 		ReturnDesc += Title;
-		for (int8 i = 0; i < Responses.Num(); ++i)
+		int32 i = Reverse ? -Responses.Num() : 0;
+		const int32 Total = Reverse ? 0 : Responses.Num();
+		while (i != Total)
 		{
-			FBTDialogueResponse Response = Responses[i];
-			ReturnDesc += DisplayStaticResponse(Response, Position, Reverse);
+			const int32 Idx = Reverse ? -i - 1 : i;
+			FBTDialogueResponse Response = Responses[Idx];
+			int32 Position = Reverse ? i : i + 1;
+			Position = ForcePosition != -1000 ? ForcePosition : Position;
+			ReturnDesc += DisplayStaticResponse(Response, Position);
 			ReturnDesc += i < Responses.Num() - 1 ? "\n\n" : "\n";
+			++i;
 		}
 		ReturnDesc += "----------------------\n";
 	}

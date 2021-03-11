@@ -17,47 +17,37 @@
 #include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
 #include "BehaviorTree/BTTaskNode.h"
 
-#include "BTTask_TalkToPlayer.generated.h"
+#include "BTTask_CreateUIPanel.generated.h"
 
-class UDialogueUI;
-class UButton;
+class UNansUserWidget;
 
 /**
- *
+ * Create an UI and set it in the DialogueHUD instance.
+ * Don't forget to parameter DialogueSystem in project settings.
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTTask_TalkToPlayer : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGSYSTEM_API UBTTask_CreateUIPanel : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
+public:
+	UBTTask_CreateUIPanel(const FObjectInitializer& ObjectInitializer);
+protected:
+
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	FName UINameKey = NAME_None;
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	FName PreviousUINameKey = NAME_None;
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	FName PreviousUIClassKey = NAME_None;
+	UPROPERTY(EditInstanceOnly, Category = "UI")
+	FName UIName = NAME_None;
+	UPROPERTY(EditInstanceOnly, Category = "UI")
+	TSubclassOf<UNansUserWidget> UIToCreate;
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-public:
-	UBTTask_TalkToPlayer(const FObjectInitializer& ObjectInitializer);
-	UFUNCTION()
-	void OnQuestionEnd();
-
 	virtual FString GetStaticDescription() const override;
 
 #if WITH_EDITOR
 	virtual FName GetNodeIconName() const override;
 #endif	  // WITH_EDITOR
-
-protected:
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	FName UINameKey = NAME_None;
-
-	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = true))
-	FText Message;
-	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = false))
-	FText Title = FText::GetEmpty();
-
-	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
-		EBTNodeResult::Type TaskResult) override;
-
-private:
-	UPROPERTY()
-	UBehaviorTreeComponent* OwnerComponent = nullptr;
-	UPROPERTY()
-	UDialogueUI* DialogueUI = nullptr;
 };

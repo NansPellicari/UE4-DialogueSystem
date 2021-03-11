@@ -15,10 +15,8 @@
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
-#include "Runtime/UMG/Public/Components/PanelWidget.h"
 #include "Service/BTDialogDifficultyHandler.h"
-#include "UI/DialogHUD.h"
+#include "UI/DialogueUI.h"
 #include "UI/ResponseButtonWidget.h"
 #include "UI/WheelButtonWidget.h"
 
@@ -34,21 +32,20 @@ FString UBTTask_WheelResponses::GetStaticDescription() const
 
 void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	if (!IsValid(DialogHUD))
+	if (!IsValid(DialogueUI))
 	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongHUDType", "The HUD set is not valid (UDialogHUD is expected) in "));
+		EDITOR_ERROR("DialogSystem", LOCTEXT("WrongUIType", "The UI set is not valid (UDialogueUI is expected) in "));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);
 		return;
 	}
 
-	// TODO make wheel name configurable?
-	UWheelButtonWidget* WheelButton = Cast<UWheelButtonWidget>(DialogHUD->FindWidget(FName("WheelButton")));
+	UWheelButtonWidget* WheelButton = DialogueUI->GetWheelButton();
 
 	if (!IsValid(WheelButton))
 	{
 		EDITOR_ERROR(
 			"DialogSystem",
-			LOCTEXT("WrongWheelButtonNameOrInexistant", "Check the wheel button name or if exists in the Dialog HUD in "
+			LOCTEXT("WrongWheelButtonNameOrInexistant", "Check the wheel button name or if exists in the Dialog UI in "
 			),
 			this
 		);
@@ -81,8 +78,7 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		return;
 	}
 
-
-	for (const auto& Button : DialogHUD->GetResponsesButttons())
+	for (const auto& Button : DialogueUI->GetResponsesButttons())
 	{
 		Button->SetVisibility(ESlateVisibility::Hidden);
 		FBTDialogueResponse Response = Button->GetResponse();

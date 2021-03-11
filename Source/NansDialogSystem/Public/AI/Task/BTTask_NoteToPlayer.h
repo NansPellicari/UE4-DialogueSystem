@@ -17,47 +17,55 @@
 #include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
 #include "BehaviorTree/BTTaskNode.h"
 
-#include "BTTask_TalkToPlayer.generated.h"
+#include "BTTask_NoteToPlayer.generated.h"
 
-class UDialogueUI;
-class UButton;
+class AMessageableHUD;
+class INMessageable;
+
+UENUM(BlueprintType)
+enum class EMessageDisplayOn : uint8
+{
+	PlayerHUD UMETA(DisplayName = "Player HUD"),
+	NPC UMETA(DisplayName = "NPC's balloon"),
+};
 
 /**
  *
  */
 UCLASS()
-class NANSDIALOGSYSTEM_API UBTTask_TalkToPlayer : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGSYSTEM_API UBTTask_NoteToPlayer : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
 
-	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-public:
-	UBTTask_TalkToPlayer(const FObjectInitializer& ObjectInitializer);
-	UFUNCTION()
-	void OnQuestionEnd();
-
-	virtual FString GetStaticDescription() const override;
-
-#if WITH_EDITOR
-	virtual FName GetNodeIconName() const override;
-#endif	  // WITH_EDITOR
-
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "UI")
-	FName UINameKey = NAME_None;
+	UPROPERTY(EditInstanceOnly, Category = "Message")
+	float MessageDuration = 5.f;
 
 	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = true))
 	FText Message;
-	UPROPERTY(EditInstanceOnly, Category = "Message", meta = (MultiLine = false))
-	FText Title = FText::GetEmpty();
 
+	UPROPERTY(EditInstanceOnly, Category = "Message")
+	EMessageDisplayOn WhereToDisplay = EMessageDisplayOn::NPC;
+
+	UPROPERTY(EditInstanceOnly, Category = "Message")
+	bool WaitAfterMessage = false;
+
+	virtual FString GetStaticDescription() const override;
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 		EBTNodeResult::Type TaskResult) override;
 
+#if WITH_EDITOR
+	virtual FName GetNodeIconName() const override;
+#endif // WITH_EDITOR
+
 private:
 	UPROPERTY()
-	UBehaviorTreeComponent* OwnerComponent = nullptr;
+	TArray<TScriptInterface<INMessageable>> MessageWidgets;
 	UPROPERTY()
-	UDialogueUI* DialogueUI = nullptr;
+	UBehaviorTreeComponent* OwnerComponent = nullptr;
+	UFUNCTION()
+	void OnMessageEnd();
+
+	int32 MessageFinished = 0;
 };

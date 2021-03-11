@@ -31,7 +31,6 @@ namespace UnrealBuildTool.Rules
 					"NansUE4Utilities",
 					"NansBehaviorSteps",
 					"NansUMGExtent",
-					"Interactive",
 					"NansDialogSystem"
 				});
 			PrivateIncludePaths.AddRange(

@@ -73,9 +73,6 @@ class NANSDIALOGSYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNansConditionOperator> ConditionsOperators;
 
-	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
-	FName PointsHandlerKeyName = FName("PointsHandler");
-
 	virtual FString GetStaticDescription() const override;
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;

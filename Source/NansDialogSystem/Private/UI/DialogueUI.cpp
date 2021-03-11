@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "UI/DialogHUD.h"
+#include "UI/DialogueUI.h"
 
 #include "Components/PanelWidget.h"
 #include "Misc/ErrorUtils.h"
@@ -20,7 +20,7 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
-void UDialogHUD::NativePreConstruct()
+void UDialogueUI::NativePreConstruct()
 {
 	UClass* ButtonClass = ResponseButtonWidget.Get();
 	if (!ButtonClass)
@@ -32,19 +32,19 @@ void UDialogHUD::NativePreConstruct()
 	}
 }
 
-void UDialogHUD::NativeDestruct()
+void UDialogueUI::NativeDestruct()
 {
 	Reset();
 	Super::NativeDestruct();
 }
 
-void UDialogHUD::Reset_Implementation()
+void UDialogueUI::Reset_Implementation()
 {
 	TimeDisplayed = 0.f;
 	RemoveResponses();
 }
 
-void UDialogHUD::DisplayMessage(EDialogMessageType MessageType)
+void UDialogueUI::DisplayMessage(EDialogMessageType MessageType)
 {
 	if (UIPlayerBox == nullptr || UINPCBox == nullptr) return;
 
@@ -59,9 +59,9 @@ void UDialogHUD::DisplayMessage(EDialogMessageType MessageType)
 	UINPCBox->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-UWheelButtonWidget* UDialogHUD::GetWheelButton() const { return WheelButton; }
+UWheelButtonWidget* UDialogueUI::GetWheelButton() const { return WheelButton; }
 
-UResponseButtonWidget* UDialogHUD::AddNewResponse(FResponseButtonBuilderData& BuilderData)
+UResponseButtonWidget* UDialogueUI::AddNewResponse(FResponseButtonBuilderData& BuilderData)
 {
 	UClass* ButtonClass = ResponseButtonWidget.Get();
 	if (!ButtonClass)
@@ -81,7 +81,7 @@ UResponseButtonWidget* UDialogHUD::AddNewResponse(FResponseButtonBuilderData& Bu
 	return ButtonWidget;
 }
 
-bool UDialogHUD::RemoveResponses()
+bool UDialogueUI::RemoveResponses()
 {
 	if (!IsValid(ResponsesSlot))
 	{
@@ -116,7 +116,7 @@ bool UDialogHUD::RemoveResponses()
 	return true;
 }
 
-int32 UDialogHUD::CountVisibleResponses() const
+int32 UDialogueUI::CountVisibleResponses() const
 {
 	TArray<UWidget*> Children = ResponsesSlot->GetAllChildren();
 	int32 CountVisible = 0;
@@ -127,12 +127,12 @@ int32 UDialogHUD::CountVisibleResponses() const
 	return CountVisible;
 }
 
-int32 UDialogHUD::CountResponses() const
+int32 UDialogueUI::CountResponses() const
 {
 	return ResponsesSlot->GetChildrenCount();
 }
 
-TArray<UResponseButtonWidget*> UDialogHUD::GetResponsesButttons() const
+TArray<UResponseButtonWidget*> UDialogueUI::GetResponsesButttons() const
 {
 	TArray<UResponseButtonWidget*> Buttons;
 	for (auto Child : ResponsesSlot->GetAllChildren())
@@ -142,21 +142,21 @@ TArray<UResponseButtonWidget*> UDialogHUD::GetResponsesButttons() const
 	return Buttons;
 }
 
-UPanelWidget* UDialogHUD::GetUINPCBox() const { return UINPCBox; }
-UPanelWidget* UDialogHUD::GetResponsesSlot() const { return ResponsesSlot; }
-UPanelWidget* UDialogHUD::GetUIPlayerBox() const { return UIPlayerBox; }
-UButton* UDialogHUD::GetButtonPassPlayerLine() const { return ButtonPassPlayerLine; }
-UButton* UDialogHUD::GetButtonPassNPCLine() const { return ButtonPassNPCLine; }
-UWheelProgressBarWidget* UDialogHUD::GetProgressBar() const { return ProgressBar; }
+UPanelWidget* UDialogueUI::GetUINPCBox() const { return UINPCBox; }
+UPanelWidget* UDialogueUI::GetResponsesSlot() const { return ResponsesSlot; }
+UPanelWidget* UDialogueUI::GetUIPlayerBox() const { return UIPlayerBox; }
+UButton* UDialogueUI::GetButtonPassPlayerLine() const { return ButtonPassPlayerLine; }
+UButton* UDialogueUI::GetButtonPassNPCLine() const { return ButtonPassNPCLine; }
+UDialogueProgressBarWidget* UDialogueUI::GetProgressBar() const { return ProgressBar; }
 
-void UDialogHUD::ChangeButtonVisibility(ESlateVisibility InVisibility, int32 Index) const
+void UDialogueUI::ChangeButtonVisibility(ESlateVisibility InVisibility, int32 Index) const
 {
 	UResponseButtonWidget* Button = Cast<UResponseButtonWidget>(ResponsesSlot->GetChildAt(Index));
 	if (Button == nullptr) return; // only concerned about button
 	Button->SetVisibility(InVisibility);
 }
 
-void UDialogHUD::ChangeButtonsVisibility(ESlateVisibility InVisibility) const
+void UDialogueUI::ChangeButtonsVisibility(ESlateVisibility InVisibility) const
 {
 	for (int32 i = 0; i < ResponsesSlot->GetChildrenCount(); ++i)
 	{
@@ -164,7 +164,7 @@ void UDialogHUD::ChangeButtonsVisibility(ESlateVisibility InVisibility) const
 	}
 }
 
-void UDialogHUD::SetNPCText_Implementation(const FText& InText, const FText& InTitle)
+void UDialogueUI::SetNPCText_Implementation(const FText& InText, const FText& InTitle)
 {
 	CurrentNPCDialog.Text = InText;
 	CurrentNPCDialog.Title = InTitle;
@@ -172,7 +172,7 @@ void UDialogHUD::SetNPCText_Implementation(const FText& InText, const FText& InT
 	OnQuestion.Broadcast(CurrentPlayerDialog.Text, CurrentPlayerDialog.Title);
 }
 
-void UDialogHUD::SetPlayerText_Implementation(const FText& InText, const FText& InTitle)
+void UDialogueUI::SetPlayerText_Implementation(const FText& InText, const FText& InTitle)
 {
 	CurrentPlayerDialog.Text = InText;
 	CurrentPlayerDialog.Title = InTitle;
@@ -187,20 +187,20 @@ void UDialogHUD::SetPlayerText_Implementation(const FText& InText, const FText& 
 	OnResponse.Broadcast(CurrentPlayerDialog.Text, CurrentPlayerDialog.Title);
 }
 
-void UDialogHUD::GetCurrentPlayerDialog(FText& OutText, FText& OutTitle)
+void UDialogueUI::GetCurrentPlayerDialog(FText& OutText, FText& OutTitle)
 {
 	OutText = CurrentPlayerDialog.Text;
 	OutTitle = CurrentPlayerDialog.Title;
 }
 
-void UDialogHUD::GetCurrentNPCDialog(FText& OutText, FText& OutTitle)
+void UDialogueUI::GetCurrentNPCDialog(FText& OutText, FText& OutTitle)
 {
 	OutText = CurrentNPCDialog.Text;
 	OutTitle = CurrentNPCDialog.Title;
 }
 
 
-void UDialogHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UDialogueUI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 

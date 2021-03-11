@@ -21,19 +21,19 @@ namespace UnrealBuildTool.Rules
 					"CoreUObject",
 					"Engine", // TODO This one should be removed when NansCommon be removed too
 					"AIModule",
-					"GameplayTasks",
 					"UMG",
 					"Slate",
 					"SlateCore",
 					"InputCore",
 					"DeveloperSettings",
+					"NansBehaviorStepsCore",
+					"NansBehaviorSteps",
+					"GameplayTasks",
 					"GameplayAbilities",
 					"GameplayTags",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
-					"NansBehaviorSteps",
-					"NansUMGExtent",
-					"Interactive"
+					"NansUMGExtent"
 				}
 			);
 
