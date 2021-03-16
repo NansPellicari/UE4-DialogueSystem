@@ -60,7 +60,6 @@ bool UBTDialogPointsHandler::Initialize(
 
 	// Activating Dialog Gameplay Activity
 	FGameplayEventData Payload;
-	// TODO Check: need more data ?
 	Payload.Instigator = OwnerComp.GetAIOwner()->GetPawn();
 	Payload.Target = PlayerGASC->GetOwnerActor();
 	Payload.EventTag = UDialogSystemSettings::Get()->TriggerAbilityTag;

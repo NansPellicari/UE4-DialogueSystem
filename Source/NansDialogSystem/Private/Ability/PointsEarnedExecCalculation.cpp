@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ void UPointsEarnedExecCalculation::Execute_Implementation(
 		0.0f
 	);
 
-	float UnmitigatedPointsEarned = PointsEarned; // Can multiply any damage boosters here
+	float UnmitigatedPointsEarned = PointsEarned; // Can multiply any points boosters here
 
 	float MitigatedPointsEarned = UnmitigatedPointsEarned; // TODO check if not possible to directly add Mitigator here 
 

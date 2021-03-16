@@ -19,7 +19,7 @@ namespace UnrealBuildTool.Rules
 				new[]
 				{
 					"CoreUObject",
-					"Engine", // TODO This one should be removed when NansCommon be removed too
+					"Engine",
 					"AIModule",
 					"UMG",
 					"Slate",
