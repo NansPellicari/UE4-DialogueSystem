@@ -68,6 +68,7 @@ struct NANSDIALOGSYSTEM_API FNAllOrName
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="!bIsAll"))
 	FString Value;
+	// TODO check if enough, maybe should add a bIsNot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="!Value"))
 	bool bIsAll = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="!bIsAll"))
