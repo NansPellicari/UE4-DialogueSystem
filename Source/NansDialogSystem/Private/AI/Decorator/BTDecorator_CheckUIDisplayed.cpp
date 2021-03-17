@@ -18,6 +18,7 @@
 
 UBTDecorator_CheckUIDisplayed::UBTDecorator_CheckUIDisplayed(const FObjectInitializer& ObjectInitializer)
 {
+	NodeName = "Check: UI Displayed";
 	const auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 	if (UIName == NAME_None)
 	{

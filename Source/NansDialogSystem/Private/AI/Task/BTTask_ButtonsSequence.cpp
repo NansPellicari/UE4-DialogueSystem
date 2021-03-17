@@ -66,6 +66,7 @@ UBTTask_ButtonsSequence::UBTTask_ButtonsSequence(const FObjectInitializer& Objec
 	{
 		UINameKey = Settings.UINameKey;
 	}
+	NodeName = "Buttons Sequences";
 }
 
 void UBTTask_ButtonsSequence::BeginDestroy()
@@ -462,5 +463,13 @@ FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence&
 	StaticButtonSequenceDescriptions::SetDescription(Sequence, Desc);
 	return Desc;
 }
+
+#if WITH_EDITOR
+FName UBTTask_ButtonsSequence::GetNodeIconName() const
+{
+	// TODO import my own icon
+	return FName("BTEditor.Graph.BTNode.Task.PlaySound.Icon");
+}
+#endif	  // WITH_EDITOR
 
 #undef LOCTEXT_NAMESPACE

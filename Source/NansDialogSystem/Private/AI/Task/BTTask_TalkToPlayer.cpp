@@ -30,6 +30,7 @@ UBTTask_TalkToPlayer::UBTTask_TalkToPlayer(const FObjectInitializer& ObjectIniti
 	{
 		UINameKey = Settings.UINameKey;
 	}
+	NodeName = "Talk To Player";
 }
 
 EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

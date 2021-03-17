@@ -27,7 +27,7 @@ UBTDecorator_CheckDialogueResults::UBTDecorator_CheckDialogueResults(const FObje
 		ObjectInitializer
 	)
 {
-	NodeName = "Conditions on Dialogue Results";
+	NodeName = "Check: Dialogue Results";
 }
 
 bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
@@ -56,9 +56,9 @@ bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTree
 
 FString UBTDecorator_CheckDialogueResults::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 
-	ReturnDesc += FString("\n\nConditions:");
+	ReturnDesc += FString("\nConditions:");
 	for (int32 Index = 0; Index != DialogueHistorySearches.Num(); ++Index)
 	{
 		FNDialogueHistorySearch Condition = DialogueHistorySearches[Index];

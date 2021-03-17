@@ -25,6 +25,12 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
+UBTTask_NoteToPlayer::UBTTask_NoteToPlayer(const FObjectInitializer& ObjectInitializer)
+	: UBTTask_NotifyAIOnAbort(ObjectInitializer)
+{
+	NodeName = "Note To Player";
+}
+
 EBTNodeResult::Type UBTTask_NoteToPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -58,7 +64,10 @@ EBTNodeResult::Type UBTTask_NoteToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 
 	if (WhereToDisplay == EMessageDisplayOn::PlayerHUD || PawnComps.Num() <= 0)
 	{
-		const TScriptInterface<IDialogueHUD> DialogHUD = NDialogBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
+		const TScriptInterface<IDialogueHUD> DialogHUD = NDialogBTHelpers::GetPlayerHUD(
+			OwnerComp,
+			FString(__FUNCTION__)
+		);
 		AMessageableHUD* HUD = Cast<AMessageableHUD>(DialogHUD.GetObject());
 
 		if (!IsValid(HUD))

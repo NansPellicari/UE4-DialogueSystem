@@ -25,6 +25,7 @@
 
 UBTTask_CreateUIPanel::UBTTask_CreateUIPanel(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	NodeName = "Create UI Panel";
 	auto Settings = UDialogSystemSettings::Get()->BehaviorTreeSettings;
 	if (UIName == NAME_None)
 	{

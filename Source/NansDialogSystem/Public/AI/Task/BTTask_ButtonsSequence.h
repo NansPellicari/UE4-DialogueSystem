@@ -218,6 +218,7 @@ public:
 #if WITH_EDITOR
 	virtual void PostLoad() override;
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual FName GetNodeIconName() const override;
 #endif	  // WITH_EDITOR
 
 	virtual FString GetStaticDescription() const override;

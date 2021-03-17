@@ -22,6 +22,13 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
+UBTTask_WheelResponses::UBTTask_WheelResponses(const FObjectInitializer& ObjectInitializer) : UBTTask_Responses(
+	ObjectInitializer
+)
+{
+	NodeName = "Wheel Responses";
+}
+
 FString UBTTask_WheelResponses::GetStaticDescription() const
 {
 	FString ReturnDesc = "\nResponses Type Tolerance: " + FString::SanitizeFloat(ResponsesTypeTolerance);

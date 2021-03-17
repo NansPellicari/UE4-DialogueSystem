@@ -45,6 +45,8 @@ class NANSDIALOGSYSTEM_API UBTTask_Responses : public UBTTask_NotifyAIOnAbort
 #if WITH_EDITOR
 	virtual void PostLoad() override;
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+public:
+	virtual FName GetNodeIconName() const override;
 #endif	  // WITH_EDITOR
 
 public:

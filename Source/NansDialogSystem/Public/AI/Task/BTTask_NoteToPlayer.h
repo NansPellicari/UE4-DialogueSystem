@@ -37,6 +37,9 @@ class NANSDIALOGSYSTEM_API UBTTask_NoteToPlayer : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
 
+public:
+	explicit UBTTask_NoteToPlayer(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	UPROPERTY(EditInstanceOnly, Category = "Message")
 	float MessageDuration = 5.f;

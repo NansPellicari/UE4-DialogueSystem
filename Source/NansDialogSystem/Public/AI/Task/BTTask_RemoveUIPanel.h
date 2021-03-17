@@ -27,6 +27,10 @@ UCLASS()
 class NANSDIALOGSYSTEM_API UBTTask_RemoveUIPanel : public UBTTask_NotifyAIOnAbort
 {
 	GENERATED_BODY()
+
+public:
+	explicit UBTTask_RemoveUIPanel(const FObjectInitializer& ObjectInitializer);
+
 protected:
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
