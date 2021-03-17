@@ -32,13 +32,14 @@ NDialogBTHelpers::~NDialogBTHelpers() {}
 ACharacter* NDialogBTHelpers::GetPlayerCharacter(UBrainComponent& OwnerComp, const FString TaskName)
 {
 	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(&OwnerComp, 0);
-	check(IsValid(PlayerChar));
+	if (!IsValid(PlayerChar)) return nullptr;
 	return PlayerChar;
 }
 
 APlayerController* NDialogBTHelpers::GetPlayerController(UBrainComponent& OwnerComp, const FString TaskName)
 {
 	const auto PlayerChar = GetPlayerCharacter(OwnerComp, TaskName);
+	if (!IsValid(PlayerChar)) return nullptr;
 	return Cast<APlayerController>(PlayerChar->GetController());
 }
 
@@ -69,6 +70,16 @@ UDialogueUI* NDialogBTHelpers::GetUIFromBlackboard(UBehaviorTreeComponent& Owner
 TScriptInterface<IDialogueHUD> NDialogBTHelpers::GetPlayerHUD(UBehaviorTreeComponent& OwnerComp, const FString TaskName)
 {
 	APlayerController* PlayerController = GetPlayerController(OwnerComp, TaskName);
+	if (!IsValid(PlayerController))
+	{
+		EDITOR_WARN(
+			"DialogSystem",
+			FText::Format(LOCTEXT("NoPlayerController", "no player controller when called {0}"), FText::FromString(
+				TaskName)),
+			&OwnerComp
+		);
+		return nullptr;
+	}
 	const auto PlayerHUD = PlayerController->GetHUD();
 	if (!IsValid(PlayerHUD) || !PlayerHUD->Implements<UDialogueHUD>())
 	{

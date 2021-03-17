@@ -344,4 +344,12 @@ FString UBTTask_Responses::DisplayStaticResponses(
 }
 
 void UBTTask_Responses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) {}
+
+#if WITH_EDITOR
+FName UBTTask_Responses::GetNodeIconName() const
+{
+	// TODO import my own icon
+	return FName("BTEditor.Graph.BTNode.Task.PlaySound.Icon");
+}
+#endif	  // WITH_EDITOR
 #undef LOCTEXT_NAMESPACE

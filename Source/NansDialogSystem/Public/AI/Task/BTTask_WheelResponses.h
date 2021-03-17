@@ -30,6 +30,9 @@ class NANSDIALOGSYSTEM_API UBTTask_WheelResponses : public UBTTask_Responses
 {
 	GENERATED_BODY()
 public:
+
+	explicit UBTTask_WheelResponses(const FObjectInitializer& ObjectInitializer);
+
 	virtual FString GetStaticDescription() const override;
 
 #if WITH_EDITOR

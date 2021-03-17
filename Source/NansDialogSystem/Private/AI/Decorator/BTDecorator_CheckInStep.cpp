@@ -81,7 +81,7 @@ UBTDecorator_CheckInStep::UBTDecorator_CheckInStep(const FObjectInitializer& Obj
 	ObjectInitializer
 )
 {
-	NodeName = "Conditions on points in step";
+	NodeName = "Check: Points in step";
 }
 
 bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
@@ -117,9 +117,9 @@ bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent
 
 FString UBTDecorator_CheckInStep::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 
-	ReturnDesc += FString("\n\nStep conditions:");
+	ReturnDesc += FString("\nStep conditions:");
 	for (int32 Index = 0; Index != StepConditions.Num(); ++Index)
 	{
 		FBTStepCondition Condition = StepConditions[Index];

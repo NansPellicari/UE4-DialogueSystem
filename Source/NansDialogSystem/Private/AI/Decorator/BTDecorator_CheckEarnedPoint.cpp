@@ -105,7 +105,7 @@ UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitia
 	ObjectInitializer
 )
 {
-	NodeName = "Conditions with earned points";
+	NodeName = "Check: Earned points";
 }
 
 bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
@@ -143,9 +143,9 @@ bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComp
 
 FString UBTDecorator_CheckEarnedPoint::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 
-	ReturnDesc += FString("\n\nEarned Points conditions:");
+	ReturnDesc += FString("\nEarned Points conditions:");
 	for (int32 Index = 0; Index != EarnedPointsConditions.Num(); ++Index)
 	{
 		FPointCondition Condition = EarnedPointsConditions[Index];

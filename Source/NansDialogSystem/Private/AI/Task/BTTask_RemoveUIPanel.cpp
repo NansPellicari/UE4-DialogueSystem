@@ -20,6 +20,12 @@
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
+UBTTask_RemoveUIPanel::UBTTask_RemoveUIPanel(const FObjectInitializer& ObjectInitializer)
+	: UBTTask_NotifyAIOnAbort(ObjectInitializer)
+{
+	NodeName = "Remove UI Panel";
+}
+
 EBTNodeResult::Type UBTTask_RemoveUIPanel::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();

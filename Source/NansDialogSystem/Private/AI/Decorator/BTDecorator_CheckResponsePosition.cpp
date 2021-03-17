@@ -46,7 +46,7 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	NodeName = "Conditions on response order";
+	NodeName = "Check: Response position";
 }
 
 bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
@@ -84,9 +84,9 @@ bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTre
 
 FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 {
-	FString ReturnDesc = Super::GetStaticDescription();
+	FString ReturnDesc;
 
-	ReturnDesc += FString("\n\nResponse position conditions:");
+	ReturnDesc += FString("\nResponse position conditions:");
 	for (int32 Index = 0; Index != ResponsePositionConditions.Num(); ++Index)
 	{
 		const FResponsePositionCondition Condition = ResponsePositionConditions[Index];
