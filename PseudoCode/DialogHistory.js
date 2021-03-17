@@ -3,7 +3,7 @@ class Owner {
 		this.Name = Name;
 	}
 }
-class DialogBlock {
+class DialogueBlock {
 	constructor(
 		Name,
 		NormalizedPoint,
@@ -19,16 +19,16 @@ class DialogBlock {
 	}
 }
 
-class DialogSequence {
-	constructor(Name, DialogBlocks, Owner, id) {
+class DialogueSequence {
+	constructor(Name, DialogueBlocks, Owner, id) {
 		this.Name = Name;
-		this.DialogBlocks = DialogBlocks;
-		this.DialogOwner = Owner;
+		this.DialogueBlocks = DialogueBlocks;
+		this.DialogueOwner = Owner;
 		this.Id = id;
 	}
 }
 
-class DialogHistory {
+class DialogueHistory {
 	constructor(LevelName, LevelId, Sequences) {
 		this.LevelName = LevelName;
 		this.LevelId = LevelId;
@@ -52,64 +52,64 @@ const AvailablePointTypes = [
 const Marcel = new Owner("Marcel");
 const Jack = new Owner("Jack");
 
-const Sequence1Marcel = new DialogSequence(
+const Sequence1Marcel = new DialogueSequence(
 	"Sequence1",
 	[
-		new DialogBlock("Block1", 1, 1.5, AvailablePointTypes[0], 0),
-		new DialogBlock("Block2", 2, 4, AvailablePointTypes[1], 1)
+		new DialogueBlock("Block1", 1, 1.5, AvailablePointTypes[0], 0),
+		new DialogueBlock("Block2", 2, 4, AvailablePointTypes[1], 1)
 	],
 	Marcel,
 	1
 );
-const Sequence1MarcelBis = new DialogSequence(
+const Sequence1MarcelBis = new DialogueSequence(
 	"Sequence1",
 	[
-		new DialogBlock("Block1", 1, 3, AvailablePointTypes[0], 0),
-		new DialogBlock("Block2", 2, 6, AvailablePointTypes[1], 1)
+		new DialogueBlock("Block1", 1, 3, AvailablePointTypes[0], 0),
+		new DialogueBlock("Block2", 2, 6, AvailablePointTypes[1], 1)
 	],
 	Marcel,
 	2
 );
-const Sequence2Marcel = new DialogSequence(
+const Sequence2Marcel = new DialogueSequence(
 	"Sequence2",
 	[
-		new DialogBlock("Block3", 3, 2, AvailablePointTypes[2], 2),
-		new DialogBlock("Block4", 1, 3, AvailablePointTypes[3], 2)
+		new DialogueBlock("Block3", 3, 2, AvailablePointTypes[2], 2),
+		new DialogueBlock("Block4", 1, 3, AvailablePointTypes[3], 2)
 	],
 	Marcel,
 	3
 );
-const Sequence1Jack = new DialogSequence(
+const Sequence1Jack = new DialogueSequence(
 	"Sequence1",
 	[
-		new DialogBlock("Block1", 1, 3, AvailablePointTypes[0], 0),
-		new DialogBlock("Block2", 3, 1, AvailablePointTypes[3], 2)
+		new DialogueBlock("Block1", 1, 3, AvailablePointTypes[0], 0),
+		new DialogueBlock("Block2", 3, 1, AvailablePointTypes[3], 2)
 	],
 	Jack,
 	4
 );
-const Sequence3Jack = new DialogSequence(
+const Sequence3Jack = new DialogueSequence(
 	"Sequence3",
 	[
-		new DialogBlock("Block5", 1, 3, AvailablePointTypes[3], 4),
-		new DialogBlock("Block6", 3, 1, AvailablePointTypes[2], 5)
+		new DialogueBlock("Block5", 1, 3, AvailablePointTypes[3], 4),
+		new DialogueBlock("Block6", 3, 1, AvailablePointTypes[2], 5)
 	],
 	Jack,
 	5
 );
 
-const DialogHistories = [
-	new DialogHistory("Level1", 1, [Sequence1Marcel, Sequence1Jack]),
-	new DialogHistory("Level2", 3, [Sequence2Marcel, Sequence3Jack]),
-	new DialogHistory("Level1", 2, [Sequence1MarcelBis, Sequence1Jack])
+const DialogueHistories = [
+	new DialogueHistory("Level1", 1, [Sequence1Marcel, Sequence1Jack]),
+	new DialogueHistory("Level2", 3, [Sequence2Marcel, Sequence3Jack]),
+	new DialogueHistory("Level1", 2, [Sequence1MarcelBis, Sequence1Jack])
 ];
 
 const currentLevelId = 2;
 const currentSequence = Sequence3Jack;
 
 class Search {
-	constructor(DialogHistories) {
-		this.DialogHistories = DialogHistories;
+	constructor(DialogueHistories) {
+		this.DialogueHistories = DialogueHistories;
 	}
 
 	searchSequenceById(Id) {}
@@ -117,7 +117,7 @@ class Search {
 	SearchBlocks(search) {
 		let Results = [];
 		let searchChunks = search.split(".");
-		for (let history of DialogHistories) {
+		for (let history of DialogueHistories) {
 			if (
 				searchChunks[0] != "*" &&
 				searchChunks[0] != history.LevelName
@@ -147,18 +147,18 @@ class Search {
 				}
 				if (
 					searchChunks[2] != "*" &&
-					searchChunks[2] != sequence.DialogOwner.Name
+					searchChunks[2] != sequence.DialogueOwner.Name
 				) {
 					continue;
 				}
 				if (
 					searchChunks[2] == "None" &&
-					sequence.DialogOwner != currentSequence.DialogOwner
+					sequence.DialogueOwner != currentSequence.DialogueOwner
 				) {
 					continue;
 				}
 
-				for (let block of sequence.DialogBlocks) {
+				for (let block of sequence.DialogueBlocks) {
 					if (
 						searchChunks[3] != "*" &&
 						searchChunks[3] != block.Name
@@ -181,7 +181,7 @@ const searches = [
 	"*.*.Marcel.*.PointType",
 	"*.*.*.*.PointType"
 ];
-const Seeker = new Search(DialogHistories);
+const Seeker = new Search(DialogueHistories);
 
 for (search of searches) {
 	let BlocksResults = Seeker.SearchBlocks(search);

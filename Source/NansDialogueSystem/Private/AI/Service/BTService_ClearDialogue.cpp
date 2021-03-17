@@ -21,9 +21,11 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-UBTService_ClearDialogue::UBTService_ClearDialogue(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+UBTService_ClearDialogue::UBTService_ClearDialogue(const FObjectInitializer& ObjectInitializer) : Super(
+	ObjectInitializer
+)
 {
-	NodeName = "Clear Dialog";
+	NodeName = "Clear Dialogue";
 
 	bNotifyTick = false;
 	bTickIntervals = false;
