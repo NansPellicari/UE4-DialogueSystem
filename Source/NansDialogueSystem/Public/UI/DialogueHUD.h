@@ -17,14 +17,6 @@
 #include "UObject/Interface.h"
 #include "DialogueHUD.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
-	FOnHUDChangeUIPanelEvent,
-	const FName&,
-	UIName,
-	bool,
-	bIsDisplayedOrHide
-);
-
 UINTERFACE()
 class UDialogueHUD : public UInterface
 {

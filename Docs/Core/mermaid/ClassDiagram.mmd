@@ -1,0 +1,28 @@
+classDiagram
+
+Player "1" *-- "1..*" DialogueHistory
+DialogueHistory "1" *-- "1..*" DialogueSequence
+DialogueSequence "1" *-- "1..*" DialogueResult
+
+
+class DialogueResult {
+    +FName Id
+    +int32 NormalizedPoint
+    +FPointType PointType
+    *int32 RealEarnedPoint
+    *int32 SentencePosition
+}
+
+class DialogueSequence {
+    +FName Id
+    +APawn* DialogueOwner
+}
+
+class DialogueHistory {
+    +FName LevelName
+}
+
+class FPointType {
+    <<struct>>
+    +FName Name
+}
