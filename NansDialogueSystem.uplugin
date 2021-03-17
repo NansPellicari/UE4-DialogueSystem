@@ -1,0 +1,55 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "(Nans) Dialogue System",
+	"Description": "An example of a minimal plugin.  This can be used as a starting point when creating your own plugin.",
+	"Category": "Dialogue",
+	"CreatedBy": "Nans Pellicari",
+	"CreatedByURL": "https://github.com/NansPellicari",
+	"DocsURL": "https://github.com/NansPellicari/UE4-DialogueSystem",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/NansPellicari/UE4-DialogueSystem",
+	"EnabledByDefault": false,
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "NansDialogueSystem",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "NansDialogueSystemEd",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "NansUE4TestsHelpers",
+			"Enabled": true
+		},
+		{
+			"Name": "NansUE4Utilities",
+			"Enabled": true
+		},
+		{
+			"Name": "NansCoreHelpers",
+			"Enabled": true
+		},
+		{
+			"Name": "NansBehaviorSteps",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "NansUMGExtent",
+			"Enabled": true
+		}
+	]
+}
