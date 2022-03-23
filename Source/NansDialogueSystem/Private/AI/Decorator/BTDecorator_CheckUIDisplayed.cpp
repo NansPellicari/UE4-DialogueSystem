@@ -30,5 +30,10 @@ bool UBTDecorator_CheckUIDisplayed::CalculateRawConditionValue(UBehaviorTreeComp
 	uint8* NodeMemory) const
 {
 	const auto PlayerHUD = NDialogueBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	return IDialogueHUD::Execute_IsDisplayed(PlayerHUD.GetObject(), UIName);
+	bool bDisplayed = false;
+	if (PlayerHUD != nullptr)
+	{
+		bDisplayed = IDialogueHUD::Execute_IsDisplayed(PlayerHUD.GetObject(), UIName);
+	}
+	return bDisplayed;
 }

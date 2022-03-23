@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 
 #include "CoreMinimal.h"
 
-
 #include "Ability/NDSGameplayEffectTypes.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "NDSFunctionLibrary.generated.h"
+
+class UNDialogueSubsystem;
+class UBehaviorTreeComponent;
 
 /**
  * This blueprint lib is mainly useful to call FNDSGameplayEffectContext methods.
@@ -45,4 +47,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Ability", Meta = (WorldContext = "WorldContextObject"))
 	static bool IsPlayerCanDialogue(UObject* WorldContextObject, int32 PlayerIndex = 0);
+
+	UFUNCTION(BlueprintCallable, Category="Ability")
+	static bool IsPlayerABSCanDialogue(const UAbilitySystemComponent* ABSComp);
+
+	static UNDialogueSubsystem* GetDialogSubsystem();
 };

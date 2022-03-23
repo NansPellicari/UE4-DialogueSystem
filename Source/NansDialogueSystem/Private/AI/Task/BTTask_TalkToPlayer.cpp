@@ -39,6 +39,7 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	OwnerComponent = &OwnerComp;
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 	DialogueUI = NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
+	UE_LOG(LogTemp, Warning, TEXT("%s Here"), ANSI_TO_TCHAR(__FUNCTION__));
 
 	if (!IsValid(DialogueUI))
 	{
@@ -90,7 +91,10 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 void UBTTask_TalkToPlayer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 	EBTNodeResult::Type TaskResult)
 {
-	DialogueUI->OnEndDisplayQuestion.RemoveAll(this);
+	if (IsValid(DialogueUI))
+	{
+		DialogueUI->OnEndDisplayQuestion.RemoveAll(this);
+	}
 	OwnerComponent = nullptr;
 	DialogueUI = nullptr;
 }

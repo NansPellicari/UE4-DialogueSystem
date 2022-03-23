@@ -17,22 +17,26 @@
 
 #include "BTDialogueTypes.h"
 #include "PointSystemHelpers.h"
+#include "GameplayEffectTypes.h"
+#include "Step.h"
 #include "Components/ActorComponent.h"
 #include "Dialogue/DialogueHistory.h"
 #include "Dialogue/DialogueHistorySearch.h"
-#include "NansBehaviorSteps/Public/BTStepsLibrary.h"
-
+#include "Misc/BPDelegateHandle.h"
 #include "PlayerDialogueComponent.generated.h"
 
 // struct FNDialogueHistorySearch;
 struct FNansConditionOperator;
 class UAbilitySystemComponent;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FDialogueEvent, class UPlayerDialogueComponent*);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FEventForDialogueEvent, class UPlayerDialogueComponent*, PlayerDialogueComp);
+
 /**
  * The main Goal of this Component is to save data from dialog session.
  * It is also used to retrieve data on previous or actual session to perform some checks on previously chosen responses. 
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class NANSDIALOGUESYSTEM_API UPlayerDialogueComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -51,7 +55,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
 	int32 GetDialoguePoints(FNDialogueCategory Category) const;
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
-	void AddPoints(FNPoint Point, int32 Position, FBTStep Step);
+	void AddPoints(FNPoint Point, int32 Position, FNStep Step);
 	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search) const;
 	UPROPERTY(EditAnywhere, Category="PlayerDialogueComponent")
@@ -59,7 +63,36 @@ public:
 	UPROPERTY(EditAnywhere, Category="PlayerDialogueComponent")
 	bool bDebug = false;
 
+	// BEGIN BP delegates management declaration for OnDialogueStart
+	FDialogueEvent OnDialogueStartEvent;
+	UFUNCTION(BlueprintNativeEvent, Category = "Dialogue")
+	void OnDialogueStart();
+	virtual FDialogueEvent& OnNativeDialogueStart();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Dialogue")
+	FBPDelegateHandle BindToOnDialogueStart(const FEventForDialogueEvent& Functor);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Dialogue")
+	void UnbindToOnDialogueStart(UPARAM(ref) FBPDelegateHandle& Handle);
+	virtual void OnDialogueStart_Implementation();
+	virtual FBPDelegateHandle BindToOnDialogueStart_Implementation(const FEventForDialogueEvent& Functor);
+	virtual void UnbindToOnDialogueStart_Implementation(FBPDelegateHandle& Handle);
+	// END BP delegates management declaration for OnDialogueStart
+
+	// BEGIN BP delegates management declaration for OnDialogueEnd
+	FDialogueEvent OnDialogueEndEvent;
+	UFUNCTION(BlueprintNativeEvent, Category = "Dialogue")
+	void OnDialogueEnd();
+	virtual FDialogueEvent& OnNativeDialogueEnd();
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Dialogue")
+	FBPDelegateHandle BindToOnDialogueEnd(const FEventForDialogueEvent& Functor);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Dialogue")
+	void UnbindToOnDialogueEnd(UPARAM(ref) FBPDelegateHandle& Handle);
+	virtual void OnDialogueEnd_Implementation();
+	virtual FBPDelegateHandle BindToOnDialogueEnd_Implementation(const FEventForDialogueEvent& Functor);
+	virtual void UnbindToOnDialogueEnd_Implementation(FBPDelegateHandle& Handle);
+	// END BP delegates management declaration for OnDialogueEnd
+
 protected:
+	void DialogueTagChange(const FGameplayTag CallbackTag, int32 NewCount);
 	virtual void BeginPlay() override;
 	UPROPERTY()
 	UAbilitySystemComponent* ABSComp;

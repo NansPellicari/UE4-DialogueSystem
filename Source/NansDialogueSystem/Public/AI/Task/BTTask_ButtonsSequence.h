@@ -30,6 +30,7 @@ class UPanelWidget;
 class UButtonSequenceWidget;
 class NButtonSequenceMovementManager;
 class UBTTask_Countdown;
+class NBTDialoguePointsHandler;
 
 /**
  * Dialogue Response Struct
@@ -269,8 +270,7 @@ protected:
 
 private:
 	TSharedPtr<NButtonSequenceMovementManager> BTSequenceManager;
-	UPROPERTY()
-	UBTDialoguePointsHandler* PointsHandler;
+	TSharedPtr<NBTDialoguePointsHandler> PointsHandler;
 	FString PlayerTries;
 	int32 SequenceIndex = -1;
 	EBTNodeResult::Type TriesStatus = EBTNodeResult::InProgress;

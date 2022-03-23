@@ -15,52 +15,33 @@
 
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
-#include "BTStepsHandlerContainer.h"
 #include "PointSystemHelpers.h"
+#include "StepsHandler.h"
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 #include "Component/PlayerDialogueComponent.h"
 #include "Dialogue/DialogueHistorySearch.h"
-#include "BTDialoguePointsHandler.generated.h"
 
 struct FDialogueSequence;
 struct FNDialogueFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class UBehaviorTreeComponent;
 
-UCLASS(BlueprintType)
-class NANSDIALOGUESYSTEM_API UBTDialoguePointsHandler : public UObject
+class NANSDIALOGUESYSTEM_API NBTDialoguePointsHandler
 {
-	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere)
-	bool bDebug = false;
-
-
-	UBTDialoguePointsHandler() {}
-	bool Initialize(UBTStepsHandlerContainer* InStepsHandler, UBehaviorTreeComponent& OwnerComp,
-		FDialogueSequence DialogueSequence);
-
-	virtual void BeginDestroy() override;
-
-	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
+	NBTDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler, UPlayerDialogueComponent* InDialogComp,
+		const AAIController* InOwner, bool InbDebug);
+	virtual ~NBTDialoguePointsHandler();
 	void AddPoints(FNPoint Point, int32 Position);
-
-	UFUNCTION(BlueprintCallable, Category = "PointsHandler")
-	void Clear();
 	bool HasResults(const FNDialogueHistorySearch& Search) const;
 	bool HasResults(const TArray<FNDialogueHistorySearch> Searches,
 		TArray<FNansConditionOperator> ConditionsOperators) const;
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PointsHandler")
 	int32 GetDialoguePoints(FNDialogueCategory Category) const;
+	const AAIController* GetOwner() const;
 
+	bool bDebug = false;
 protected:
-	UPROPERTY()
-	UBTStepsHandlerContainer* StepsHandler;
-	UPROPERTY()
-	UAbilitySystemComponent* PlayerGASC;
-	UPROPERTY()
-	UPlayerDialogueComponent* DialogComp;
-
-	FString BehaviorTreePathName;
-	FString AIPawnPathName;
+	TSharedPtr<NStepsHandler> StepsHandler;
+	TWeakObjectPtr<UPlayerDialogueComponent> DialogComp;
+	TWeakObjectPtr<const AAIController> Owner;
 };

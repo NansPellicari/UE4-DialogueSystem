@@ -19,7 +19,7 @@
 #include "Components/ActorComponent.h"
 #include "AIDialogComponent.generated.h"
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class NANSDIALOGUESYSTEM_API UAIDialogComponent : public UActorComponent, public IAITaskAbortAware
 {
 	GENERATED_BODY()
@@ -27,12 +27,15 @@ class NANSDIALOGUESYSTEM_API UAIDialogComponent : public UActorComponent, public
 public:
 	// Sets default values for this component's properties
 	UAIDialogComponent();
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
-
-	virtual void OnBTTaskAbort(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+private:
+	bool bIsAborting = false;
+	void OnBehaviorTreeTaskAbort(UBehaviorTreeComponent& OwnerComp) const;
+	TWeakObjectPtr<UBehaviorTreeComponent> BehaviorTreeComp;
 };

@@ -29,16 +29,17 @@ NDialogueBTHelpers::NDialogueBTHelpers() {}
 
 NDialogueBTHelpers::~NDialogueBTHelpers() {}
 
-ACharacter* NDialogueBTHelpers::GetPlayerCharacter(UBrainComponent& OwnerComp, const FString TaskName)
+ACharacter* NDialogueBTHelpers::GetPlayerCharacter(const AAIController& AIController)
 {
-	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(&OwnerComp, 0);
+	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(&AIController, 0);
 	if (!IsValid(PlayerChar)) return nullptr;
 	return PlayerChar;
 }
 
 APlayerController* NDialogueBTHelpers::GetPlayerController(UBrainComponent& OwnerComp, const FString TaskName)
 {
-	const auto PlayerChar = GetPlayerCharacter(OwnerComp, TaskName);
+	check(OwnerComp.GetAIOwner())
+	const auto PlayerChar = GetPlayerCharacter(*OwnerComp.GetAIOwner());
 	if (!IsValid(PlayerChar)) return nullptr;
 	return Cast<APlayerController>(PlayerChar->GetController());
 }
@@ -71,7 +72,7 @@ UDialogueUI* NDialogueBTHelpers::GetUIFromBlackboard(UBehaviorTreeComponent& Own
 TScriptInterface<IDialogueHUD> NDialogueBTHelpers::GetPlayerHUD(UBehaviorTreeComponent& OwnerComp,
 	const FString TaskName)
 {
-	APlayerController* PlayerController = GetPlayerController(OwnerComp, TaskName);
+	const APlayerController* PlayerController = GetPlayerController(OwnerComp, TaskName);
 	if (!IsValid(PlayerController))
 	{
 		EDITOR_WARN(
@@ -98,8 +99,7 @@ TScriptInterface<IDialogueHUD> NDialogueBTHelpers::GetPlayerHUD(UBehaviorTreeCom
 	return DialogueHUD;
 }
 
-void NDialogueBTHelpers::
-RemoveUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard)
+void NDialogueBTHelpers::RemoveUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard)
 {
 	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
 	const FName UINameKey = Settings.UINameKey;
@@ -107,7 +107,7 @@ RemoveUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* 
 	const FName PreviousUIClassKey = Settings.PreviousUIClassKey;
 
 	const FName WidgetName = Blackboard->GetValueAsName(UINameKey);
-	auto PlayerHUD = GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
+	const auto PlayerHUD = GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
 	if (!IsValid(PlayerHUD.GetObject()))
 	{
 		// Error are already manage in GetPlayerHUD()
@@ -138,7 +138,8 @@ RemoveUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* 
 
 UAbilitySystemComponent* NDialogueBTHelpers::GetGASC(UBehaviorTreeComponent& OwnerComp)
 {
-	auto Char = GetPlayerCharacter(OwnerComp, __FUNCTION__);
+	check(OwnerComp.GetAIOwner())
+	const auto Char = GetPlayerCharacter(*OwnerComp.GetAIOwner());
 	if (!IsValid(Char))
 	{
 		// errors are already manage in GetPlayerCharacter()
@@ -159,24 +160,19 @@ UAbilitySystemComponent* NDialogueBTHelpers::GetGASC(UBehaviorTreeComponent& Own
 	return Comp;
 }
 
-UPlayerDialogueComponent* NDialogueBTHelpers::GetDialogueComponent(UBehaviorTreeComponent& OwnerComp)
+UPlayerDialogueComponent* NDialogueBTHelpers::GetDialogueComponent(const ACharacter* PlayerChar)
 {
-	auto Char = GetPlayerCharacter(OwnerComp, __FUNCTION__);
-	if (!IsValid(Char))
-	{
-		// errors are already manage in GetPlayerCharacter()
-		return nullptr;
-	}
+	check(IsValid(PlayerChar));
 
-	auto Comp = Char->FindComponentByClass<UPlayerDialogueComponent>();
+	UPlayerDialogueComponent* Comp = PlayerChar->FindComponentByClass<UPlayerDialogueComponent>();
 	if (!IsValid(Comp))
 	{
 		EDITOR_ERROR(
 			"DialogueSystem",
-			FText::Format(LOCTEXT("PlayerDialogueCompNotFound", "The UPlayerDialogueComponent has not be found in {0} "),
-				FText::
-				FromString(OwnerComp.GetFullName())),
-			&OwnerComp
+			FText::Format(LOCTEXT("PlayerDialogueCompNotFound",
+					"The UPlayerDialogueComponent was not found for player {0} ")
+				, FText::FromString(PlayerChar->GetFullName())),
+			PlayerChar
 		);
 		return nullptr;
 	}

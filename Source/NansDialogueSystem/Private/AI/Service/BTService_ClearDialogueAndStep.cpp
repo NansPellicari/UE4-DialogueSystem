@@ -11,7 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AI/Service/BTService_ClearDialogue.h"
+#include "BTStepsLibrary.h"
+#include "AI/Service/BTService_ClearDialogueAndStep.h"
 
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
@@ -23,7 +24,8 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-UBTService_ClearDialogue::UBTService_ClearDialogue(const FObjectInitializer& ObjectInitializer) : Super(
+UBTService_ClearDialogueAndStep::UBTService_ClearDialogueAndStep(
+	const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer
 )
 {
@@ -35,14 +37,17 @@ UBTService_ClearDialogue::UBTService_ClearDialogue(const FObjectInitializer& Obj
 	bNotifyCeaseRelevant = false;
 }
 
-void UBTService_ClearDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTService_ClearDialogueAndStep::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
 
+	UE_LOG(LogTemp, Warning, TEXT("%s Here"), ANSI_TO_TCHAR(__FUNCTION__));
+
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
+	UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	DialSys->EndDialogSequence(AIOwner);
@@ -58,14 +63,14 @@ void UBTService_ClearDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerCom
 }
 
 #if WITH_EDITOR
-FName UBTService_ClearDialogue::GetNodeIconName() const
+FName UBTService_ClearDialogueAndStep::GetNodeIconName() const
 {
 	// TODO import my own icon
 	return FName("BTEditor.Graph.BTNode.Task.PlaySound.Icon");
 }
 #endif	  // WITH_EDITOR
 
-FString UBTService_ClearDialogue::GetStaticDescription() const
+FString UBTService_ClearDialogueAndStep::GetStaticDescription() const
 {
 	FString ReturnDesc;
 

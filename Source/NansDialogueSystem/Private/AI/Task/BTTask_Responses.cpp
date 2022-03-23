@@ -13,6 +13,8 @@
 
 #include "AI/Task/BTTask_Responses.h"
 
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "PointSystemHelpers.h"
 #include "AI/Task/BTTask_Countdown.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -69,15 +71,12 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 	}
 
 	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-	PointsHandler = Cast<UBTDialoguePointsHandler>(
-		Blackboard->GetValueAsObject(Settings.PointsHandlerKey)
-	);
-
-	if (!IsValid(PointsHandler))
-	{
-		EDITOR_ERROR("DialogSystem", LOCTEXT("NotPointsHandler", "Set a UBTDialoguePointsHandler in "));
-		return EBTNodeResult::Aborted;
-	}
+	const AAIController* AIOwner = OwnerComp.GetAIOwner();
+	check(IsValid(AIOwner));
+	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+	PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	if (!ensure(PointsHandler.IsValid())) return EBTNodeResult::Aborted;
 
 	DialogueUI = NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogueUI))

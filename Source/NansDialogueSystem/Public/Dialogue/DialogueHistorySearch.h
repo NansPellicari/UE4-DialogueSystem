@@ -122,16 +122,24 @@ struct NANSDIALOGUESYSTEM_API FNDialogueHistorySearch
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FNAllOrName DialogueName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ENPropertyValue PropertyName;
+	ENPropertyValue PropertyName = ENPropertyValue::Difficulty;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName != ENPropertyValue::IsDone"))
-	ENansConditionComparator Operator;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition=
-		"PropertyName == ENPropertyValue::Difficulty || PropertyName == ENPropertyValue::SentencePosition"))
+	ENConditionComparator Operator = ENConditionComparator::Equals;
+	UPROPERTY(
+		EditAnywhere,
+		BlueprintReadWrite,
+		Meta=(EditCondition=
+			"PropertyName == ENPropertyValue::Difficulty || PropertyName == ENPropertyValue::SentencePosition")
+	)
 	int32 IntValue = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName == ENPropertyValue::BlockName"))
 	FName NameValue = NAME_None;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition=
-		"PropertyName == ENPropertyValue::InitialPoints || PropertyName == ENPropertyValue::PointsEarned"))
+	UPROPERTY(
+		EditAnywhere,
+		BlueprintReadWrite,
+		Meta=(EditCondition=
+			"PropertyName == ENPropertyValue::InitialPoints || PropertyName == ENPropertyValue::PointsEarned")
+	)
 	float FloatValue = 0.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta=(EditCondition="PropertyName == ENPropertyValue::CategoryName"))
 	FNDialogueCategory CategoryValue;

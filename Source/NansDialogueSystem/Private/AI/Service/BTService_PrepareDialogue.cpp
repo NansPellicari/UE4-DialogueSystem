@@ -14,13 +14,16 @@
 #include "AI/Service/BTService_PrepareDialogue.h"
 
 #include "AIController.h"
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Dialogue/DialogueSequence.h"
 #include "GameFramework/Character.h"
+#include "Misc/ErrorUtils.h"
 #include "Service/BTDialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Setting/DialogueSystemSettings.h"
+#include "UI/ResponseButtonWidget.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
@@ -38,40 +41,59 @@ UBTService_PrepareDialogue::UBTService_PrepareDialogue(const FObjectInitializer&
 void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+	check(IsValid(AIOwner));
+	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+	// False means the dialogue sequence with this AIOwner has been already started
+	if (!DialSys->CreateDialogSequence(AIOwner)) return;
+
+	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	check(PointsHandler.IsValid());
+
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-	BTDialogPointsHandler = Cast<UBTDialoguePointsHandler>(BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey));
+	const UBlackboardData* BBData = BlackboardComp->GetBlackboardAsset();
 
-	if (!IsValid(BTDialogPointsHandler))
+	if (!IsValid(BBData))
 	{
-		BTDialogPointsHandler = NewObject<UBTDialoguePointsHandler>(&OwnerComp);
-		BlackboardComp->SetValueAsObject(Settings.PointsHandlerKey, BTDialogPointsHandler);
-		UBTStepsHandlerContainer* BTSteps = Cast<UBTStepsHandlerContainer>(
-			BlackboardComp->GetValueAsObject(StepsKeyName)
+		EDITOR_ERROR(
+			"DialogSystem",
+			LOCTEXT("NoBBDataSet", "No BB data set for dialog in"),
+			static_cast<UObject*>(OwnerComp.GetCurrentTree())
 		);
+	}
+	const FDialogueBehaviorTreeSettings Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
+	const UStruct* StructSettings = FDialogueBehaviorTreeSettings::StaticStruct();
+	TArray<FName> BBKeys;
+	for (const auto& Key : BBData->Keys)
+	{
+		BBKeys.Add(Key.EntryName);
+	}
 
-		if (BTSteps != nullptr && BTDialogPointsHandler != nullptr)
+	for (TFieldIterator<FProperty> It(StructSettings, EFieldIteratorFlags::ExcludeSuper); It; ++It)
+	{
+		FProperty* Property = *It;
+
+		if (FNameProperty* NamedProperty = CastField<FNameProperty>(Property))
 		{
-			FDialogueSequence NewDialogueSequence;
-			NewDialogueSequence.Name = OwnerComp.GetCurrentTree()->GetFName();
-			// TODO use the new Protagonist name
-			NewDialogueSequence.Owner = ActorOwner->GetPathName();
-
-			BTDialogPointsHandler->Initialize(
-				BTSteps,
-				OwnerComp,
-				NewDialogueSequence
-			);
-
-			BTDialogPointsHandler->bDebug = bDebugPointsHandler;
-
-			// TODO create a decorator for this
-			// if (!bCanDialogue)
-			// {
-			// 	OwnerComp.StopLogic(FString("Player can't speak"));
-			// }
+			const FString& VariableName = NamedProperty->GetName();
+			auto Category = NamedProperty->GetMetaData("Category");
+			const void* ValueRaw = NamedProperty->ContainerPtrToValuePtr<uint8>(&Settings);
+			const FName& BBKeyName = NamedProperty->GetPropertyValue(ValueRaw);
+			if (Category.Contains(TEXT("BBKeys")) && !BBKeys.Contains(BBKeyName))
+			{
+				EDITOR_ERROR(
+					"DialogSystem",
+					FText::Format(LOCTEXT("MissingBBKey",
+						"You have to set the key \"{0}\" in the Blackboard, see the config \"{1}\" in the dialog system settings"
+					) , FText::FromName(BBKeyName), FText::FromString(VariableName)),
+					static_cast<UObject*>(OwnerComp.GetCurrentTree())
+				);
+				return;
+			}
 		}
 	}
+
+	BBKeys.Empty();
 
 	BTDialogDifficultyHandler = Cast<UBTDialogueDifficultyHandler>(
 		BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey)

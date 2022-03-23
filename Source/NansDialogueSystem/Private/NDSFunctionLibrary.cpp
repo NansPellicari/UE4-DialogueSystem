@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,9 +13,11 @@
 
 #include "NDSFunctionLibrary.h"
 
-
+#include "NDialogueSubsystem.h"
 #include "Ability/NDSAbilitySystemComponent.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "GameFramework/Character.h"
+#include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/ErrorUtils.h"
 #include "Setting/DialogueSystemSettings.h"
@@ -69,7 +71,14 @@ bool UNDSFunctionLibrary::IsPlayerCanDialogue(UObject* WorldContextObject, int32
 {
 	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(WorldContextObject->GetWorld(), PlayerIndex);
 	UNDSAbilitySystemComponent* ABS = Player->FindComponentByClass<UNDSAbilitySystemComponent>();
-	if (!IsValid(ABS)) return false;
+	return IsPlayerABSCanDialogue(ABS);
+}
+
+bool UNDSFunctionLibrary::IsPlayerABSCanDialogue(const UAbilitySystemComponent* ABSComp)
+{
+	verify(IsValid(ABSComp));
+	const UNDSAbilitySystemComponent* ABS = Cast<UNDSAbilitySystemComponent>(ABSComp);
+	verify(IsValid(ABS));
 	TArray<FGameplayAbilitySpec*> MatchingGameplayAbilities;
 	ABS->GetActivatableGameplayAbilitySpecsByAllMatchingTags(
 		UDialogueSystemSettings::Get()->TagsForDialogueAbility,
@@ -80,10 +89,19 @@ bool UNDSFunctionLibrary::IsPlayerCanDialogue(UObject* WorldContextObject, int32
 		EDITOR_ERROR(
 			"DialogueSystem",
 			LOCTEXT("CanNotAddPointsForACategory", "Player should be able to speak!"),
-			WorldContextObject
+			ABSComp
 		);
 		return false;
 	}
 	return true;
+}
+
+UNDialogueSubsystem* UNDSFunctionLibrary::GetDialogSubsystem()
+{
+	ULocalPlayer* LocalPlayer = GEngine->FindFirstLocalPlayerFromControllerId(0);
+	check(LocalPlayer);
+	UNDialogueSubsystem* MySubsystem = LocalPlayer->GetSubsystem<UNDialogueSubsystem>();
+	check(IsValid(MySubsystem));
+	return MySubsystem;
 }
 #undef LOCTEXT_NAMESPACE

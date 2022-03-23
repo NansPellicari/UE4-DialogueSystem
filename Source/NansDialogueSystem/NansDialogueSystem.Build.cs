@@ -26,7 +26,6 @@ namespace UnrealBuildTool.Rules
 					"SlateCore",
 					"InputCore",
 					"DeveloperSettings",
-					"NansBehaviorStepsCore",
 					"NansBehaviorSteps",
 					"GameplayTasks",
 					"GameplayAbilities",

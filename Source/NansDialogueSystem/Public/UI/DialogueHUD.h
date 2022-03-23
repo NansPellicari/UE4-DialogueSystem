@@ -31,15 +31,14 @@ class NANSDIALOGUESYSTEM_API IDialogueHUD
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="UI")
+	void HideUIPanel(const FName& Name);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="UI")
-	void HideUIPanel(FName Name);
+	bool IsDisplayed(const FName& Name) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="UI")
-	bool IsDisplayed(const FName Name) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="UI")
-	UUserWidget* DisplayUIPanel(TSubclassOf<UUserWidget> WidgetClass, FName Name);
+	UUserWidget* DisplayUIPanel(TSubclassOf<UUserWidget> WidgetClass, const FName& Name);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="UI")
 	UUserWidget* GetCurrentUIPanel() const;

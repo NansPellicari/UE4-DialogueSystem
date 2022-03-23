@@ -32,7 +32,7 @@ struct NANSDIALOGUESYSTEM_API FResponsePositionCondition
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	int32 Step;
+	int32 Step = 0;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
 	FName StepLabel = NAME_None;
@@ -43,13 +43,13 @@ struct NANSDIALOGUESYSTEM_API FResponsePositionCondition
 	 * Otherwise it will checked only the last results.
 	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	bool bInEveryInstances;
+	bool bInEveryInstances = false;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	ENansConditionComparator Operator;
+	ENConditionComparator Operator = ENConditionComparator::Equals;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	int32 Position;
+	int32 Position = 0;
 
 	static void ToDialogueHistorySearch(const TArray<FResponsePositionCondition> ResponsePositions,
 		TArray<FNansConditionOperator> ConditionsOperators,
@@ -64,7 +64,6 @@ UCLASS()
 class NANSDIALOGUESYSTEM_API UBTDecorator_CheckResponsePosition : public UBTDecorator
 {
 	GENERATED_UCLASS_BODY()
-
 	// Basically conditions are check "first at last" with AND operator, use "ConditionsOperators" if you want more
 	// This allow to check values already earned in this Behavior Tree
 	UPROPERTY(EditAnywhere, Category = "Condition")

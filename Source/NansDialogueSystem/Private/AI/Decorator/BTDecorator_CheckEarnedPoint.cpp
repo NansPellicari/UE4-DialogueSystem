@@ -14,8 +14,11 @@
 #include "AI/Decorator/BTDecorator_CheckEarnedPoint.h"
 
 #include "BTDialogueTypes.h"
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
+#include "AIController.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/BTDialoguePointsHandler.h"
 #include "Setting/DialogueSystemSettings.h"
@@ -36,7 +39,7 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		Search2.DialogueName.bIsAll = true;
 
 		Search.PropertyName = ENPropertyValue::CategoryName;
-		Search.Operator = ENansConditionComparator::Equals;
+		Search.Operator = ENConditionComparator::Equals;
 		Search.CategoryValue = RespPos.PointType;
 
 		Search2.PropertyName = ENPropertyValue::InitialPoints;
@@ -45,7 +48,7 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		Searches.Add(Search);
 		Searches.Add(Search2);
 
-		ENansConditionOperator OpForInterGrp = ENansConditionOperator::AND;
+		ENConditionOperator OpForInterGrp = ENConditionOperator::AND;
 		TArray<FNansConditionOperator> NewOperators;
 		int32 OpIdx = 0;
 
@@ -57,13 +60,13 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		NewOperators.Add(FNansConditionOperator());
 		NewOperators[OpIdx].Operand1 = UNansComparator::BuildKeyFromIndex(RealIdx);
 		NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 1);
-		NewOperators[OpIdx].Operator = ENansConditionOperator::AND;
+		NewOperators[OpIdx].Operator = ENConditionOperator::AND;
 		NewOperators[OpIdx].Inversed = false;
-		NewOperators[OpIdx].OperatorWithPreviousCondition = ENansConditionOperator::Save;
+		NewOperators[OpIdx].OperatorWithPreviousCondition = ENConditionOperator::Save;
 		NewOperators[OpIdx].GroupName = GroupName;
 
-		if (RespPos.Operator == ENansConditionComparator::Inferior
-			|| RespPos.Operator == ENansConditionComparator::InferiorOrEquals)
+		if (RespPos.Operator == ENConditionComparator::Inferior
+			|| RespPos.Operator == ENConditionComparator::InferiorOrEquals)
 		{
 			FNDialogueHistorySearch Search3 = Search;
 			Search3.bInversed = true;
@@ -73,8 +76,8 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 			NewOperators[OpIdx].Operand1 = GroupName;
 			NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 2);
 			RealNewIdx++;
-			NewOperators[OpIdx].Operator = ENansConditionOperator::OR;
-			NewOperators[OpIdx].OperatorWithPreviousCondition = ENansConditionOperator::Save;
+			NewOperators[OpIdx].Operator = ENConditionOperator::OR;
+			NewOperators[OpIdx].OperatorWithPreviousCondition = ENConditionOperator::Save;
 			NewOperators[OpIdx].GroupName = GroupName + FString("OrInverse");
 		}
 
@@ -92,7 +95,7 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 										: CondOperator.Operand2;
 			if (IsFirst)
 			{
-				CondOperator.OperatorWithPreviousCondition = ENansConditionOperator::Save;
+				CondOperator.OperatorWithPreviousCondition = ENConditionOperator::Save;
 			}
 			IsFirst = false;
 		}
@@ -111,22 +114,12 @@ UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitia
 bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) const
 {
-	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-
-	UBTDialoguePointsHandler* PointsHandler = Cast<UBTDialoguePointsHandler>(
-		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
-	);
-
-	if (PointsHandler == nullptr)
-	{
-		EDITOR_ERROR(
-			"DialogueSystem",
-			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			reinterpret_cast<UObject*>(OwnerComp.GetCurrentTree())
-		);
-		return false;
-	}
+	const AAIController* AIOwner = OwnerComp.GetAIOwner();
+	check(IsValid(AIOwner));
+	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	check(PointsHandler);
 
 	TArray<FNDialogueHistorySearch> Searches;
 	TArray<FNansConditionOperator> Operators;

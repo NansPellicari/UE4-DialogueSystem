@@ -43,6 +43,26 @@ void UPlayerDialogueComponent::BeginPlay()
 	{
 		EDITOR_ERROR("DialogSystem", LOCTEXT("MissingABS", "Need the UAbilitySystemComponent to work"));
 	}
+	else if (UDialogueSystemSettings::Get()->DialogueActivationOwnedTags.Num() >= 1)
+	{
+		const FGameplayTag& ActivationTag = UDialogueSystemSettings::Get()->DialogueActivationOwnedTags.First();
+		ABSComp->RegisterGameplayTagEvent(ActivationTag, EGameplayTagEventType::NewOrRemoved).AddUObject(
+			this,
+			&UPlayerDialogueComponent::DialogueTagChange
+		);
+	}
+}
+
+void UPlayerDialogueComponent::DialogueTagChange(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	if (NewCount == 0)
+	{
+		OnNativeDialogueEnd().Broadcast(this);
+	}
+	else
+	{
+		OnNativeDialogueStart().Broadcast(this);
+	}
 }
 
 void UPlayerDialogueComponent::AddSequence(const FDialogueSequence& Sequence)
@@ -142,7 +162,7 @@ int32 UPlayerDialogueComponent::GetDialoguePoints(FNDialogueCategory Category) c
 	return Points;
 }
 
-void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FBTStep Step)
+void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FNStep Step)
 {
 	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
 	if (!IsValid(GEffect))
@@ -265,7 +285,12 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 				Search.OwnerName.Value != Sequence.Owner
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogueSystem, Display, TEXT("%s>Do not belong to the same user"), *Decals);
+				if (bDebugSearch) UE_LOG(
+					LogDialogueSystem,
+					Display,
+					TEXT("%s>Do not belong to the same user"),
+					*Decals
+				);
 				continue;
 			}
 			if (
@@ -273,7 +298,12 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 				Sequence.Owner != CurrentSequence->Owner
 			)
 			{
-				if (bDebugSearch) UE_LOG(LogDialogueSystem, Display, TEXT("%s>Do not belong to the same user"), *Decals);
+				if (bDebugSearch) UE_LOG(
+					LogDialogueSystem,
+					Display,
+					TEXT("%s>Do not belong to the same user"),
+					*Decals
+				);
 				continue;
 			}
 
@@ -328,7 +358,7 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 						Display,
 						TEXT("%s>Is %s category: %i"),
 						*Decals,
-						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						*ENUM_TO_STRING(ENConditionComparator, Search.Operator),
 						bSuccess
 					)
 				}
@@ -349,7 +379,7 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 						Display,
 						TEXT("%s>Is %s name: %i"),
 						*Decals,
-						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						*ENUM_TO_STRING(ENConditionComparator, Search.Operator),
 						bSuccess
 					)
 				}
@@ -367,7 +397,7 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 						Display,
 						TEXT("%s>Is %s %s: %i"),
 						*Decals,
-						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						*ENUM_TO_STRING(ENConditionComparator, Search.Operator),
 						Search.PropertyName == ENPropertyValue::InitialPoints
 						? TEXT("InitialPoints")
 						: TEXT("MitigatedPointsEarned"),
@@ -388,7 +418,7 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 						Display,
 						TEXT("%s>Is %s %s: %i"),
 						*Decals,
-						*ENUM_TO_STRING(ENansConditionComparator, Search.Operator),
+						*ENUM_TO_STRING(ENConditionComparator, Search.Operator),
 						Search.PropertyName == ENPropertyValue::Difficulty
 						? TEXT("Difficulty")
 						: TEXT("Position"),
@@ -410,5 +440,71 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 	}
 	return Results;
 }
+
+// BEGIN BP delegates management implementation for OnDialogueStart
+FDialogueEvent& UPlayerDialogueComponent::OnNativeDialogueStart()
+{
+	return OnDialogueStartEvent;
+}
+
+void UPlayerDialogueComponent::OnDialogueStart_Implementation()
+{
+	OnDialogueStartEvent.Broadcast(this);
+}
+
+FBPDelegateHandle UPlayerDialogueComponent::BindToOnDialogueStart_Implementation(const FEventForDialogueEvent& Functor)
+{
+	auto Delegate = TDelegate<void(UPlayerDialogueComponent*)>::CreateLambda(
+		[Functor](UPlayerDialogueComponent* Component)
+		{
+			Functor.ExecuteIfBound(Component);
+		}
+	);
+	return FBPDelegateHandle(OnDialogueStartEvent.Add(Delegate));
+}
+
+void UPlayerDialogueComponent::UnbindToOnDialogueStart_Implementation(FBPDelegateHandle& Handle)
+{
+	if (Handle.RealHandle.IsValid())
+	{
+		OnDialogueStartEvent.Remove(Handle.RealHandle);
+		Handle.RealHandle.Reset();
+	}
+}
+
+// END BP delegates management implementation for OnDialogueStart
+
+// BEGIN BP delegates management implementation for OnDialogueEnd
+FDialogueEvent& UPlayerDialogueComponent::OnNativeDialogueEnd()
+{
+	return OnDialogueEndEvent;
+}
+
+void UPlayerDialogueComponent::OnDialogueEnd_Implementation()
+{
+	OnDialogueEndEvent.Broadcast(this);
+}
+
+FBPDelegateHandle UPlayerDialogueComponent::BindToOnDialogueEnd_Implementation(const FEventForDialogueEvent& Functor)
+{
+	auto Delegate = TDelegate<void(UPlayerDialogueComponent*)>::CreateLambda(
+		[Functor](UPlayerDialogueComponent* Component)
+		{
+			Functor.ExecuteIfBound(Component);
+		}
+	);
+	return FBPDelegateHandle(OnDialogueEndEvent.Add(Delegate));
+}
+
+void UPlayerDialogueComponent::UnbindToOnDialogueEnd_Implementation(FBPDelegateHandle& Handle)
+{
+	if (Handle.RealHandle.IsValid())
+	{
+		OnDialogueEndEvent.Remove(Handle.RealHandle);
+		Handle.RealHandle.Reset();
+	}
+}
+
+// END BP delegates management implementation for OnDialogueEnd
 
 #undef LOCTEXT_NAMESPACE

@@ -14,36 +14,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIModule/Classes/BehaviorTree/Services/BTService_BlueprintBase.h"
-#include "Service/BTDialogueDifficultyHandler.h"
+#include "BehaviorTree/BTService.h"
 
-#include "BTService_PrepareDialogue.generated.h"
-
-class UBTDialoguePointsHandler;
+#include "BTService_ClearDialogueAndStep.generated.h"
 
 /**
  *
  */
-UCLASS(BlueprintType)
-class NANSDIALOGUESYSTEM_API UBTService_PrepareDialogue : public UBTService_BlueprintBase
+UCLASS()
+class NANSDIALOGUESYSTEM_API UBTService_ClearDialogueAndStep : public UBTService
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditInstanceOnly, Category = "Development")
-	bool bDebugPointsHandler = false;
-	UPROPERTY(EditInstanceOnly, Category = "Development")
-	bool bDebugDifficultyHandler = false;
-
-	UBTService_PrepareDialogue(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UBTService_ClearDialogueAndStep(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual FString GetStaticDescription() const override;
 
 #if WITH_EDITOR
 	virtual FName GetNodeIconName() const override;
 #endif	  // WITH_EDITOR
-
-protected:
-	UPROPERTY()
-	UBTDialogueDifficultyHandler* BTDialogDifficultyHandler;
 };

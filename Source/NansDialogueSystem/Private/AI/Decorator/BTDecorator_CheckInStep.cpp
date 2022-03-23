@@ -13,6 +13,9 @@
 
 #include "AI/Decorator/BTDecorator_CheckInStep.h"
 
+#include "AIController.h"
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
@@ -47,16 +50,16 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 		Search.FloatValue = StepCondition.CompareTo;
 
 		Search2.PropertyName = ENPropertyValue::CategoryName;
-		Search2.Operator = ENansConditionComparator::Equals;
+		Search2.Operator = ENConditionComparator::Equals;
 		Search2.CategoryValue = StepCondition.Category;
 		Searches.Add(Search);
 		Searches.Add(Search2);
 		FNansConditionOperator Operator;
 		Operator.Operand1 = UNansComparator::BuildKeyFromIndex(Index);
 		Operator.Operand2 = UNansComparator::BuildKeyFromIndex(Index + 1);
-		Operator.Operator = ENansConditionOperator::AND;
+		Operator.Operator = ENConditionOperator::AND;
 		Operator.Inversed = false;
-		Operator.OperatorWithPreviousCondition = ENansConditionOperator::Save;
+		Operator.OperatorWithPreviousCondition = ENConditionOperator::Save;
 		Operator.GroupName = FString("InternGrp") + FString::FromInt(Index) + FString("&") +
 							 FString::FromInt(Index + 1);
 		Operators.Add(Operator);
@@ -68,7 +71,7 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 			CondOperator.Operand2 = CondOperator.Operand2 == StepOpTo ? Operator.GroupName : CondOperator.Operand2;
 			if (IsFirst)
 			{
-				CondOperator.OperatorWithPreviousCondition = ENansConditionOperator::Save;
+				CondOperator.OperatorWithPreviousCondition = ENConditionOperator::Save;
 			}
 			IsFirst = false;
 		}
@@ -86,21 +89,12 @@ UBTDecorator_CheckInStep::UBTDecorator_CheckInStep(const FObjectInitializer& Obj
 
 bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
-	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-	UBTDialoguePointsHandler* PointsHandler = Cast<UBTDialoguePointsHandler>(
-		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
-	);
-
-	if (PointsHandler == nullptr)
-	{
-		EDITOR_ERROR(
-			"DialogueSystem",
-			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			(UObject*) OwnerComp.GetCurrentTree()
-		);
-		return false;
-	}
+	const AAIController* AIOwner = OwnerComp.GetAIOwner();
+	check(IsValid(AIOwner));
+	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	check(PointsHandler);
 
 	TArray<FNDialogueHistorySearch> Searches;
 	TArray<FNansConditionOperator> Operators;

@@ -28,17 +28,15 @@ struct FDialogueBehaviorTreeSettings
 {
 	GENERATED_BODY()
 
-	UPROPERTY(config, EditAnywhere, Category= "Task|CreateUI" )
+	UPROPERTY(config, EditAnywhere, Category= "CreateUI")
 	FName DefaultUIName = FName("UIForAI");
-	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
 	FName UINameKey = FName("CurrentUIName");
-	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
 	FName PreviousUINameKey = FName("PreviousUIName");
-	UPROPERTY(config, EditAnywhere, Category= "Task|AccessUI" )
+	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
 	FName PreviousUIClassKey = FName("PreviousUIClass");
-	UPROPERTY(config, EditAnywhere, Category= "Task|Points" )
-	FName PointsHandlerKey = FName("PointsHandler");
-	UPROPERTY(config, EditAnywhere, Category= "Task|Points" )
+	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
 	FName DifficultyHandlerKey = FName("DifficultyHandler");
 };
 
@@ -50,11 +48,11 @@ struct NANSDIALOGUESYSTEM_API FNDialogueFactorSettings
 	UPROPERTY(EditAnywhere, Category = Difficulty)
 	FNDialogueCategory Category;
 	UPROPERTY(EditAnywhere, Category = Difficulty)
-	float Multiplier;
+	float Multiplier = 1.f;
 	UPROPERTY(EditAnywhere, Category = Difficulty, Meta = (ClampMin = "0", ClampMax = "1"))
-	float RangeFrom;
+	float RangeFrom = 0.f;
 	UPROPERTY(EditAnywhere, Category = Difficulty, Meta = (ClampMin = "0", ClampMax = "1"))
-	float RangeTo;
+	float RangeTo = 1.f;
 };
 
 USTRUCT()
@@ -97,7 +95,7 @@ struct NANSDIALOGUESYSTEM_API FNDialogueCategorySettings
 	FGameplayTag Name;
 
 	UPROPERTY(EditAnywhere, Category = ResponseCategory)
-	FLinearColor Color;
+	FLinearColor Color = FLinearColor::Gray;
 
 	/**
 	 * /!\ Note: Be aware that this default effect is used to create a GameplayEffectSpec in Tasks to add:
@@ -192,7 +190,7 @@ public:
 	* This is used by BTTask_CreateHUD & BTTask_RemoveHUD,
 	* it will set a default name to the UI created for the DialogueUI container. 
 	*/
-	UPROPERTY(config, EditAnywhere, Category= "AI" )
+	UPROPERTY(config, EditAnywhere, Category= "AI")
 	FDialogueBehaviorTreeSettings BehaviorTreeSettings;
 
 	/** Accessor and initializer **/

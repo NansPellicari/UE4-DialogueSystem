@@ -13,6 +13,8 @@
 
 #include "AI/Decorator/BTDecorator_CheckDialogueResults.h"
 
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -33,23 +35,12 @@ UBTDecorator_CheckDialogueResults::UBTDecorator_CheckDialogueResults(const FObje
 bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
 	uint8* NodeMemory) const
 {
-	const UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-
-	UBTDialoguePointsHandler* PointsHandler = Cast<UBTDialoguePointsHandler>(
-		BlackboardComp->GetValueAsObject(Settings.PointsHandlerKey)
-	);
-
-	if (PointsHandler == nullptr)
-	{
-		EDITOR_ERROR(
-			"DialogSystem",
-			LOCTEXT("InvalidPointsHandlerKey", "Invalid key for PointsHandler in "),
-			reinterpret_cast<UObject*>(OwnerComp.GetCurrentTree())
-		);
-		return false;
-	}
+	const AAIController* AIOwner = OwnerComp.GetAIOwner();
+	check(IsValid(AIOwner));
+	const UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	if (!ensure(PointsHandler.IsValid())) return false;
 
 	return PointsHandler->HasResults(DialogueHistorySearches, ConditionsOperators);
 }

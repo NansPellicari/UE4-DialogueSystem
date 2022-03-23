@@ -41,18 +41,11 @@ public:
 		return Cast<T>(Pawn);
 	}
 
-	/**
-	* @param TaskName is used just to add useful data for error message 
-	*/
-	static ACharacter* GetPlayerCharacter(UBrainComponent& OwnerComp, const FString TaskName);
-	/**
-	* @param TaskName is used just to add useful data for error message 
-	*/
+	static ACharacter* GetPlayerCharacter(const AAIController& AIController);
 	static APlayerController* GetPlayerController(UBrainComponent& OwnerComp, const FString TaskName);
-
 	static UDialogueUI* GetUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
 	static UAbilitySystemComponent* GetGASC(UBehaviorTreeComponent& OwnerComp);
-	static UPlayerDialogueComponent* GetDialogueComponent(UBehaviorTreeComponent& OwnerComp);
+	static UPlayerDialogueComponent* GetDialogueComponent(const ACharacter* PlayerChar);
 	/**
 	* @param TaskName is used just to add useful data for error message 
 	*/

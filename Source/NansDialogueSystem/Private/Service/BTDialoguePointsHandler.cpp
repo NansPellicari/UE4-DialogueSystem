@@ -16,10 +16,9 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AIController.h"
 #include "BTDialogueTypes.h"
-#include "BTStepsLibrary.h"
-#include "NansDialogueSystemLog.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "Dialogue/DialogueSequence.h"
 #include "Kismet/GameplayStatics.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
@@ -28,66 +27,65 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-void UBTDialoguePointsHandler::BeginDestroy()
+NBTDialoguePointsHandler::NBTDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler,
+	UPlayerDialogueComponent* InDialogComp, const AAIController* InOwner, bool InbDebug)
 {
-	Super::BeginDestroy();
-}
-
-void UBTDialoguePointsHandler::Clear()
-{
-	bDebug = false;
-	PlayerGASC->CancelAbilities(&UDialogueSystemSettings::Get()->TagsForDialogueAbility);
-}
-
-bool UBTDialoguePointsHandler::Initialize(
-	UBTStepsHandlerContainer* InStepsHandler, UBehaviorTreeComponent& OwnerComp,
-	FDialogueSequence DialogueSequence)
-{
+	Owner = MakeWeakObjectPtr(InOwner);
 	StepsHandler = InStepsHandler;
-	PlayerGASC = NDialogueBTHelpers::GetGASC(OwnerComp);
-	BehaviorTreePathName = DialogueSequence.Name.ToString();
-	AIPawnPathName = DialogueSequence.Owner;
+	DialogComp = MakeWeakObjectPtr(InDialogComp);
+	bDebug = InbDebug;
+	check(DialogComp.IsValid())
+	const UBrainComponent* Brain = Owner->GetBrainComponent();
+	check(Brain);
+	const UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(Brain);
+	check(BTComp);
 
-	check(GetWorld());
-
-	// TODO retrieve index for splitted screen 
-	verify(UNDSFunctionLibrary::IsPlayerCanDialogue(&OwnerComp, 0));
-
-	DialogComp = NDialogueBTHelpers::GetDialogueComponent(OwnerComp);
-	verify(IsValid(DialogComp));
-
-	DialogComp->AddSequence(DialogueSequence);
+	FDialogueSequence NewDialogueSequence;
+	NewDialogueSequence.Name = BTComp->GetCurrentTree()->GetFName();
+	// TODO use the new Protagonist name
+	NewDialogueSequence.Owner = Owner->GetPathName();
+	DialogComp->AddSequence(NewDialogueSequence);
 
 	// Activating Dialog Gameplay Activity
 	FGameplayEventData Payload;
-	Payload.Instigator = OwnerComp.GetAIOwner()->GetPawn();
-	Payload.Target = PlayerGASC->GetOwnerActor();
+	Payload.Instigator = Owner->GetPawn();
+	Payload.Target = InDialogComp->GetOwner();
 	Payload.EventTag = UDialogueSystemSettings::Get()->TriggerAbilityTag;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
-		PlayerGASC->GetOwnerActor(),
+		DialogComp->GetOwner(),
 		UDialogueSystemSettings::Get()->TriggerAbilityTag,
 		Payload
 	);
-	return true;
 }
 
-void UBTDialoguePointsHandler::AddPoints(FNPoint Point, int32 Position)
+NBTDialoguePointsHandler::~NBTDialoguePointsHandler()
 {
-	verify(IsValid(DialogComp));
-	const FBTStep Step = UBTStepsLibrary::GetCurrent(StepsHandler);
+	Owner.Reset();
+	DialogComp.Reset();
+}
+
+void NBTDialoguePointsHandler::AddPoints(FNPoint Point, int32 Position)
+{
+	verify(DialogComp.IsValid());
+	const FNStep Step = StepsHandler->GetCurrent();
 	DialogComp->AddPoints(Point, Position, Step);
 }
 
-int32 UBTDialoguePointsHandler::GetDialoguePoints(FNDialogueCategory Category) const
+int32 NBTDialoguePointsHandler::GetDialoguePoints(FNDialogueCategory Category) const
 {
-	verify(IsValid(DialogComp));
+	verify(DialogComp.IsValid());
 	return DialogComp->GetDialoguePoints(Category);
 }
 
-bool UBTDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
+const AAIController* NBTDialoguePointsHandler::GetOwner() const
+{
+	return Owner.Get();
+}
+
+bool NBTDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
 	TArray<FNansConditionOperator> ConditionsOperators) const
 {
-	verify(IsValid(DialogComp));
+	verify(DialogComp.IsValid());
 	const bool bOldValue = DialogComp->bDebugSearch;
 	DialogComp->bDebugSearch = bDebug;
 	const bool Result = DialogComp->HasResultsOnSearches(Searches, ConditionsOperators);
@@ -95,9 +93,9 @@ bool UBTDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> 
 	return Result;
 }
 
-bool UBTDialoguePointsHandler::HasResults(const FNDialogueHistorySearch& Search) const
+bool NBTDialoguePointsHandler::HasResults(const FNDialogueHistorySearch& Search) const
 {
-	verify(IsValid(DialogComp));
+	verify(DialogComp.IsValid());
 	const bool bOldValue = DialogComp->bDebugSearch;
 	DialogComp->bDebugSearch = bDebug;
 	const bool bItHas = DialogComp->HasResults(Search);

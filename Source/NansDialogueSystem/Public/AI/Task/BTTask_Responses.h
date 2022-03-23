@@ -20,12 +20,12 @@
 
 #include "BTTask_Responses.generated.h"
 
-class UBTDialoguePointsHandler;
 class UDialogueUI;
 class UPanelWidget;
 class UResponseButtonWidget;
 class UDialogueProgressBarWidget;
 class UBTTask_Countdown;
+class NBTDialoguePointsHandler;
 
 /**
  * TODO create a mother class "UBTTask_WaitingForUser" which is connected to StepContext event "OnTimeElapsedForUser" which call
@@ -102,8 +102,7 @@ protected:
 	UPanelWidget* ResponsesSlot;
 	UPROPERTY()
 	UBTTask_Countdown* CountDownTask;
-	UPROPERTY()
-	UBTDialoguePointsHandler* PointsHandler;
+	TSharedPtr<NBTDialoguePointsHandler> PointsHandler;
 
 private:
 	int32 MiddleResponseIndex = -1;

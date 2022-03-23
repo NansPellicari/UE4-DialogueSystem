@@ -34,10 +34,10 @@ struct NANSDIALOGUESYSTEM_API FPointCondition
 	FNDialogueCategory PointType;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	ENansConditionComparator Operator;
+	ENConditionComparator Operator = ENConditionComparator::Equals;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Point Condition")
-	int32 CompareTo;
+	int32 CompareTo = 0;
 
 	static void ToDialogueHistorySearch(const TArray<FPointCondition> ResponsePositions,
 		TArray<FNansConditionOperator> ConditionsOperators,
@@ -52,7 +52,6 @@ UCLASS()
 class NANSDIALOGUESYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
 {
 	GENERATED_UCLASS_BODY()
-
 	// Basically conditions are check "first at last" with AND operator, use "ConditionsOperators" if you want more
 	// This allow to check values already earned in this Behavior Tree
 	UPROPERTY(EditAnywhere, Category = "Condition")

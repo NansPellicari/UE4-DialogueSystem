@@ -37,7 +37,7 @@ struct NANSDIALOGUESYSTEM_API FBTStepCondition
 	bool isDone = true;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
-	int32 Step;
+	int32 Step = 0.f;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
 	FName StepLabel = NAME_None;
@@ -46,10 +46,10 @@ struct NANSDIALOGUESYSTEM_API FBTStepCondition
 	FNDialogueCategory Category;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
-	ENansConditionComparator Operator;
+	ENConditionComparator Operator = ENConditionComparator::Equals;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Step Condition")
-	int32 CompareTo;
+	int32 CompareTo = 0.f;
 
 	static void ToDialogueHistorySearch(const TArray<FBTStepCondition> StepConditions,
 		TArray<FNansConditionOperator> ConditionsOperators,
@@ -64,7 +64,6 @@ UCLASS()
 class NANSDIALOGUESYSTEM_API UBTDecorator_CheckInStep : public UBTDecorator
 {
 	GENERATED_UCLASS_BODY()
-
 	// Basically conditions are check "first at last" with AND operator, use "ConditionsOperators" if you want more
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FBTStepCondition> StepConditions;
