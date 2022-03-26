@@ -26,21 +26,20 @@ struct FNDialogueFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class UBehaviorTreeComponent;
 
-class NANSDIALOGUESYSTEM_API NBTDialoguePointsHandler
+class NANSDIALOGUESYSTEM_API NDialoguePointsHandler
 {
 public:
-	NBTDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler, UPlayerDialogueComponent* InDialogComp,
+	NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler, UPlayerDialogueComponent* InDialogComp,
 		const AAIController* InOwner, bool InbDebug);
-	virtual ~NBTDialoguePointsHandler();
+	virtual ~NDialoguePointsHandler();
 	void AddPoints(FNPoint Point, int32 Position);
 	bool HasResults(const FNDialogueHistorySearch& Search) const;
 	bool HasResults(const TArray<FNDialogueHistorySearch> Searches,
 		TArray<FNansConditionOperator> ConditionsOperators) const;
 	int32 GetDialoguePoints(FNDialogueCategory Category) const;
 	const AAIController* GetOwner() const;
-
+private:
 	bool bDebug = false;
-protected:
 	TSharedPtr<NStepsHandler> StepsHandler;
 	TWeakObjectPtr<UPlayerDialogueComponent> DialogComp;
 	TWeakObjectPtr<const AAIController> Owner;

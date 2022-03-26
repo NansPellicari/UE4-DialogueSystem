@@ -14,7 +14,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 #include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_RemoveUIPanel.generated.h"
@@ -24,7 +24,7 @@
  * Don't forget to parameter DialogueSystem in project settings.
  */
 UCLASS()
-class NANSDIALOGUESYSTEM_API UBTTask_RemoveUIPanel : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_RemoveUIPanel : public UBTTaskNode
 {
 	GENERATED_BODY()
 

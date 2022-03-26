@@ -21,7 +21,7 @@
 #include "Misc/NansArrayUtils.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Setting/DialogueSystemSettings.h"
@@ -158,8 +158,8 @@ void UBTTask_ButtonsSequence::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, 
 	TriesStatus = EBTNodeResult::InProgress;
 	SequenceIndex = -1;
 	BTSequenceManager->Reset();
-	DialogueUI->OnEndDisplayResponse.RemoveAll(this);
-	DialogueUI->Reset();
+	// DialogueUI->OnEndDisplayResponse.RemoveAll(this);
+	// DialogueUI->Reset();
 }
 
 void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)

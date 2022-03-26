@@ -11,14 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "BTStepsLibrary.h"
 #include "AI/Service/BTService_ClearDialogueAndStep.h"
+#include "BTStepsLibrary.h"
 
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Service/BTDialogueDifficultyHandler.h"
-#include "Service/BTDialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Setting/DialogueSystemSettings.h"
 
@@ -29,7 +27,7 @@ UBTService_ClearDialogueAndStep::UBTService_ClearDialogueAndStep(
 	ObjectInitializer
 )
 {
-	NodeName = "Clear Dialogue";
+	NodeName = "Clear Dialogue & Step";
 
 	bNotifyTick = false;
 	bTickIntervals = false;
@@ -41,25 +39,20 @@ void UBTService_ClearDialogueAndStep::OnBecomeRelevant(UBehaviorTreeComponent& O
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
 
 	UE_LOG(LogTemp, Warning, TEXT("%s Here"), ANSI_TO_TCHAR(__FUNCTION__));
 
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
-	UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
+
+	// UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
+
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
+	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 	DialSys->EndDialogSequence(AIOwner);
-
-	UBTDialogueDifficultyHandler* BTDialogDifficultyHandler =
-		Cast<UBTDialogueDifficultyHandler>(BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey));
-
-	if (IsValid(BTDialogDifficultyHandler))
-	{
-		BTDialogDifficultyHandler->Clear();
-	}
-	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	// TODO Should be less brutal... A dialogue can end but behavior still continuing
+	OwnerComp.StopLogic(TEXT("Dialog is ending"));
 }
 
 #if WITH_EDITOR

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AIController.h"
@@ -27,7 +27,7 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-NBTDialoguePointsHandler::NBTDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler,
+NDialoguePointsHandler::NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler,
 	UPlayerDialogueComponent* InDialogComp, const AAIController* InOwner, bool InbDebug)
 {
 	Owner = MakeWeakObjectPtr(InOwner);
@@ -58,31 +58,31 @@ NBTDialoguePointsHandler::NBTDialoguePointsHandler(const TSharedPtr<NStepsHandle
 	);
 }
 
-NBTDialoguePointsHandler::~NBTDialoguePointsHandler()
+NDialoguePointsHandler::~NDialoguePointsHandler()
 {
 	Owner.Reset();
 	DialogComp.Reset();
 }
 
-void NBTDialoguePointsHandler::AddPoints(FNPoint Point, int32 Position)
+void NDialoguePointsHandler::AddPoints(FNPoint Point, int32 Position)
 {
 	verify(DialogComp.IsValid());
 	const FNStep Step = StepsHandler->GetCurrent();
 	DialogComp->AddPoints(Point, Position, Step);
 }
 
-int32 NBTDialoguePointsHandler::GetDialoguePoints(FNDialogueCategory Category) const
+int32 NDialoguePointsHandler::GetDialoguePoints(FNDialogueCategory Category) const
 {
 	verify(DialogComp.IsValid());
 	return DialogComp->GetDialoguePoints(Category);
 }
 
-const AAIController* NBTDialoguePointsHandler::GetOwner() const
+const AAIController* NDialoguePointsHandler::GetOwner() const
 {
 	return Owner.Get();
 }
 
-bool NBTDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
+bool NDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> Searches,
 	TArray<FNansConditionOperator> ConditionsOperators) const
 {
 	verify(DialogComp.IsValid());
@@ -93,7 +93,7 @@ bool NBTDialoguePointsHandler::HasResults(const TArray<FNDialogueHistorySearch> 
 	return Result;
 }
 
-bool NBTDialoguePointsHandler::HasResults(const FNDialogueHistorySearch& Search) const
+bool NDialoguePointsHandler::HasResults(const FNDialogueHistorySearch& Search) const
 {
 	verify(DialogComp.IsValid());
 	const bool bOldValue = DialogComp->bDebugSearch;

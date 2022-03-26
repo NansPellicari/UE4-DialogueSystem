@@ -15,7 +15,7 @@
 
 #include "CoreMinimal.h"
 #include "AIModule/Classes/BehaviorTree/Services/BTService_BlueprintBase.h"
-#include "Service/BTDialogueDifficultyHandler.h"
+#include "Service/DialogueDifficultyHandler.h"
 
 #include "BTService_PrepareDialogue.generated.h"
 
@@ -42,8 +42,4 @@ public:
 #if WITH_EDITOR
 	virtual FName GetNodeIconName() const override;
 #endif	  // WITH_EDITOR
-
-protected:
-	UPROPERTY()
-	UBTDialogueDifficultyHandler* BTDialogDifficultyHandler;
 };

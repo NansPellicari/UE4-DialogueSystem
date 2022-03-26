@@ -18,9 +18,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
-#include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogSystem"
 
@@ -39,7 +38,7 @@ bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTree
 	check(IsValid(AIOwner));
 	const UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
-	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
+	const TSharedPtr<NDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
 	if (!ensure(PointsHandler.IsValid())) return false;
 
 	return PointsHandler->HasResults(DialogueHistorySearches, ConditionsOperators);

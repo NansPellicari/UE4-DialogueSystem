@@ -15,7 +15,7 @@
 
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 #include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_Responses.generated.h"
@@ -25,14 +25,14 @@ class UPanelWidget;
 class UResponseButtonWidget;
 class UDialogueProgressBarWidget;
 class UBTTask_Countdown;
-class NBTDialoguePointsHandler;
+class NDialoguePointsHandler;
 
 /**
  * TODO create a mother class "UBTTask_WaitingForUser" which is connected to StepContext event "OnTimeElapsedForUser" which call
  * "OnTaskFinished"
  */
 UCLASS(Abstract)
-class NANSDIALOGUESYSTEM_API UBTTask_Responses : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_Responses : public UBTTaskNode
 {
 	GENERATED_BODY()
 
@@ -102,7 +102,7 @@ protected:
 	UPanelWidget* ResponsesSlot;
 	UPROPERTY()
 	UBTTask_Countdown* CountDownTask;
-	TSharedPtr<NBTDialoguePointsHandler> PointsHandler;
+	TSharedPtr<NDialoguePointsHandler> PointsHandler;
 
 private:
 	int32 MiddleResponseIndex = -1;

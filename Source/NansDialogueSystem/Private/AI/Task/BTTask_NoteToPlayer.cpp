@@ -26,7 +26,7 @@
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
 UBTTask_NoteToPlayer::UBTTask_NoteToPlayer(const FObjectInitializer& ObjectInitializer)
-	: UBTTask_NotifyAIOnAbort(ObjectInitializer)
+	: UBTTaskNode(ObjectInitializer)
 {
 	NodeName = "Note To Player";
 }
@@ -117,7 +117,7 @@ void UBTTask_NoteToPlayer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uin
 
 	if (MessageWidgets.Num() > 0)
 	{
-		for (auto MessageWidget : MessageWidgets)
+		for (const auto MessageWidget : MessageWidgets)
 		{
 			if (WaitAfterMessage) MessageWidget->OnNativeEndDisplayMessage().RemoveAll(this);
 		}

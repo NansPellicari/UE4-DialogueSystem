@@ -36,12 +36,12 @@ UBTTask_TalkToPlayer::UBTTask_TalkToPlayer(const FObjectInitializer& ObjectIniti
 EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
-	OwnerComponent = &OwnerComp;
+	OwnerComponent = MakeWeakObjectPtr(&OwnerComp);
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
-	DialogueUI = NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
+	DialogueUI = MakeWeakObjectPtr(NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard));
 	UE_LOG(LogTemp, Warning, TEXT("%s Here"), ANSI_TO_TCHAR(__FUNCTION__));
 
-	if (!IsValid(DialogueUI))
+	if (!DialogueUI.IsValid())
 	{
 		// Error is already manage in NDialogueBTHelpers::GetUIFromBlackboard()
 		return EBTNodeResult::Aborted;
@@ -51,7 +51,7 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 	DialogueUI->OnEndDisplayQuestion.AddUniqueDynamic(this, &UBTTask_TalkToPlayer::OnQuestionEnd);
 	// TODO add more of these to helps debugging
 	UE_VLOG(
-		OwnerComponent,
+		OwnerComponent.Get(),
 		LogDialogueSystem,
 		Log,
 		TEXT("NPC talk to player: title: \"%s\", message: \"%s\""),
@@ -64,7 +64,7 @@ EBTNodeResult::Type UBTTask_TalkToPlayer::ExecuteTask(UBehaviorTreeComponent& Ow
 
 void UBTTask_TalkToPlayer::OnQuestionEnd()
 {
-	FinishLatentTask(*OwnerComponent, EBTNodeResult::Succeeded);
+	FinishLatentTask(*OwnerComponent.Get(), EBTNodeResult::Succeeded);
 }
 
 FString UBTTask_TalkToPlayer::GetStaticDescription() const
@@ -91,12 +91,12 @@ FString UBTTask_TalkToPlayer::GetStaticDescription() const
 void UBTTask_TalkToPlayer::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 	EBTNodeResult::Type TaskResult)
 {
-	if (IsValid(DialogueUI))
+	if (DialogueUI.IsValid())
 	{
 		DialogueUI->OnEndDisplayQuestion.RemoveAll(this);
 	}
-	OwnerComponent = nullptr;
-	DialogueUI = nullptr;
+	OwnerComponent.Reset();
+	DialogueUI.Reset();
 }
 
 #if WITH_EDITOR

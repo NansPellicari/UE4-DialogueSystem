@@ -13,9 +13,12 @@
 
 #include "AI/Task/BTTask_WheelResponses.h"
 
+#include "AIController.h"
+#include "NDialogueSubsystem.h"
+#include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
-#include "Service/BTDialogueDifficultyHandler.h"
+#include "Service/DialogueDifficultyHandler.h"
 #include "UI/DialogueUI.h"
 #include "UI/ResponseButtonWidget.h"
 #include "UI/WheelButtonWidget.h"
@@ -46,13 +49,16 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		return;
 	}
 
+	check(IsValid(OwnerComp.GetAIOwner()));
+
 	UWheelButtonWidget* WheelButton = DialogueUI->GetWheelButton();
 
 	if (!IsValid(WheelButton))
 	{
 		EDITOR_ERROR(
 			"DialogueSystem",
-			LOCTEXT("WrongWheelButtonNameOrInexistant", "Check the wheel button name or if exists in the Dialogue UI in "
+			LOCTEXT("WrongWheelButtonNameOrInexistant",
+				"Check the wheel button name or if exists in the Dialogue UI in "
 			),
 			this
 		);
@@ -71,14 +77,20 @@ void UBTTask_WheelResponses::ReceiveOnTick(UBehaviorTreeComponent& OwnerComp, ui
 		FMath::Clamp<float>(WheelRatioAntiClockwise - WheelRatioClockwise, ResponsesTypeTolerance, 100);
 
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTDialogueDifficultyHandler* DifficultyHandler =
-		Cast<UBTDialogueDifficultyHandler>(BlackboardComp->GetValueAsObject(DifficultyHandlerKeyName));
 
-	if (!ensure(DifficultyHandler != nullptr))
+	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+	check(IsValid(DialSys));
+
+	const TSharedPtr<NDialogueDifficultyHandler> DifficultyHandler = DialSys->GetDifficultyHandler(
+		OwnerComp.GetAIOwner()
+	);
+
+	if (!ensure(DifficultyHandler.IsValid()))
 	{
 		EDITOR_ERROR(
 			"DialogueSystem",
-			LOCTEXT("DifficultyHandlerMissingOnWheelResponses", "The difficulty handler is missing on WheelResponses"),
+			LOCTEXT("DifficultyHandlerMissingOnWheelResponses",
+				"The difficulty handler is missing but mandatory for WheelResponses"),
 			this
 		);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Aborted);

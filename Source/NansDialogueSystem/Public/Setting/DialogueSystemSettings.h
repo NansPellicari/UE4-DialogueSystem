@@ -36,8 +36,6 @@ struct FDialogueBehaviorTreeSettings
 	FName PreviousUINameKey = FName("PreviousUIName");
 	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
 	FName PreviousUIClassKey = FName("PreviousUIClass");
-	UPROPERTY(config, EditAnywhere, Category= "BBKeys")
-	FName DifficultyHandlerKey = FName("DifficultyHandler");
 };
 
 USTRUCT()

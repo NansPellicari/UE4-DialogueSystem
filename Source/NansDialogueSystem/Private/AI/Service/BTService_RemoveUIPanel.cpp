@@ -36,6 +36,7 @@ void UBTService_RemoveUIPanel::OnBecomeRelevant(UBehaviorTreeComponent& OwnerCom
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
+	UE_LOG(LogTemp, Warning, TEXT("%s Here"), ANSI_TO_TCHAR(__FUNCTION__));
 	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, Blackboard);
 }
 

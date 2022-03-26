@@ -14,7 +14,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 #include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_NoteToPlayer.generated.h"
@@ -30,10 +30,10 @@ enum class EMessageDisplayOn : uint8
 };
 
 /**
- *
+ * FIXME should not be in this plugin...
  */
 UCLASS()
-class NANSDIALOGUESYSTEM_API UBTTask_NoteToPlayer : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_NoteToPlayer : public UBTTaskNode
 {
 	GENERATED_BODY()
 

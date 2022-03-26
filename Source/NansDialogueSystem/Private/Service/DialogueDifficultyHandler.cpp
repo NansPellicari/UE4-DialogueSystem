@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Service/BTDialogueDifficultyHandler.h"
+#include "Service/DialogueDifficultyHandler.h"
 
 #include "AbilitySystemComponent.h"
 #include "BTDialogueTypes.h"
@@ -21,21 +21,22 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-UBTDialogueDifficultyHandler::UBTDialogueDifficultyHandler()
+NDialogueDifficultyHandler::NDialogueDifficultyHandler(const TWeakObjectPtr<UAbilitySystemComponent>& InPlayerAsc,
+	bool bInDebug)
 {
 	UDialogueSystemSettings::Get()->GetDifficultyConfigs(Settings);
+	PlayerAsc = InPlayerAsc;
+	bDebug = bInDebug;
 }
 
-void UBTDialogueDifficultyHandler::Initialize(UBehaviorTreeComponent& OwnerComp)
+NDialogueDifficultyHandler::~NDialogueDifficultyHandler()
 {
-	check(GetWorld());
-	PlayerGASC = NDialogueBTHelpers::GetGASC(OwnerComp);
+	PlayerAsc.Reset();
 }
 
-void UBTDialogueDifficultyHandler::Clear() {}
-
-float UBTDialogueDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& Response)
+float NDialogueDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse& Response)
 {
+	verify(PlayerAsc.IsValid());
 	TArray<FNDialogueDifficultyMagnitudeFactorSettings> RespFactors = FNDialogueCategory::GetDifficulties(
 		Response.Category
 	);
@@ -55,7 +56,8 @@ float UBTDialogueDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse
 			EDITOR_ERROR(
 				"DialogComponent",
 				LOCTEXT("MissingAttrForDiffFactor",
-					"Missing AttributeValue for DialogueDifficultyMagnitudeFactorSettings")
+					"Missing AttributeValue for DialogueDifficultyMagnitudeFactorSettings"),
+				PlayerAsc
 			);
 			bError = true;
 		}
@@ -64,7 +66,8 @@ float UBTDialogueDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse
 			EDITOR_ERROR(
 				"DialogComponent",
 				LOCTEXT("MissingMaxAttrForDiffFactor",
-					"Missing MaxAtttributeValue for DialogueDifficultyMagnitudeFactorSettings")
+					"Missing MaxAtttributeValue for DialogueDifficultyMagnitudeFactorSettings"),
+				PlayerAsc
 			);
 			bError = true;
 		}
@@ -72,8 +75,8 @@ float UBTDialogueDifficultyHandler::GetDifficultyLevel(const FBTDialogueResponse
 		{
 			continue;
 		}
-		const float Factor = PlayerGASC->GetNumericAttribute(RespFactor.AttributeValue)
-							 / PlayerGASC->GetNumericAttribute(RespFactor.MaxAtttributeValue);
+		const float Factor = PlayerAsc->GetNumericAttribute(RespFactor.AttributeValue)
+							 / PlayerAsc->GetNumericAttribute(RespFactor.MaxAtttributeValue);
 
 		for (const FNDialogueFactorSettings& Setting : Settings)
 		{

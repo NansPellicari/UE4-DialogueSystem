@@ -15,7 +15,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_Countdown.generated.h"
 
@@ -25,7 +25,7 @@ class UDialogueProgressBarWidget;
  *
  */
 UCLASS(NotBlueprintable)
-class NANSDIALOGUESYSTEM_API UBTTask_Countdown : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_Countdown : public UBTTaskNode
 {
 	GENERATED_BODY()
 	UBTTask_Countdown(const FObjectInitializer& objectInitializer);

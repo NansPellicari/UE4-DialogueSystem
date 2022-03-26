@@ -20,7 +20,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
 #include "Misc/ErrorUtils.h"
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Setting/DialogueSystemSettings.h"
 #include "UI/ResponseButtonWidget.h"
@@ -47,9 +47,6 @@ void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 	// False means the dialogue sequence with this AIOwner has been already started
 	if (!DialSys->CreateDialogSequence(AIOwner)) return;
 
-	const TSharedPtr<NBTDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
-	check(PointsHandler.IsValid());
-
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	const UBlackboardData* BBData = BlackboardComp->GetBlackboardAsset();
 
@@ -73,7 +70,7 @@ void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 	{
 		FProperty* Property = *It;
 
-		if (FNameProperty* NamedProperty = CastField<FNameProperty>(Property))
+		if (const FNameProperty* NamedProperty = CastField<FNameProperty>(Property))
 		{
 			const FString& VariableName = NamedProperty->GetName();
 			auto Category = NamedProperty->GetMetaData("Category");
@@ -95,38 +92,27 @@ void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 
 	BBKeys.Empty();
 
-	BTDialogDifficultyHandler = Cast<UBTDialogueDifficultyHandler>(
-		BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey)
-	);
-
-	if (!IsValid(BTDialogDifficultyHandler))
-	{
-		BTDialogDifficultyHandler = NewObject<UBTDialogueDifficultyHandler>(&OwnerComp);
-		BTDialogDifficultyHandler->Initialize(OwnerComp);
-		BlackboardComp->SetValueAsObject(Settings.DifficultyHandlerKey, BTDialogDifficultyHandler);
-	}
-
-	const auto PlayerHUD = NDialogueBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	if (!IsValid(PlayerHUD.GetObject()))
-	{
-		return;
-	}
-
-	const FName PreviousUINameKey = Settings.PreviousUINameKey;
-	const FName PreviousUIClassKey = Settings.PreviousUIClassKey;
-
-	// Save previous UIPanel to reload it next time. 
-	const FName PreviousName = BlackboardComp->GetValueAsName(PreviousUINameKey);
-	if (PreviousName == NAME_None)
-	{
-		FName OldUIName;
-		TSubclassOf<UUserWidget> OldUIClass;
-		IDialogueHUD::Execute_GetFullCurrentUIPanel(PlayerHUD.GetObject(), OldUIClass, OldUIName);
-		BlackboardComp->SetValueAsName(PreviousUINameKey, OldUIName);
-		BlackboardComp->SetValueAsClass(PreviousUIClassKey, OldUIClass);
-	}
-
-	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	// const auto PlayerHUD = NDialogueBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
+	// if (!IsValid(PlayerHUD.GetObject()))
+	// {
+	// 	return;
+	// }
+	//
+	// const FName PreviousUINameKey = Settings.PreviousUINameKey;
+	// const FName PreviousUIClassKey = Settings.PreviousUIClassKey;
+	//
+	// // Save previous UIPanel to reload it next time. 
+	// const FName PreviousName = BlackboardComp->GetValueAsName(PreviousUINameKey);
+	// if (PreviousName == NAME_None)
+	// {
+	// 	FName OldUIName;
+	// 	TSubclassOf<UUserWidget> OldUIClass;
+	// 	IDialogueHUD::Execute_GetFullCurrentUIPanel(PlayerHUD.GetObject(), OldUIClass, OldUIName);
+	// 	BlackboardComp->SetValueAsName(PreviousUINameKey, OldUIName);
+	// 	BlackboardComp->SetValueAsClass(PreviousUIClassKey, OldUIClass);
+	// }
+	//
+	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 }
 
 #if WITH_EDITOR

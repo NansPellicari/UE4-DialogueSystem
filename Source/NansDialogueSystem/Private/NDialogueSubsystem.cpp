@@ -15,11 +15,12 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "AIController.h"
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 
 #include "BTStepsSubsystem.h"
 #include "NDSFunctionLibrary.h"
 #include "Service/DialogueBTHelpers.h"
+#include "Service/DialogueDifficultyHandler.h"
 #include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
@@ -59,6 +60,7 @@ void UNDialogueSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
 	PointsHandler.Reset();
+	DifficultyHandler.Reset();
 }
 
 UBTStepsSubsystem& UNDialogueSubsystem::GetBTStepsSubsystem() const
@@ -73,7 +75,7 @@ bool UNDialogueSubsystem::PlayerIsInDialogSequenceWith(const AAIController* Owne
 	const UAbilitySystemComponent* PlayerAbs = GetPlayerAbs();
 	verify(IsValid(PlayerAbs))
 	const bool bIsPlayerCanDialogue = UNDSFunctionLibrary::IsPlayerABSCanDialogue(PlayerAbs);
-	if (!bIsPlayerCanDialogue) return false;
+	verify(bIsPlayerCanDialogue);
 	return PointsHandler.IsValid() && PointsHandler->GetOwner() == Owner;
 }
 
@@ -81,18 +83,30 @@ bool UNDialogueSubsystem::CreateDialogSequence(const AAIController* Owner)
 {
 	if (PlayerIsInDialogSequenceWith(Owner)) return false;
 
-	const TSharedPtr<NStepsHandler>& StepsHandler = GetBTStepsSubsystem().GetStepsHandler(Owner);
+	TSharedPtr<NStepsHandler> StepsHandler = GetBTStepsSubsystem().GetStepsHandler(Owner);
+	if (!StepsHandler.IsValid())
+	{
+		StepsHandler = GetBTStepsSubsystem().CreateStepsHandler(Owner);
+	}
 	check(StepsHandler.IsValid());
 	UPlayerDialogueComponent* DialogComp = NDialogueBTHelpers::GetDialogueComponent(GetPlayerCharacter());
 	check(DialogComp);
 
-	PointsHandler = MakeShared<NBTDialoguePointsHandler>(StepsHandler, DialogComp, Owner, bDebugPointsHandler);
-	PointsHandler->bDebug = bDebugPointsHandler;
+	PointsHandler = MakeShared<NDialoguePointsHandler>(StepsHandler, DialogComp, Owner, bDebugPointsHandler);
+	DifficultyHandler = MakeShared<NDialogueDifficultyHandler>(
+		MakeWeakObjectPtr(GetPlayerAbs()),
+		bDebugDifficultyHandler
+	);
 	return true;
 }
 
 void UNDialogueSubsystem::EndDialogSequence(const AAIController* Owner)
 {
+	if (!ensureMsgf(PlayerIsInDialogSequenceWith(Owner), TEXT("Dialogue already stopped")))
+	{
+		return;
+	}
+
 	// TODO move this in a dedicated component BTStep
 	// A dialog can be embed to another Behavior Tree,
 	// or be just a part of a Behavior tree.
@@ -105,13 +119,22 @@ void UNDialogueSubsystem::EndDialogSequence(const AAIController* Owner)
 		PlayerAbs->CancelAbilities(&UDialogueSystemSettings::Get()->TagsForDialogueAbility);
 	}
 	PointsHandler.Reset();
+	DifficultyHandler.Reset();
 }
 
-const TSharedPtr<NBTDialoguePointsHandler>& UNDialogueSubsystem::GetPointsHandler(const AAIController* Owner) const
+const TSharedPtr<NDialoguePointsHandler>& UNDialogueSubsystem::GetPointsHandler(const AAIController* Owner) const
 {
 	verify(IsValid(Owner));
 	check(PlayerIsInDialogSequenceWith(Owner));
 	return PointsHandler;
+}
+
+const TSharedPtr<NDialogueDifficultyHandler>& UNDialogueSubsystem::GetDifficultyHandler(
+	const AAIController* Owner) const
+{
+	verify(IsValid(Owner));
+	check(PlayerIsInDialogSequenceWith(Owner));
+	return DifficultyHandler;
 }
 
 #undef LOCTEXT_NAMESPACE

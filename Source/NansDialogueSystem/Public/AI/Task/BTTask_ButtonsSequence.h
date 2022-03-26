@@ -18,7 +18,7 @@
 
 #include "BTDialogueTypes.h"
 #include "GameplayEffect.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 #include "NansUE4Utilities/public/Misc/TextLibrary.h"
 #include "UI/ResponseButtonWidget.h"
 
@@ -30,7 +30,7 @@ class UPanelWidget;
 class UButtonSequenceWidget;
 class NButtonSequenceMovementManager;
 class UBTTask_Countdown;
-class NBTDialoguePointsHandler;
+class NDialoguePointsHandler;
 
 /**
  * Dialogue Response Struct
@@ -207,7 +207,7 @@ public:
  *
  */
 UCLASS()
-class NANSDIALOGUESYSTEM_API UBTTask_ButtonsSequence : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_ButtonsSequence : public UBTTaskNode
 {
 	GENERATED_BODY()
 
@@ -270,7 +270,7 @@ protected:
 
 private:
 	TSharedPtr<NButtonSequenceMovementManager> BTSequenceManager;
-	TSharedPtr<NBTDialoguePointsHandler> PointsHandler;
+	TSharedPtr<NDialoguePointsHandler> PointsHandler;
 	FString PlayerTries;
 	int32 SequenceIndex = -1;
 	EBTNodeResult::Type TriesStatus = EBTNodeResult::InProgress;

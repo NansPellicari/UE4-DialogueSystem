@@ -15,18 +15,20 @@
 
 #include "CoreMinimal.h"
 
-#include "AI/AITaskAbortAware.h"
 #include "Components/ActorComponent.h"
 #include "AIDialogComponent.generated.h"
 
+class UBehaviorTreeComponent;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class NANSDIALOGUESYSTEM_API UAIDialogComponent : public UActorComponent, public IAITaskAbortAware
+class NANSDIALOGUESYSTEM_API UAIDialogComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
 	UAIDialogComponent();
+	void GetBehaviorTreeComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -36,6 +38,6 @@ protected:
 
 private:
 	bool bIsAborting = false;
-	void OnBehaviorTreeTaskAbort(UBehaviorTreeComponent& OwnerComp) const;
+	void OnBehaviorTreeTaskAbort() const;
 	TWeakObjectPtr<UBehaviorTreeComponent> BehaviorTreeComp;
 };

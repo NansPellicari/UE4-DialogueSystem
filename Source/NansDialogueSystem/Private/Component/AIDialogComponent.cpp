@@ -17,21 +17,36 @@
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Service/BTDialogueDifficultyHandler.h"
-#include "Service/BTDialoguePointsHandler.h"
+#include "Service/DialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
-#include "Setting/DialogueSystemSettings.h"
 
 // Sets default values for this component's properties
 UAIDialogComponent::UAIDialogComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	// TODO create a UBTStepsComponent and embed it here
 	// A UBTStepsComponent should to the same listening on OnBehaviorTreeTaskAbort()
 	// to remove the StepsHandler associated to the AI controller
+}
+
+void UAIDialogComponent::GetBehaviorTreeComponent()
+{
+	// TODO create a UBTStepsComponent and create a protected function to embed this logic:
+	const APawn* Pawn = Cast<APawn>(GetOwner());
+	checkf(IsValid(Pawn), TEXT("You can attached a UAIDialogComponent only to Pawn or Character"));
+	const AAIController* Controller = Cast<AAIController>(Pawn->GetController());
+	checkf(IsValid(Controller), TEXT("A UAIDialogComponent has to be attached to a AIController only"));
+	UBrainComponent* Brain = Controller->GetBrainComponent();
+	if (Brain)
+	{
+		UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(Brain);
+		checkf(BTComp, TEXT("The brain component has to be a behavior tree component"));
+		BehaviorTreeComp = MakeWeakObjectPtr(BTComp);
+		check(BehaviorTreeComp.IsValid());
+	}
 }
 
 // Called when the game starts
@@ -39,15 +54,7 @@ void UAIDialogComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// TODO create a UBTStepsComponent and create a protected function to embed this logic:
-	const APawn* Pawn = Cast<APawn>(GetOwner());
-	check(IsValid(Pawn), TEXT("You can attached a UAIDialogComponent only to Pawn or Character"))
-	const AAIController* Controller = Cast<AAIController>(Pawn->GetController());
-	checkf(IsValid(Controller), TEXT("A UAIDialogComponent has to be attached to a AIController only"));
-	UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(Controller->GetBrainComponent());
-	checkf(IsValid(BTComp), TEXT("The brain component has to be a behavior tree component"));
-	BehaviorTreeComp = MakeWeakObjectPtr(BTComp);
-	check(BehaviorTreeComp.IsValid());
+	GetBehaviorTreeComponent();
 }
 
 void UAIDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -55,12 +62,13 @@ void UAIDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!BehaviorTreeComp.IsValid()) GetBehaviorTreeComponent();
 	if (!BehaviorTreeComp.IsValid()) return;
 
 	if (!bIsAborting && BehaviorTreeComp->IsAbortPending())
 	{
 		bIsAborting = true;
-		OnBehaviorTreeTaskAbort(*BehaviorTreeComp.Get());
+		OnBehaviorTreeTaskAbort();
 	}
 	else
 	{
@@ -68,24 +76,18 @@ void UAIDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
-void UAIDialogComponent::OnBehaviorTreeTaskAbort(UBehaviorTreeComponent& OwnerComp) const
+void UAIDialogComponent::OnBehaviorTreeTaskAbort() const
 {
-	const AAIController* AIOwner = OwnerComp.GetAIOwner();
-	check(IsValid(AIOwner));
-	// TODO Move this in a UBTStepsComponent, see above 
-	UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
-	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
-	check(IsValid(DialSys));
-	DialSys->EndDialogSequence(AIOwner);
-
-	const FDialogueBehaviorTreeSettings& Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
-	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	UBTDialogueDifficultyHandler* BTDialogDifficultyHandler =
-		Cast<UBTDialogueDifficultyHandler>(BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey));
-
-	if (IsValid(BTDialogDifficultyHandler))
+	if (BehaviorTreeComp.Get())
 	{
-		BTDialogDifficultyHandler->Clear();
+		const AAIController* AIOwner = BehaviorTreeComp->GetAIOwner();
+		check(IsValid(AIOwner));
+		// TODO Move this in a UBTStepsComponent, see above 
+		UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
+		UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
+		check(IsValid(DialSys));
+		DialSys->EndDialogSequence(AIOwner);
+		UBlackboardComponent* BlackboardComp = BehaviorTreeComp->GetBlackboardComponent();
+		NDialogueBTHelpers::RemoveUIFromBlackboard(*BehaviorTreeComp.Get(), BlackboardComp);
 	}
-	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 }

@@ -14,7 +14,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AI/BehaviorTree/BTTask_NotifyAIOnAbort.h"
+#include "BehaviorTree/BTTaskNode.h"
 #include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_TalkToPlayer.generated.h"
@@ -26,7 +26,7 @@ class UButton;
  *
  */
 UCLASS()
-class NANSDIALOGUESYSTEM_API UBTTask_TalkToPlayer : public UBTTask_NotifyAIOnAbort
+class NANSDIALOGUESYSTEM_API UBTTask_TalkToPlayer : public UBTTaskNode
 {
 	GENERATED_BODY()
 
@@ -56,8 +56,6 @@ protected:
 		EBTNodeResult::Type TaskResult) override;
 
 private:
-	UPROPERTY()
-	UBehaviorTreeComponent* OwnerComponent = nullptr;
-	UPROPERTY()
-	UDialogueUI* DialogueUI = nullptr;
+	TWeakObjectPtr<UBehaviorTreeComponent> OwnerComponent;
+	TWeakObjectPtr<UDialogueUI> DialogueUI;
 };

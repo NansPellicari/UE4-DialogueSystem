@@ -1,4 +1,4 @@
-﻿//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+﻿// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 // limitations under the License.
 
 #include "Ability/GA_BaseDialogue.h"
-
 
 #include "GameplayEffectExtension.h"
 #include "NansDialogueSystemLog.h"
@@ -107,11 +106,13 @@ bool UGA_BaseDialogue::CanActivateAbility(const FGameplayAbilitySpecHandle Handl
 	return true;
 }
 
-void UGA_BaseDialogue::CancelAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateCancelAbility)
+void UGA_BaseDialogue::CancelAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateCancelAbility)
 {
 	if (ScopeLockCount > 0)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("%s here 0"), ANSI_TO_TCHAR(__FUNCTION__));
 		WaitingToExecute.Add(
 			FPostLockDelegate::CreateUObject(
 				this,
@@ -122,10 +123,13 @@ void UGA_BaseDialogue::CancelAbility(const FGameplayAbilitySpecHandle Handle, co
 				bReplicateCancelAbility
 			)
 		);
+		UE_LOG(LogTemp, Warning, TEXT("%s here 1"), ANSI_TO_TCHAR(__FUNCTION__));
 		return;
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("%s here 2"), ANSI_TO_TCHAR(__FUNCTION__));
 	Super::CancelAbility(Handle, ActorInfo, ActivationInfo, bReplicateCancelAbility);
+	UE_LOG(LogTemp, Warning, TEXT("%s here 3"), ANSI_TO_TCHAR(__FUNCTION__));
 
 	if (bIsDebug)
 	{

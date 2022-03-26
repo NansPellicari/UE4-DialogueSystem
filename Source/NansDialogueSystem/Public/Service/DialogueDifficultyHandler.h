@@ -17,32 +17,21 @@
 #include "BTDialogueTypes.h"
 #include "Setting/DialogueSystemSettings.h"
 
-#include "BTDialogueDifficultyHandler.generated.h"
-
 class UBehaviorTreeComponent;
 // struct FNDialogueFactorSettings;
 class UNFactorsFactoryClientAdapter;
 class UAbilitySystemComponent;
 
-UCLASS()
-class NANSDIALOGUESYSTEM_API UBTDialogueDifficultyHandler : public UObject
+class NANSDIALOGUESYSTEM_API NDialogueDifficultyHandler
 {
-	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere)
-	bool bDebug = false;
-
-	void Initialize(UBehaviorTreeComponent& OwnerComp);
-	void Clear();
-
-	UBTDialogueDifficultyHandler();
+	NDialogueDifficultyHandler(const TWeakObjectPtr<UAbilitySystemComponent>& InPlayerAsc, bool bInDebug);
+	virtual ~NDialogueDifficultyHandler();
 	float GetDifficultyLevel(const FBTDialogueResponse& Response);
-
-protected:
+private:
 	/** Should change depending on the Character the player will choose */
 	float GeneralDifficultyLevel = 1.f;
 	TArray<FNDialogueFactorSettings> Settings;
-
-	UPROPERTY()
-	UAbilitySystemComponent* PlayerGASC;
+	bool bDebug = false;
+	TWeakObjectPtr<UAbilitySystemComponent> PlayerAsc;
 };

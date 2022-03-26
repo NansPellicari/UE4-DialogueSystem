@@ -19,7 +19,8 @@
 #include "NDialogueSubsystem.generated.h"
 
 class UAbilitySystemComponent;
-class NBTDialoguePointsHandler;
+class NDialoguePointsHandler;
+class NDialogueDifficultyHandler;
 
 /**
  * 
@@ -36,15 +37,19 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	bool bDebugPointsHandler = false;
+	UPROPERTY(EditAnywhere)
+	bool bDebugDifficultyHandler = false;
 
 	bool CreateDialogSequence(const AAIController* Owner);
 	void EndDialogSequence(const AAIController* Owner);
 
 	bool PlayerIsInDialogSequenceWith(const AAIController* Owner) const;
-	const TSharedPtr<NBTDialoguePointsHandler>& GetPointsHandler(const AAIController* Owner) const;
+	const TSharedPtr<NDialoguePointsHandler>& GetPointsHandler(const AAIController* Owner) const;
+	const TSharedPtr<NDialogueDifficultyHandler>& GetDifficultyHandler(const AAIController* Owner) const;
 	UAbilitySystemComponent* GetPlayerAbs() const;
 	UBTStepsSubsystem& GetBTStepsSubsystem() const;
 	ACharacter* GetPlayerCharacter() const;
 private:
-	TSharedPtr<NBTDialoguePointsHandler> PointsHandler;
+	TSharedPtr<NDialoguePointsHandler> PointsHandler;
+	TSharedPtr<NDialogueDifficultyHandler> DifficultyHandler;
 };

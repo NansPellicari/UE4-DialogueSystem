@@ -86,9 +86,9 @@ bool UNDSFunctionLibrary::IsPlayerABSCanDialogue(const UAbilitySystemComponent* 
 	);
 	if (MatchingGameplayAbilities.Num() <= 0)
 	{
-		EDITOR_ERROR(
+		EDITOR_WARN(
 			"DialogueSystem",
-			LOCTEXT("CanNotAddPointsForACategory", "Player should be able to speak!"),
+			LOCTEXT("PlayerCantSpeak", "Player can't speak right now"),
 			ABSComp
 		);
 		return false;

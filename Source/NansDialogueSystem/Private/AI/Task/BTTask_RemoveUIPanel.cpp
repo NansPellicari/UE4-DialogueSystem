@@ -21,7 +21,7 @@
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
 UBTTask_RemoveUIPanel::UBTTask_RemoveUIPanel(const FObjectInitializer& ObjectInitializer)
-	: UBTTask_NotifyAIOnAbort(ObjectInitializer)
+	: UBTTaskNode(ObjectInitializer)
 {
 	NodeName = "Remove UI Panel";
 }

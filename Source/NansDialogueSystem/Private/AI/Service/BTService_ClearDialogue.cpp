@@ -16,10 +16,7 @@
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Service/BTDialogueDifficultyHandler.h"
-#include "Service/BTDialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
-#include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
@@ -39,22 +36,15 @@ void UBTService_ClearDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerCom
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
 
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	DialSys->EndDialogSequence(AIOwner);
-
-	UBTDialogueDifficultyHandler* BTDialogDifficultyHandler =
-		Cast<UBTDialogueDifficultyHandler>(BlackboardComp->GetValueAsObject(Settings.DifficultyHandlerKey));
-
-	if (IsValid(BTDialogDifficultyHandler))
-	{
-		BTDialogDifficultyHandler->Clear();
-	}
-	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	// TODO Should be less brutal... A dialogue can end but behavior still continuing
+	OwnerComp.StopLogic(TEXT("Dialog is ending"));
 }
 
 #if WITH_EDITOR
