@@ -13,7 +13,7 @@
 
 #include "Ability/NDSGameplayEffectTypes.h"
 
-void FNDSGameplayEffectContext::AddPointsData(FDialogueResult Data)
+void FNDSGameplayEffectContext::AddPointsData(const FDialogueResult& Data)
 {
 	PointsData = Data;
 }
@@ -23,12 +23,12 @@ FDialogueResult FNDSGameplayEffectContext::GetPointData() const
 	return PointsData;
 }
 
-void FNDSGameplayEffectContext::AddExtraData(FGameplayTag Tag, const FString& Data)
+void FNDSGameplayEffectContext::AddExtraData(const FGameplayTag& Tag, const FString& Data)
 {
 	ExtraData.Add(Tag, Data);
 }
 
-void FNDSGameplayEffectContext::AddExtraData(TMap<FGameplayTag, FString> NewData)
+void FNDSGameplayEffectContext::AddExtraData(const TMap<FGameplayTag, FString>& NewData)
 {
 	ExtraData.Append(NewData);
 }

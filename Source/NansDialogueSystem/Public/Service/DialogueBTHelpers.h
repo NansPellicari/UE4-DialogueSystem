@@ -52,4 +52,5 @@ public:
 	static TScriptInterface<IDialogueHUD> GetPlayerHUD(UBehaviorTreeComponent& OwnerComp, const FString TaskName);
 
 	static void RemoveUIFromBlackboard(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* Blackboard);
+	static void ChangeHUDForDialogue(UBehaviorTreeComponent& OwnerComp, UBlackboardComponent* BlackboardComp);
 };

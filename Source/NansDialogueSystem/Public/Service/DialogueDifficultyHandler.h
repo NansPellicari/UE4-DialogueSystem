@@ -28,10 +28,10 @@ public:
 	NDialogueDifficultyHandler(const TWeakObjectPtr<UAbilitySystemComponent>& InPlayerAsc, bool bInDebug);
 	virtual ~NDialogueDifficultyHandler();
 	float GetDifficultyLevel(const FBTDialogueResponse& Response);
+	bool bDebug = false;
 private:
 	/** Should change depending on the Character the player will choose */
 	float GeneralDifficultyLevel = 1.f;
 	TArray<FNDialogueFactorSettings> Settings;
-	bool bDebug = false;
 	TWeakObjectPtr<UAbilitySystemComponent> PlayerAsc;
 };

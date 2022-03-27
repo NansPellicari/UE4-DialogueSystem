@@ -17,7 +17,7 @@
 
 #include "WheelButtonWidget.h"
 #include "Components/Button.h"
-#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
+#include "Blueprint/NansUserWidget.h"
 
 #include "DialogueUI.generated.h"
 

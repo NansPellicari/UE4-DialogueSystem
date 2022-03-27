@@ -42,7 +42,7 @@ void UBTService_ClearDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerCom
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	DialSys->EndDialogSequence(AIOwner);
-	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 	// TODO Should be less brutal... A dialogue can end but behavior still continuing
 	OwnerComp.StopLogic(TEXT("Dialog is ending"));
 }

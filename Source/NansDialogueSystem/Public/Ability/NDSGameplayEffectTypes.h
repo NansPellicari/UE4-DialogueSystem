@@ -30,10 +30,10 @@ struct NANSDIALOGUESYSTEM_API FNDSGameplayEffectContext : public FGameplayEffect
 {
 	GENERATED_BODY()
 
-	virtual void AddPointsData(FDialogueResult Data);
+	virtual void AddPointsData(const FDialogueResult& Data);
 	virtual FDialogueResult GetPointData() const;
-	virtual void AddExtraData(FGameplayTag Tag, const FString& Data);
-	virtual void AddExtraData(TMap<FGameplayTag, FString> NewData);
+	virtual void AddExtraData(const FGameplayTag& Tag, const FString& Data);
+	virtual void AddExtraData(const TMap<FGameplayTag, FString>& NewData);
 	virtual TMap<FGameplayTag, FString> GetExtraData() const;
 
 	/**

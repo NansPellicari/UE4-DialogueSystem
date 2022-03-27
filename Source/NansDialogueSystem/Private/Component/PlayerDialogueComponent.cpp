@@ -34,7 +34,10 @@ UPlayerDialogueComponent::UPlayerDialogueComponent()
 void UPlayerDialogueComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!IsValid(GetOwner())) return;
+	if (!IsValid(GetOwner()))
+	{
+		return;
+	}
 	AActor* OwnerActor = Cast<AActor>(GetOwner());
 	ABSComp = Cast<UAbilitySystemComponent>(
 		OwnerActor->GetComponentByClass(UAbilitySystemComponent::StaticClass())
@@ -101,7 +104,7 @@ bool UPlayerDialogueComponent::HasResults(const FNDialogueHistorySearch& Search)
 }
 
 bool UPlayerDialogueComponent::HasResultsOnSearches(const TArray<FNDialogueHistorySearch> Searches,
-	TArray<FNansConditionOperator> ConditionsOperators)
+                                                    TArray<FNansConditionOperator> ConditionsOperators)
 {
 	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -164,14 +167,14 @@ int32 UPlayerDialogueComponent::GetDialoguePoints(FNDialogueCategory Category) c
 
 void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FNStep Step)
 {
-	TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
+	const TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
 	if (!IsValid(GEffect))
 	{
 		EDITOR_ERROR(
 			"DialogSystem",
 			FText::Format(
 				LOCTEXT("EffectOnEarnedMissing",
-					"No effect on earned is set for point type {0}"),
+					"You have to set an \"effect on earned\" for point type {0}"),
 				FText::FromString(Point.Category.Name.ToString()))
 		);
 		return;
@@ -185,7 +188,7 @@ void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FNStep S
 	DialogData.InitialPoints = Point.Point;
 	DialogData.Response = Point.Response;
 	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
-	FGameplayEffectSpecHandle SpecHandle = ABSComp->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
+	const FGameplayEffectSpecHandle& SpecHandle = ABSComp->MakeOutgoingSpec(GEffect, Point.Difficulty, FxContextHandle);
 	UAbilitySystemBlueprintLibrary::AddAssetTag(SpecHandle, Point.Category.Name);
 	UAbilitySystemBlueprintLibrary::AddAssetTag(
 		SpecHandle,
@@ -203,11 +206,11 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 {
 	TArray<FDialogueResult> Results;
 	const FDialogueHistory* CurrentHistory = CurrentHistoryIndex > -1
-												 ? &DialogueHistories[CurrentHistoryIndex]
-												 : &DialogueHistories.Last();
+		                                         ? &DialogueHistories[CurrentHistoryIndex]
+		                                         : &DialogueHistories.Last();
 	const FDialogueSequence* CurrentSequence = CurrentSequenceIndex > -1
-												   ? &CurrentHistory->Sequences[CurrentSequenceIndex]
-												   : &CurrentHistory->Sequences.Last();
+		                                           ? &CurrentHistory->Sequences[CurrentSequenceIndex]
+		                                           : &CurrentHistory->Sequences.Last();
 	FString Decals = "";
 	if (bDebugSearch)
 	{
@@ -370,10 +373,10 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 						Search.NameValue.ToString()
 					);
 					bSuccess = bSuccess || UNansComparator::EvaluateComparator<FString>(
-								   Search.Operator,
-								   Block.BlockName.GetName().ToString(),
-								   Search.NameValue.ToString()
-							   );
+						Search.Operator,
+						Block.BlockName.GetName().ToString(),
+						Search.NameValue.ToString()
+					);
 					if (bDebugSearch) UE_LOG(
 						LogDialogueSystem,
 						Display,

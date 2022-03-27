@@ -14,10 +14,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BTDialogueTypes.h"
 #include "ResponseButtonWidget.h"
-#include "Components/Button.h"
-#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
 
 #include "ButtonSequenceWidget.generated.h"
 
@@ -30,7 +27,6 @@ class NANSDIALOGUESYSTEM_API UButtonSequenceWidget : public UResponseButtonWidge
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Display")
 	FVector2D ButtonDisplaySize = FVector2D(100.f, 100.f);
 };

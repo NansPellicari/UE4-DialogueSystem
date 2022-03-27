@@ -45,7 +45,13 @@ void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	// False means the dialogue sequence with this AIOwner has been already started
-	if (!DialSys->CreateDialogSequence(AIOwner)) return;
+	if (!DialSys->CreateDialogSequence(AIOwner))
+	{
+		return;
+	}
+
+	DialSys->SetDebugPointsHandler(bDebugPointsHandler);
+	DialSys->SetDebugDifficultyHandler(bDebugDifficultyHandler);
 
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	const UBlackboardData* BBData = BlackboardComp->GetBlackboardAsset();
@@ -91,28 +97,7 @@ void UBTService_PrepareDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 	}
 
 	BBKeys.Empty();
-
-	// const auto PlayerHUD = NDialogueBTHelpers::GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
-	// if (!IsValid(PlayerHUD.GetObject()))
-	// {
-	// 	return;
-	// }
-	//
-	// const FName PreviousUINameKey = Settings.PreviousUINameKey;
-	// const FName PreviousUIClassKey = Settings.PreviousUIClassKey;
-	//
-	// // Save previous UIPanel to reload it next time. 
-	// const FName PreviousName = BlackboardComp->GetValueAsName(PreviousUINameKey);
-	// if (PreviousName == NAME_None)
-	// {
-	// 	FName OldUIName;
-	// 	TSubclassOf<UUserWidget> OldUIClass;
-	// 	IDialogueHUD::Execute_GetFullCurrentUIPanel(PlayerHUD.GetObject(), OldUIClass, OldUIName);
-	// 	BlackboardComp->SetValueAsName(PreviousUINameKey, OldUIName);
-	// 	BlackboardComp->SetValueAsClass(PreviousUIClassKey, OldUIClass);
-	// }
-	//
-	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	NDialogueBTHelpers::ChangeHUDForDialogue(OwnerComp, BlackboardComp);
 }
 
 #if WITH_EDITOR

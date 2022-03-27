@@ -25,14 +25,21 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-NDialogueBTHelpers::NDialogueBTHelpers() {}
+NDialogueBTHelpers::NDialogueBTHelpers()
+{
+}
 
-NDialogueBTHelpers::~NDialogueBTHelpers() {}
+NDialogueBTHelpers::~NDialogueBTHelpers()
+{
+}
 
 ACharacter* NDialogueBTHelpers::GetPlayerCharacter(const AAIController& AIController)
 {
 	ACharacter* PlayerChar = UGameplayStatics::GetPlayerCharacter(&AIController, 0);
-	if (!IsValid(PlayerChar)) return nullptr;
+	if (!IsValid(PlayerChar))
+	{
+		return nullptr;
+	}
 	return PlayerChar;
 }
 
@@ -40,12 +47,15 @@ APlayerController* NDialogueBTHelpers::GetPlayerController(UBrainComponent& Owne
 {
 	check(OwnerComp.GetAIOwner())
 	const auto PlayerChar = GetPlayerCharacter(*OwnerComp.GetAIOwner());
-	if (!IsValid(PlayerChar)) return nullptr;
+	if (!IsValid(PlayerChar))
+	{
+		return nullptr;
+	}
 	return Cast<APlayerController>(PlayerChar->GetController());
 }
 
 UDialogueUI* NDialogueBTHelpers::GetUIFromBlackboard(UBehaviorTreeComponent& OwnerComp,
-	UBlackboardComponent* Blackboard)
+                                                     UBlackboardComponent* Blackboard)
 {
 	const auto Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
 	const FName UINameKey = Settings.UINameKey;
@@ -70,7 +80,7 @@ UDialogueUI* NDialogueBTHelpers::GetUIFromBlackboard(UBehaviorTreeComponent& Own
 }
 
 TScriptInterface<IDialogueHUD> NDialogueBTHelpers::GetPlayerHUD(UBehaviorTreeComponent& OwnerComp,
-	const FString TaskName)
+                                                                const FString TaskName)
 {
 	const APlayerController* PlayerController = GetPlayerController(OwnerComp, TaskName);
 	if (!IsValid(PlayerController))
@@ -177,5 +187,32 @@ UPlayerDialogueComponent* NDialogueBTHelpers::GetDialogueComponent(const ACharac
 		return nullptr;
 	}
 	return Comp;
+}
+
+void NDialogueBTHelpers::ChangeHUDForDialogue(UBehaviorTreeComponent& OwnerComp,
+                                              UBlackboardComponent* BlackboardComp)
+{
+	const FDialogueBehaviorTreeSettings Settings = UDialogueSystemSettings::Get()->BehaviorTreeSettings;
+	const auto PlayerHUD = GetPlayerHUD(OwnerComp, FString(__FUNCTION__));
+	if (!IsValid(PlayerHUD.GetObject()))
+	{
+		return;
+	}
+
+	const FName PreviousUINameKey = Settings.PreviousUINameKey;
+	const FName PreviousUIClassKey = Settings.PreviousUIClassKey;
+
+	// Save previous UIPanel to reload it next time. 
+	const FName PreviousName = BlackboardComp->GetValueAsName(PreviousUINameKey);
+	if (PreviousName == NAME_None)
+	{
+		FName OldUIName;
+		TSubclassOf<UUserWidget> OldUIClass;
+		IDialogueHUD::Execute_GetFullCurrentUIPanel(PlayerHUD.GetObject(), OldUIClass, OldUIName);
+		BlackboardComp->SetValueAsName(PreviousUINameKey, OldUIName);
+		BlackboardComp->SetValueAsClass(PreviousUIClassKey, OldUIClass);
+	}
+
+	RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 }
 #undef LOCTEXT_NAMESPACE

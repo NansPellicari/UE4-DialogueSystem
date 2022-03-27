@@ -45,11 +45,11 @@ void UBTService_ClearDialogueAndStep::OnBecomeRelevant(UBehaviorTreeComponent& O
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
 
-	// UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
+	UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
 
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
-	// NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
+	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
 	DialSys->EndDialogSequence(AIOwner);
 	// TODO Should be less brutal... A dialogue can end but behavior still continuing
 	OwnerComp.StopLogic(TEXT("Dialog is ending"));

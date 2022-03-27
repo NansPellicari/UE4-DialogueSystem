@@ -4,11 +4,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NansUMGExtent/Public/Blueprint/NansUserWidget.h"
+#include "Blueprint/NansUserWidget.h"
 
 #include "DialogueProgressBarWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FProgressBarEnd);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FProgressEvent, float, Percent);
 
 /**

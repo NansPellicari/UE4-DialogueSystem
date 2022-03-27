@@ -30,16 +30,16 @@ class NANSDIALOGUESYSTEM_API NDialoguePointsHandler
 {
 public:
 	NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler, UPlayerDialogueComponent* InDialogComp,
-		const AAIController* InOwner, bool InbDebug);
+	                       const AAIController* InOwner, bool InbDebug);
 	virtual ~NDialoguePointsHandler();
 	void AddPoints(FNPoint Point, int32 Position);
 	bool HasResults(const FNDialogueHistorySearch& Search) const;
 	bool HasResults(const TArray<FNDialogueHistorySearch> Searches,
-		TArray<FNansConditionOperator> ConditionsOperators) const;
+	                TArray<FNansConditionOperator> ConditionsOperators) const;
 	int32 GetDialoguePoints(FNDialogueCategory Category) const;
 	const AAIController* GetOwner() const;
-private:
 	bool bDebug = false;
+private:
 	TSharedPtr<NStepsHandler> StepsHandler;
 	TWeakObjectPtr<UPlayerDialogueComponent> DialogComp;
 	TWeakObjectPtr<const AAIController> Owner;

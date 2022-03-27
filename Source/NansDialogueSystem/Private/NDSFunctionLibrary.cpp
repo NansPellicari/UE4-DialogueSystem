@@ -24,8 +24,8 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle,
-	FDialogueResult Data)
+void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandle& EffectContextHandle,
+                                                     const FDialogueResult& Data)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)
@@ -34,8 +34,8 @@ void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandl
 	}
 }
 
-void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle EffectContextHandle, FGameplayTag Tag,
-	const FString& Data)
+void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle& EffectContextHandle, FGameplayTag Tag,
+                                                    const FString& Data)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)
@@ -44,8 +44,8 @@ void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle
 	}
 }
 
-void UNDSFunctionLibrary::EffectContextAddExtraDataAsMap(FGameplayEffectContextHandle EffectContextHandle,
-	TMap<FGameplayTag, FString> NewData)
+void UNDSFunctionLibrary::EffectContextAddExtraDataAsMap(FGameplayEffectContextHandle& EffectContextHandle,
+                                                         TMap<FGameplayTag, FString> NewData)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)

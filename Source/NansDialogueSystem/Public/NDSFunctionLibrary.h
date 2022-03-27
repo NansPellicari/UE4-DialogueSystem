@@ -31,15 +31,16 @@ class NANSDIALOGUESYSTEM_API UNDSFunctionLibrary : public UBlueprintFunctionLibr
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
-	static void EffectContextAddPointsData(FGameplayEffectContextHandle EffectContextHandle, FDialogueResult Data);
+	static void EffectContextAddPointsData(FGameplayEffectContextHandle& EffectContextHandle,
+	                                       const FDialogueResult& Data);
 
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
-	static void EffectContextAddExtraData(FGameplayEffectContextHandle EffectContextHandle, FGameplayTag Tag,
-		const FString& Data);
+	static void EffectContextAddExtraData(FGameplayEffectContextHandle& EffectContextHandle, FGameplayTag Tag,
+	                                      const FString& Data);
 
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
-	static void EffectContextAddExtraDataAsMap(FGameplayEffectContextHandle EffectContextHandle,
-		TMap<FGameplayTag, FString> NewData);
+	static void EffectContextAddExtraDataAsMap(FGameplayEffectContextHandle& EffectContextHandle,
+	                                           TMap<FGameplayTag, FString> NewData);
 
 	UFUNCTION(BlueprintCallable, Category="Ability|EffectContext")
 	static TMap<FGameplayTag, FString> EffectContextGetExtraData(

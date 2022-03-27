@@ -81,7 +81,10 @@ bool UNDialogueSubsystem::PlayerIsInDialogSequenceWith(const AAIController* Owne
 
 bool UNDialogueSubsystem::CreateDialogSequence(const AAIController* Owner)
 {
-	if (PlayerIsInDialogSequenceWith(Owner)) return false;
+	if (PlayerIsInDialogSequenceWith(Owner))
+	{
+		return false;
+	}
 
 	TSharedPtr<NStepsHandler> StepsHandler = GetBTStepsSubsystem().GetStepsHandler(Owner);
 	if (!StepsHandler.IsValid())
@@ -120,6 +123,8 @@ void UNDialogueSubsystem::EndDialogSequence(const AAIController* Owner)
 	}
 	PointsHandler.Reset();
 	DifficultyHandler.Reset();
+	bDebugPointsHandler = false;
+	bDebugDifficultyHandler = false;
 }
 
 const TSharedPtr<NDialoguePointsHandler>& UNDialogueSubsystem::GetPointsHandler(const AAIController* Owner) const

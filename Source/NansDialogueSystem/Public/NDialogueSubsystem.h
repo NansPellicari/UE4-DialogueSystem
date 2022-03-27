@@ -15,6 +15,8 @@
 
 #include "CoreMinimal.h"
 #include "BTStepsSubsystem.h"
+#include "Service/DialogueDifficultyHandler.h"
+#include "Service/DialoguePointsHandler.h"
 
 #include "NDialogueSubsystem.generated.h"
 
@@ -35,10 +37,23 @@ public:
 	virtual void Deinitialize() override;
 	// End USubsystem
 
-	UPROPERTY(EditAnywhere)
-	bool bDebugPointsHandler = false;
-	UPROPERTY(EditAnywhere)
-	bool bDebugDifficultyHandler = false;
+	FORCEINLINE void SetDebugPointsHandler(bool bInDebugPointsHandler)
+	{
+		bDebugPointsHandler = bInDebugPointsHandler;
+		if (PointsHandler.IsValid())
+		{
+			PointsHandler->bDebug = bDebugPointsHandler;
+		}
+	}
+
+	FORCEINLINE void SetDebugDifficultyHandler(bool bInDebugDifficultyHandler)
+	{
+		bDebugDifficultyHandler = bInDebugDifficultyHandler;
+		if (DifficultyHandler.IsValid())
+		{
+			DifficultyHandler->bDebug = bDebugDifficultyHandler;
+		}
+	}
 
 	bool CreateDialogSequence(const AAIController* Owner);
 	void EndDialogSequence(const AAIController* Owner);
@@ -50,6 +65,10 @@ public:
 	UBTStepsSubsystem& GetBTStepsSubsystem() const;
 	ACharacter* GetPlayerCharacter() const;
 private:
+	UPROPERTY(EditAnywhere)
+	bool bDebugPointsHandler = false;
+	UPROPERTY(EditAnywhere)
+	bool bDebugDifficultyHandler = false;
 	TSharedPtr<NDialoguePointsHandler> PointsHandler;
 	TSharedPtr<NDialogueDifficultyHandler> DifficultyHandler;
 };

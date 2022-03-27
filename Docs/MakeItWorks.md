@@ -4,18 +4,19 @@
 
 <!-- TOC -->
 
--   [1. Install GameplayAbilitySystem](#1-install-gameplayabilitysystem)
-    -   [1.1. Create your set of Gameplay Tags](#11-create-your-set-of-gameplay-tags)
--   [2. Add required plugins as git submodules](#2-add-required-plugins-as-git-submodules)
--   [3. Configure the Dialogue System Plugin](#3-configure-the-dialogue-system-plugin)
-    -   [3.1. Basics](#31-basics)
-    -   [3.2. BB keys](#32-bb-keys)
-    -   [3.3. Difficulty](#33-difficulty)
-    -   [3.4. Responses](#34-responses)
--   [4. Create dialogue HUD](#4-create-dialogue-hud)
--   [5. Configure Character, AI NPC and GameMode](#5-configure-character-ai-npc-and-gamemode)
--   [6. Use native dialogue UIs](#6-use-native-dialogue-uis)
--   [7. Create your first dialogue](#7-create-your-first-dialogue)
+- [1. Install GameplayAbilitySystem](#1-install-gameplayabilitysystem)
+  - [1.1. AbilitySystemGlobals](#11-abilitysystemglobals)
+  - [1.2. Create your set of Gameplay Tags](#12-create-your-set-of-gameplay-tags)
+- [2. Add required plugins as git submodules](#2-add-required-plugins-as-git-submodules)
+- [3. Configure the Dialogue System Plugin](#3-configure-the-dialogue-system-plugin)
+  - [3.1. Basics](#31-basics)
+  - [3.2. BB keys](#32-bb-keys)
+  - [3.3. Difficulty](#33-difficulty)
+  - [3.4. Responses](#34-responses)
+- [4. Create dialogue HUD](#4-create-dialogue-hud)
+- [5. Configure Character, AI NPC and GameMode](#5-configure-character-ai-npc-and-gamemode)
+- [6. Use native dialogue UIs](#6-use-native-dialogue-uis)
+- [7. Create your first dialogue](#7-create-your-first-dialogue)
 
 <!-- /TOC -->
 
@@ -23,9 +24,23 @@
 
 ## 1. Install GameplayAbilitySystem
 
-<a id="markdown-11-create-your-set-of-gameplay-tags" name="11-create-your-set-of-gameplay-tags"></a>
+<a id="markdown-11-abilitysystemglobals" name="11-abilitysystemglobals"></a>
 
-### 1.1. Create your set of Gameplay Tags
+### 1.1. AbilitySystemGlobals
+
+You have to override the `AbilitySystemGlobals` first in the `Config/DefaultGame.ini` file:
+
+```
+[/Script/GameplayAbilities.AbilitySystemGlobals]
++GameplayCueNotifyPaths = "/Game/Folder/Path/Where/Your/Cues/Are/Located"
+AbilitySystemGlobalsClassName="/Script/NansDialogueSystem.NDSAbilitySystemGlobals"
+```
+
+Then to create a [UEngineSubsystem](https://docs.unrealengine.com/4.26/en-US/ProgrammingAndScripting/Subsystems/) in your project and call `UAbilitySystemGlobals::Get().InitGlobalData()` in the `Initialize(FSubsystemCollectionBase& Collection)` method.
+
+<a id="markdown-12-create-your-set-of-gameplay-tags" name="12-create-your-set-of-gameplay-tags"></a>
+
+### 1.2. Create your set of Gameplay Tags
 
 <a id="markdown-2-add-required-plugins-as-git-submodules" name="2-add-required-plugins-as-git-submodules"></a>
 
