@@ -28,11 +28,10 @@ UCLASS()
 class NANSDIALOGUESYSTEM_API UBTDecorator_CheckDialogueResults : public UBTDecorator
 {
 	GENERATED_UCLASS_BODY()
-
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNDialogueHistorySearch> DialogueHistorySearches;
 
-	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
+	// Be worried! Use this only if you don't want an \"first at last\" AND operator on Conditions
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNansConditionOperator> ConditionsOperators;
 

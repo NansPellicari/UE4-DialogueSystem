@@ -68,7 +68,7 @@ void UPlayerDialogueComponent::DialogueTagChange(const FGameplayTag CallbackTag,
 	}
 }
 
-void UPlayerDialogueComponent::AddSequence(const FDialogueSequence& Sequence)
+void UPlayerDialogueComponent::AddSequence(FDialogueSequence&& Sequence)
 {
 	auto CurrentLevelName = UGameplayStatics::GetCurrentLevelName(this);
 	// TODO improve test, only test on LevelName is not sufficient...
@@ -80,12 +80,15 @@ void UPlayerDialogueComponent::AddSequence(const FDialogueSequence& Sequence)
 		// History.LevelId = UGameplayStatics::GetCurrentLevelName(
 		CurrentHistoryIndex = DialogueHistories.Add(History);
 	}
-	CurrentSequenceIndex = DialogueHistories.Last().Sequences.Add(Sequence);
+	// We need to save history only if there is some responses given,
+	// otherwise it will increment each time the points handler is called,
+	// even when no dialogue has been triggered = looong history of sequences.
+	TemporarySequence = MakeUnique<FDialogueSequence>(MoveTemp(Sequence));
 }
 
 void UPlayerDialogueComponent::AddResponse(const FDialogueResult& Result)
 {
-	if (DialogueHistories.Last().Sequences.Num() <= 0)
+	if (DialogueHistories.Last().Sequences.Num() <= 0 && !TemporarySequence.IsValid())
 	{
 		EDITOR_ERROR(
 			"DialogSystem",
@@ -93,6 +96,11 @@ void UPlayerDialogueComponent::AddResponse(const FDialogueResult& Result)
 				"You should first create a new DialogueSequence before saving a Result")
 		);
 		return;
+	}
+	if (TemporarySequence.IsValid())
+	{
+		CurrentSequenceIndex = DialogueHistories.Last().Sequences.Add(*TemporarySequence.Get());
+		TemporarySequence.Reset();
 	}
 	DialogueHistories.Last().Sequences.Last().Results.Add(Result);
 }
@@ -104,7 +112,7 @@ bool UPlayerDialogueComponent::HasResults(const FNDialogueHistorySearch& Search)
 }
 
 bool UPlayerDialogueComponent::HasResultsOnSearches(const TArray<FNDialogueHistorySearch> Searches,
-                                                    TArray<FNansConditionOperator> ConditionsOperators)
+	TArray<FNansConditionOperator> ConditionsOperators)
 {
 	const bool HasConditionsOperator = ConditionsOperators.Num() > 0;
 	TMap<FString, BoolStruct*> ConditionsResults;
@@ -165,7 +173,7 @@ int32 UPlayerDialogueComponent::GetDialoguePoints(FNDialogueCategory Category) c
 	return Points;
 }
 
-void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FNStep Step)
+void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, const FName DialogName)
 {
 	const TSubclassOf<UGameplayEffect> GEffect = Point.EffectOnEarned;
 	if (!IsValid(GEffect))
@@ -184,7 +192,7 @@ void UPlayerDialogueComponent::AddPoints(FNPoint Point, int32 Position, FNStep S
 	DialogData.Difficulty = Point.Difficulty;
 	DialogData.Position = Position;
 	DialogData.CategoryName = Point.Category.Name;
-	DialogData.BlockName = FBlockName(Step.Id, Step.GetLabel());
+	DialogData.BlockName = FBlockName(DialogName);
 	DialogData.InitialPoints = Point.Point;
 	DialogData.Response = Point.Response;
 	UNDSFunctionLibrary::EffectContextAddPointsData(FxContextHandle, DialogData);
@@ -206,11 +214,11 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 {
 	TArray<FDialogueResult> Results;
 	const FDialogueHistory* CurrentHistory = CurrentHistoryIndex > -1
-		                                         ? &DialogueHistories[CurrentHistoryIndex]
-		                                         : &DialogueHistories.Last();
+		? &DialogueHistories[CurrentHistoryIndex]
+		: &DialogueHistories.Last();
 	const FDialogueSequence* CurrentSequence = CurrentSequenceIndex > -1
-		                                           ? &CurrentHistory->Sequences[CurrentSequenceIndex]
-		                                           : &CurrentHistory->Sequences.Last();
+		? &CurrentHistory->Sequences[CurrentSequenceIndex]
+		: TemporarySequence.Get();
 	FString Decals = "";
 	if (bDebugSearch)
 	{
@@ -369,11 +377,6 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 				{
 					bSuccess = UNansComparator::EvaluateComparator<FString>(
 						Search.Operator,
-						Block.BlockName.GetNameFromId().ToString(),
-						Search.NameValue.ToString()
-					);
-					bSuccess = bSuccess || UNansComparator::EvaluateComparator<FString>(
-						Search.Operator,
 						Block.BlockName.GetName().ToString(),
 						Search.NameValue.ToString()
 					);
@@ -391,8 +394,8 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 					bSuccess = UNansComparator::EvaluateComparator<float>(
 						Search.Operator,
 						Search.PropertyName == ENPropertyValue::InitialPoints
-							? Block.InitialPoints
-							: Block.MitigatedPointsEarned,
+						? Block.InitialPoints
+						: Block.MitigatedPointsEarned,
 						Search.FloatValue
 					);
 					if (bDebugSearch) UE_LOG(
@@ -412,8 +415,8 @@ TArray<FDialogueResult> UPlayerDialogueComponent::SearchResults(const FNDialogue
 					bSuccess = UNansComparator::EvaluateComparator<int32>(
 						Search.Operator,
 						Search.PropertyName == ENPropertyValue::Difficulty
-							? Block.Difficulty
-							: Block.Position,
+						? Block.Difficulty
+						: Block.Position,
 						Search.IntValue
 					);
 					if (bDebugSearch) UE_LOG(

@@ -13,9 +13,9 @@
 
 #include "Component/AIDialogComponent.h"
 
-#include "BTStepsLibrary.h"
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Service/DialoguePointsHandler.h"
 #include "Service/DialogueBTHelpers.h"
@@ -26,15 +26,10 @@ UAIDialogComponent::UAIDialogComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// TODO create a UBTStepsComponent and embed it here
-	// A UBTStepsComponent should to the same listening on OnBehaviorTreeTaskAbort()
-	// to remove the StepsHandler associated to the AI controller
 }
 
 void UAIDialogComponent::GetBehaviorTreeComponent()
 {
-	// TODO create a UBTStepsComponent and create a protected function to embed this logic:
 	const APawn* Pawn = Cast<APawn>(GetOwner());
 	checkf(IsValid(Pawn), TEXT("You can attached a UAIDialogComponent only to Pawn or Character"));
 	const AAIController* Controller = Cast<AAIController>(Pawn->GetController());
@@ -58,12 +53,18 @@ void UAIDialogComponent::BeginPlay()
 }
 
 void UAIDialogComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                       FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!BehaviorTreeComp.IsValid()) GetBehaviorTreeComponent();
-	if (!BehaviorTreeComp.IsValid()) return;
+	if (!BehaviorTreeComp.IsValid())
+	{
+		GetBehaviorTreeComponent();
+	}
+	if (!BehaviorTreeComp.IsValid())
+	{
+		return;
+	}
 
 	if (!bIsAborting && BehaviorTreeComp->IsAbortPending())
 	{
@@ -82,8 +83,6 @@ void UAIDialogComponent::OnBehaviorTreeTaskAbort() const
 	{
 		const AAIController* AIOwner = BehaviorTreeComp->GetAIOwner();
 		check(IsValid(AIOwner));
-		// TODO Move this in a UBTStepsComponent, see above 
-		UBTStepsLibrary::GetStepsSubsystem()->RemoveStepsHandler(AIOwner);
 		UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 		check(IsValid(DialSys));
 		DialSys->EndDialogSequence(AIOwner);

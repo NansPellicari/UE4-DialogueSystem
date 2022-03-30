@@ -40,10 +40,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "NansBehaviorSteps",
-			"Enabled": true
-		},
-		{
 			"Name": "GameplayAbilities",
 			"Enabled": true
 		},

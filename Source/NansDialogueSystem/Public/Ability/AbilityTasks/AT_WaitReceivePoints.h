@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ UCLASS()
 class NANSDIALOGUESYSTEM_API UAT_WaitReceivePoints : public UAbilityTask
 {
 	GENERATED_UCLASS_BODY()
-
 	UPROPERTY(BlueprintAssignable)
 	FReceivedPointsEarnedDelegate OnPointsEarned;
 
@@ -40,7 +39,7 @@ class NANSDIALOGUESYSTEM_API UAT_WaitReceivePoints : public UAbilityTask
 	// Wait until the ability owner receives points.
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf =
 		"OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UAT_WaitReceivePoints* WaitReceivePoints(UGameplayAbility* OwningAbility, bool TriggerOnce);
+	static UAT_WaitReceivePoints* WaitReceivePoints(UGameplayAbility* OwningAbility, bool InTriggerOnce);
 
 protected:
 	bool TriggerOnce;

@@ -1,5 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
+// ReSharper disable All
+
 namespace UnrealBuildTool.Rules
 {
 	public class NansDialogueSystemEd : ModuleRules
@@ -29,7 +31,6 @@ namespace UnrealBuildTool.Rules
 					"EditorStyle",
 					"NansCoreHelpers",
 					"NansUE4Utilities",
-					"NansBehaviorSteps",
 					"NansUMGExtent",
 					"NansDialogueSystem"
 				});

@@ -25,7 +25,6 @@
 #include "Service/ButtonSequenceMovementManager.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Setting/DialogueSystemSettings.h"
-#include "UI/ButtonSequenceWidget.h"
 #include "UI/DialogueProgressBarWidget.h"
 #include "UI/DialogueUI.h"
 #include "UI/ResponseButtonWidget.h"
@@ -107,7 +106,10 @@ EBTNodeResult::Type UBTTask_ButtonsSequence::ExecuteTask(UBehaviorTreeComponent&
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	PointsHandler = DialSys->GetPointsHandler(AIOwner);
-	if (!ensure(PointsHandler.IsValid())) return EBTNodeResult::Aborted;
+	if (!ensure(PointsHandler.IsValid()))
+	{
+		return EBTNodeResult::Aborted;
+	}
 
 	DialogueUI = NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogueUI))
@@ -174,14 +176,17 @@ void UBTTask_ButtonsSequence::RemoveButtons(UBehaviorTreeComponent& OwnerComp)
 
 void UBTTask_ButtonsSequence::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 {
-	PointsHandler->AddPoints(FNPoint(FBTDialogueResponse()), SequenceIndex);
+	PointsHandler->AddPoints(DialogName, FNPoint(FBTDialogueResponse()), SequenceIndex);
 	RemoveButtons(*OwnerComp);
 	FinishLatentTask(*OwnerComp, EBTNodeResult::Succeeded);
 }
 
 void UBTTask_ButtonsSequence::OnEndDisplayResponse()
 {
-	if (OwnerComponent == nullptr) return;
+	if (OwnerComponent == nullptr)
+	{
+		return;
+	}
 	FinishLatentTask(*OwnerComponent, EBTNodeResult::Succeeded);
 }
 
@@ -327,9 +332,9 @@ void UBTTask_ButtonsSequence::OnButtonClick(UResponseButtonWidget* Button)
 		Point.Point = TotalPoint;
 		Point.Response = SequenceTxt;
 		Point.EffectOnEarned = Resp.GetSpawnableEffectOnEarned();
-		Point.Difficulty = static_cast<float>(Response.Difficulty);
+		Point.Difficulty = Response.Difficulty;
 
-		PointsHandler->AddPoints(Point, SequenceIndex);
+		PointsHandler->AddPoints(DialogName, Point, SequenceIndex);
 
 		DialogueUI->SetPlayerText(Resp.Response, FText::GetEmpty());
 		RemoveButtons(*OwnerComponent);
@@ -345,7 +350,9 @@ void UBTTask_ButtonsSequence::OnButtonClick(UResponseButtonWidget* Button)
 
 FString UBTTask_ButtonsSequence::GetStaticDescription() const
 {
-	FString Desc = "\nDefault velocity: " + FString::FromInt(DefaultVelocity);
+	FString Desc;
+	Desc += "Dialogue name: " + DialogName.ToString();
+	Desc += "\nDefault velocity: " + FString::FromInt(DefaultVelocity);
 
 	int32 i = 0;
 	for (FBTButtonSequence Sequence : Sequences)
@@ -388,8 +395,8 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 			Desc += "\n" + UNTextLibrary::StringToLines(Text, 60, "\t");
 
 			FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
-								   ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
-								   : FText::FromString(TEXT("No effect"));
+				? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+				: FText::FromString(TEXT("No effect"));
 			RespArguments.Reset();
 			RespArguments.Add(TEXT("effect"), EffectName);
 			Text =
@@ -416,7 +423,10 @@ FString UBTTask_ButtonsSequence::GetStaticDescription() const
 FString UBTTask_ButtonsSequence::ShowPermutationsPoints(const FBTButtonSequence& Sequence) const
 {
 	FString StaticDesc = StaticButtonSequenceDescriptions::GetDescription(Sequence);
-	if (!StaticDesc.IsEmpty()) return StaticDesc;
+	if (!StaticDesc.IsEmpty())
+	{
+		return StaticDesc;
+	}
 
 	const FString SequenceStr = Sequence.ButtonSequence.ToString();
 	TArray<FPermutationValue<TCHAR>> CharArr = UNansArrayUtils::StringToPermutationArray(SequenceStr);

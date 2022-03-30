@@ -36,14 +36,6 @@ void UBTService_ClearDialogue::OnBecomeRelevant(UBehaviorTreeComponent& OwnerCom
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-
-	const AAIController* AIOwner = OwnerComp.GetAIOwner();
-	check(IsValid(AIOwner));
-	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
-	check(IsValid(DialSys));
-	DialSys->EndDialogSequence(AIOwner);
-	NDialogueBTHelpers::RemoveUIFromBlackboard(OwnerComp, BlackboardComp);
-	// TODO Should be less brutal... A dialogue can end but behavior still continuing
 	OwnerComp.StopLogic(TEXT("Dialog is ending"));
 }
 
@@ -54,11 +46,4 @@ FName UBTService_ClearDialogue::GetNodeIconName() const
 	return FName("BTEditor.Graph.BTNode.Task.PlaySound.Icon");
 }
 #endif	  // WITH_EDITOR
-
-FString UBTService_ClearDialogue::GetStaticDescription() const
-{
-	FString ReturnDesc;
-
-	return ReturnDesc;
-}
 #undef LOCTEXT_NAMESPACE

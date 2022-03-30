@@ -76,7 +76,10 @@ EBTNodeResult::Type UBTTask_Responses::ExecuteTask(UBehaviorTreeComponent& Owner
 	UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	PointsHandler = DialSys->GetPointsHandler(AIOwner);
-	if (!ensure(PointsHandler.IsValid())) return EBTNodeResult::Aborted;
+	if (!ensure(PointsHandler.IsValid()))
+	{
+		return EBTNodeResult::Aborted;
+	}
 
 	DialogueUI = NDialogueBTHelpers::GetUIFromBlackboard(OwnerComp, Blackboard);
 	if (!IsValid(DialogueUI))
@@ -148,7 +151,10 @@ void UBTTask_Responses::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8*
 		return;
 	}
 
-	if (DialogueUI == nullptr) return;
+	if (DialogueUI == nullptr)
+	{
+		return;
+	}
 
 	DialogueUI->OnEndDisplayResponse.RemoveAll(this);
 	DialogueUI->Reset();
@@ -213,7 +219,7 @@ void UBTTask_Responses::OnButtonClicked(UResponseButtonWidget* ButtonWidget)
 
 	const FBTDialogueResponse Response = ButtonWidget->GetResponse();
 
-	PointsHandler->AddPoints(FNPoint(Response), ButtonWidget->DisplayOrder);
+	PointsHandler->AddPoints(DialogName, FNPoint(Response), ButtonWidget->DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
 	// TODO Should be call by DialogueUI itself
@@ -240,7 +246,7 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 		Response.Point = 0;
 	}
 
-	PointsHandler->AddPoints(FNPoint(Response), DisplayOrder);
+	PointsHandler->AddPoints(DialogName, FNPoint(Response), DisplayOrder);
 
 	// TODO maybe instead of empty title should output a readable Response.Category
 	// TODO Should be call by dialog UI itself
@@ -250,13 +256,18 @@ void UBTTask_Responses::OnCountdownEnds(UBehaviorTreeComponent* OwnerComp)
 
 void UBTTask_Responses::OnEndDisplayResponse()
 {
-	if (OwnerComponent == nullptr) return;
+	if (OwnerComponent == nullptr)
+	{
+		return;
+	}
 	FinishLatentTask(*OwnerComponent, EBTNodeResult::Succeeded);
 }
 
 FString UBTTask_Responses::GetStaticDescription() const
 {
 	FString ReturnDesc;
+	ReturnDesc += "Dialogue name: " + DialogName.ToString() + "\n";
+
 	ReturnDesc +=
 		DisplayStaticResponses(
 			ReponsesUP,
@@ -302,8 +313,8 @@ FString UBTTask_Responses::DisplayStaticResponse(const FBTDialogueResponse& Resp
 		Arguments.Add(TEXT("difficulty"), Response.Difficulty);
 		Arguments.Add(TEXT("category"), FText::FromString(Response.Category.Name.ToString()));
 		const FText EffectName = IsValid(Response.GetSpawnableEffectOnEarned())
-									 ? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
-									 : FText::FromString(TEXT("No effect"));
+			? FText::FromString(Response.GetSpawnableEffectOnEarned()->GetName())
+			: FText::FromString(TEXT("No effect"));
 		Arguments.Add(TEXT("effect"), EffectName);
 		ReturnDesc += FText::Format(
 				LOCTEXT(

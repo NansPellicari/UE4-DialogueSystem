@@ -28,18 +28,21 @@ UBTDecorator_CheckDialogueResults::UBTDecorator_CheckDialogueResults(const FObje
 		ObjectInitializer
 	)
 {
-	NodeName = "Check: Dialogue Results";
+	NodeName = "Dialogue Results";
 }
 
 bool UBTDecorator_CheckDialogueResults::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
-	uint8* NodeMemory) const
+                                                                   uint8* NodeMemory) const
 {
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
 	const UNDialogueSubsystem* DialSys = UNDSFunctionLibrary::GetDialogSubsystem();
 	check(IsValid(DialSys));
 	const TSharedPtr<NDialoguePointsHandler>& PointsHandler = DialSys->GetPointsHandler(AIOwner);
-	if (!ensure(PointsHandler.IsValid())) return false;
+	if (!ensure(PointsHandler.IsValid()))
+	{
+		return false;
+	}
 
 	return PointsHandler->HasResults(DialogueHistorySearches, ConditionsOperators);
 }
@@ -60,7 +63,10 @@ FString UBTDecorator_CheckDialogueResults::GetStaticDescription() const
 		);
 	}
 
-	if (ConditionsOperators.Num() <= 0) return ReturnDesc;
+	if (ConditionsOperators.Num() <= 0)
+	{
+		return ReturnDesc;
+	}
 
 	ReturnDesc += FString("\n\nConditions Operators:");
 	ReturnDesc += UNansComparator::OperatorsToString(ConditionsOperators);

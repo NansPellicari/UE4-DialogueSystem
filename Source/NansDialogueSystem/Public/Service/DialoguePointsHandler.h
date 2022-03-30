@@ -14,10 +14,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIController.h"
 #include "BTDialogueTypes.h"
 #include "PointSystemHelpers.h"
-#include "StepsHandler.h"
-#include "AI/Decorator/BTDecorator_CheckInStep.h"
 #include "Component/PlayerDialogueComponent.h"
 #include "Dialogue/DialogueHistorySearch.h"
 
@@ -29,10 +28,9 @@ class UBehaviorTreeComponent;
 class NANSDIALOGUESYSTEM_API NDialoguePointsHandler
 {
 public:
-	NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler, UPlayerDialogueComponent* InDialogComp,
-	                       const AAIController* InOwner, bool InbDebug);
+	NDialoguePointsHandler(UPlayerDialogueComponent* InDialogComp, const AAIController* InOwner, bool InbDebug);
 	virtual ~NDialoguePointsHandler();
-	void AddPoints(FNPoint Point, int32 Position);
+	void AddPoints(FName DialogName, FNPoint Point, int32 Position) const;
 	bool HasResults(const FNDialogueHistorySearch& Search) const;
 	bool HasResults(const TArray<FNDialogueHistorySearch> Searches,
 	                TArray<FNansConditionOperator> ConditionsOperators) const;
@@ -40,7 +38,6 @@ public:
 	const AAIController* GetOwner() const;
 	bool bDebug = false;
 private:
-	TSharedPtr<NStepsHandler> StepsHandler;
 	TWeakObjectPtr<UPlayerDialogueComponent> DialogComp;
 	TWeakObjectPtr<const AAIController> Owner;
 };

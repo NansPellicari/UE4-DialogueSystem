@@ -18,7 +18,6 @@
 #include "BTDialogueTypes.h"
 #include "PointSystemHelpers.h"
 #include "GameplayEffectTypes.h"
-#include "Step.h"
 #include "Components/ActorComponent.h"
 #include "Dialogue/DialogueHistory.h"
 #include "Dialogue/DialogueHistorySearch.h"
@@ -43,9 +42,10 @@ class NANSDIALOGUESYSTEM_API UPlayerDialogueComponent : public UActorComponent
 
 public:
 	UPlayerDialogueComponent();
-	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
-	void AddSequence(const FDialogueSequence& Sequence);
-	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
+	void AddSequence(FDialogueSequence&& Sequence);
+	/**
+	 * This is called by the dialogue ability of the GAS, use AddPoints() instead.
+	 */
 	void AddResponse(const FDialogueResult& Result);
 	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	bool HasResults(const FNDialogueHistorySearch& Search);
@@ -55,7 +55,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
 	int32 GetDialoguePoints(FNDialogueCategory Category) const;
 	UFUNCTION(BlueprintCallable, Category="Dialogue|Points")
-	void AddPoints(FNPoint Point, int32 Position, FNStep Step);
+	void AddPoints(FNPoint Point, int32 Position, FName DialogName);
 	UFUNCTION(BlueprintCallable, Category="Dialogue|History")
 	TArray<FDialogueResult> SearchResults(const FNDialogueHistorySearch& Search) const;
 	UPROPERTY(EditAnywhere, Category="PlayerDialogueComponent")
@@ -65,6 +65,7 @@ public:
 
 	// BEGIN BP delegates management declaration for OnDialogueStart
 	FDialogueEvent OnDialogueStartEvent;
+	TUniquePtr<FDialogueSequence> TemporarySequence = nullptr;
 	UFUNCTION(BlueprintNativeEvent, Category = "Dialogue")
 	void OnDialogueStart();
 	virtual FDialogueEvent& OnNativeDialogueStart();

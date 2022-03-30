@@ -32,14 +32,11 @@ struct NANSDIALOGUESYSTEM_API FResponsePositionCondition
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	int32 Step = 0;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
-	FName StepLabel = NAME_None;
+	FName DialogueLabel = NAME_None;
 
 	/**
-	 * If checked will compare on each responses given in the desired step.
-	 * it can be usefull if you plan to redo several times a step.
+	 * If checked will compare on each responses given in the desired dialogue.
+	 * It can be useful if you plan to redo several times a dialogue.
 	 * Otherwise it will checked only the last results.
 	 */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Response Position Condition")
@@ -52,8 +49,7 @@ struct NANSDIALOGUESYSTEM_API FResponsePositionCondition
 	int32 Position = 0;
 
 	static void ToDialogueHistorySearch(const TArray<FResponsePositionCondition> ResponsePositions,
-		TArray<FNansConditionOperator> ConditionsOperators,
-		TArray<FNDialogueHistorySearch>& Searches,
+		TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
 		TArray<FNansConditionOperator>& Operators);
 };
 
@@ -69,11 +65,10 @@ class NANSDIALOGUESYSTEM_API UBTDecorator_CheckResponsePosition : public UBTDeco
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FResponsePositionCondition> ResponsePositionConditions;
 
-	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
+	// Be worried! Use this only if you don't want an \"first at last\" AND operator on DialogueConditions
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNansConditionOperator> ConditionsOperators;
 
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	bool EvaluateArray(UBTDialoguePointsHandler* PointsHandler) const;
 	virtual FString GetStaticDescription() const override;
 };

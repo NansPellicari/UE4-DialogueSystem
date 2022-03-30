@@ -1,4 +1,4 @@
-//  Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
+// Copyright 2020-present Nans Pellicari (nans.pellicari@gmail.com).
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ void UAT_WaitReceivePoints::OnDestroy(bool AbilityIsEnding)
 	Super::OnDestroy(AbilityIsEnding);
 }
 
-void UAT_WaitReceivePoints::OnPointsReceived(UNDSAbilitySystemComponent* SourceASC, float UnmitigatedPoints,
-	float MitigatedPoints, FDialogueResult ExtraData)
+void UAT_WaitReceivePoints::OnPointsReceived(UNDSAbilitySystemComponent* SourceASC, const float UnmitigatedPoints,
+	const float MitigatedPoints, const FDialogueResult ExtraData)
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

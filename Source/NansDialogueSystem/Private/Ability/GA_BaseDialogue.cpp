@@ -16,7 +16,6 @@
 #include "GameplayEffectExtension.h"
 #include "NansDialogueSystemLog.h"
 #include "Component/PlayerDialogueComponent.h"
-#include "Ability/NDSGameplayEffectTypes.h"
 #include "Ability/AbilityTasks/AT_WaitReceivePoints.h"
 #include "Ability/AttributeSets/DialogueAttributeSets.h"
 #include "Dialogue/DialogueResult.h"
@@ -56,7 +55,10 @@ void UGA_BaseDialogue::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo)) return;
+	if (!HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	{
+		return;
+	}
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
@@ -68,7 +70,6 @@ void UGA_BaseDialogue::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 
 	Character = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
-	UAbilitySystemComponent* ABS = Character->FindComponentByClass<UAbilitySystemComponent>();
 
 	UAT_WaitReceivePoints* Task = UAT_WaitReceivePoints::WaitReceivePoints(this, false);
 	Task->OnPointsEarned.AddDynamic(this, &UGA_BaseDialogue::OnPointsEarnedAttributeChanged);

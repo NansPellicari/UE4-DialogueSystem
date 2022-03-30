@@ -17,7 +17,6 @@
 #include "AIController.h"
 #include "Service/DialoguePointsHandler.h"
 
-#include "BTStepsSubsystem.h"
 #include "NDSFunctionLibrary.h"
 #include "Service/DialogueBTHelpers.h"
 #include "Service/DialogueDifficultyHandler.h"
@@ -28,7 +27,6 @@
 void UNDialogueSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	Collection.InitializeDependency(UBTStepsSubsystem::StaticClass());
 }
 
 ACharacter* UNDialogueSubsystem::GetPlayerCharacter() const
@@ -63,13 +61,6 @@ void UNDialogueSubsystem::Deinitialize()
 	DifficultyHandler.Reset();
 }
 
-UBTStepsSubsystem& UNDialogueSubsystem::GetBTStepsSubsystem() const
-{
-	UBTStepsSubsystem* BTStepsSubsys = GetLocalPlayerChecked()->GetSubsystem<UBTStepsSubsystem>();
-	check(BTStepsSubsys);
-	return *BTStepsSubsys;
-}
-
 bool UNDialogueSubsystem::PlayerIsInDialogSequenceWith(const AAIController* Owner) const
 {
 	const UAbilitySystemComponent* PlayerAbs = GetPlayerAbs();
@@ -86,16 +77,10 @@ bool UNDialogueSubsystem::CreateDialogSequence(const AAIController* Owner)
 		return false;
 	}
 
-	TSharedPtr<NStepsHandler> StepsHandler = GetBTStepsSubsystem().GetStepsHandler(Owner);
-	if (!StepsHandler.IsValid())
-	{
-		StepsHandler = GetBTStepsSubsystem().CreateStepsHandler(Owner);
-	}
-	check(StepsHandler.IsValid());
 	UPlayerDialogueComponent* DialogComp = NDialogueBTHelpers::GetDialogueComponent(GetPlayerCharacter());
 	check(DialogComp);
 
-	PointsHandler = MakeShared<NDialoguePointsHandler>(StepsHandler, DialogComp, Owner, bDebugPointsHandler);
+	PointsHandler = MakeShared<NDialoguePointsHandler>(DialogComp, Owner, bDebugPointsHandler);
 	DifficultyHandler = MakeShared<NDialogueDifficultyHandler>(
 		MakeWeakObjectPtr(GetPlayerAbs()),
 		bDebugDifficultyHandler
@@ -109,12 +94,6 @@ void UNDialogueSubsystem::EndDialogSequence(const AAIController* Owner)
 	{
 		return;
 	}
-
-	// TODO move this in a dedicated component BTStep
-	// A dialog can be embed to another Behavior Tree,
-	// or be just a part of a Behavior tree.
-	// So StepsHandler should be completely independent from dialog.
-	GetBTStepsSubsystem().RemoveStepsHandler(Owner);
 
 	UAbilitySystemComponent* PlayerAbs = GetPlayerAbs();
 	if (PlayerAbs)
@@ -130,7 +109,6 @@ void UNDialogueSubsystem::EndDialogSequence(const AAIController* Owner)
 const TSharedPtr<NDialoguePointsHandler>& UNDialogueSubsystem::GetPointsHandler(const AAIController* Owner) const
 {
 	verify(IsValid(Owner));
-	check(PlayerIsInDialogSequenceWith(Owner));
 	return PointsHandler;
 }
 

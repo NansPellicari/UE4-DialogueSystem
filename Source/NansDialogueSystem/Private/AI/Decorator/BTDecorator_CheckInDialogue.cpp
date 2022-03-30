@@ -11,33 +11,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AI/Decorator/BTDecorator_CheckInStep.h"
+#include "AI/Decorator/BTDecorator_CheckInDialogue.h"
 
 #include "AIController.h"
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
-#include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialoguePointsHandler.h"
-#include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> StepConditions,
+void FBTDialogueCondition::ToDialogueHistorySearch(const TArray<FBTDialogueCondition> DialogueConditions,
 	TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
 	TArray<FNansConditionOperator>& Operators)
 {
 	int32 Index = 0;
-	for (auto& StepCondition : StepConditions)
+	for (auto& DialogueCondition : DialogueConditions)
 	{
 		FNDialogueHistorySearch Search, Search2;
-		if (StepCondition.isDone)
+		if (DialogueCondition.isDone)
 		{
-			FNStep Step(StepCondition.Step, StepCondition.StepLabel);
-			Search.DialogueName.SetValue(Step.GetLabel().ToString());
-			Search2.DialogueName.SetValue(Step.GetLabel().ToString());
+			Search.DialogueName.SetValue(DialogueCondition.DialogueLabel.ToString());
+			Search2.DialogueName.SetValue(DialogueCondition.DialogueLabel.ToString());
 		}
 		else
 		{
@@ -46,12 +43,12 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 			Search2.DialogueName.bIsAll = true;
 		}
 		Search.PropertyName = ENPropertyValue::InitialPoints;
-		Search.Operator = StepCondition.Operator;
-		Search.FloatValue = StepCondition.CompareTo;
+		Search.Operator = DialogueCondition.Operator;
+		Search.FloatValue = DialogueCondition.CompareTo;
 
 		Search2.PropertyName = ENPropertyValue::CategoryName;
 		Search2.Operator = ENConditionComparator::Equals;
-		Search2.CategoryValue = StepCondition.Category;
+		Search2.CategoryValue = DialogueCondition.Category;
 		Searches.Add(Search);
 		Searches.Add(Search2);
 		FNansConditionOperator Operator;
@@ -61,7 +58,7 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 		Operator.Inversed = false;
 		Operator.OperatorWithPreviousCondition = ENConditionOperator::Save;
 		Operator.GroupName = FString("InternGrp") + FString::FromInt(Index) + FString("&") +
-							 FString::FromInt(Index + 1);
+			FString::FromInt(Index + 1);
 		Operators.Add(Operator);
 		bool IsFirst = true;
 		for (auto& CondOperator : ConditionsOperators)
@@ -80,14 +77,15 @@ void FBTStepCondition::ToDialogueHistorySearch(const TArray<FBTStepCondition> St
 	Operators.Append(ConditionsOperators);
 }
 
-UBTDecorator_CheckInStep::UBTDecorator_CheckInStep(const FObjectInitializer& ObjectInitializer) : Super(
+UBTDecorator_CheckInDialogue::UBTDecorator_CheckInDialogue(const FObjectInitializer& ObjectInitializer) : Super(
 	ObjectInitializer
 )
 {
-	NodeName = "Check: Points in step";
+	NodeName = "Points in dialogue";
 }
 
-bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
+bool UBTDecorator_CheckInDialogue::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
+	uint8* NodeMemory) const
 {
 	const AAIController* AIOwner = OwnerComp.GetAIOwner();
 	check(IsValid(AIOwner));
@@ -99,8 +97,8 @@ bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent
 	TArray<FNDialogueHistorySearch> Searches;
 	TArray<FNansConditionOperator> Operators;
 
-	FBTStepCondition::ToDialogueHistorySearch(
-		StepConditions,
+	FBTDialogueCondition::ToDialogueHistorySearch(
+		DialogueConditions,
 		ConditionsOperators,
 		Searches,
 		Operators
@@ -109,19 +107,19 @@ bool UBTDecorator_CheckInStep::CalculateRawConditionValue(UBehaviorTreeComponent
 	return PointsHandler->HasResults(Searches, Operators);
 }
 
-FString UBTDecorator_CheckInStep::GetStaticDescription() const
+FString UBTDecorator_CheckInDialogue::GetStaticDescription() const
 {
 	FString ReturnDesc;
 
-	ReturnDesc += FString("\nStep conditions:");
-	for (int32 Index = 0; Index != StepConditions.Num(); ++Index)
+	ReturnDesc += FString("\nDialogue conditions:");
+	for (int32 Index = 0; Index != DialogueConditions.Num(); ++Index)
 	{
-		FBTStepCondition Condition = StepConditions[Index];
+		FBTDialogueCondition Condition = DialogueConditions[Index];
 
 		ReturnDesc += FString::Printf(
-			TEXT("\n%s: Step [%s] is Done [%s] - %s %s %d"),
+			TEXT("\n%s: Dialogue [%s] is Done [%s] - %s %s %d"),
 			*UNansComparator::BuildKeyFromIndex(Index),
-			*(!Condition.StepLabel.IsNone() ? Condition.StepLabel.ToString() : FString::FromInt(Condition.Step)),
+			*Condition.DialogueLabel.ToString(),
 			Condition.isDone ? "x" : " ",
 			*Condition.Category.Name.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
@@ -129,7 +127,10 @@ FString UBTDecorator_CheckInStep::GetStaticDescription() const
 		);
 	}
 
-	if (ConditionsOperators.Num() <= 0) return ReturnDesc;
+	if (ConditionsOperators.Num() <= 0)
+	{
+		return ReturnDesc;
+	}
 
 	ReturnDesc += FString("\n\nConditions Operators:");
 	ReturnDesc += UNansComparator::OperatorsToString(ConditionsOperators);

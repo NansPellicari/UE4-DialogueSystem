@@ -14,7 +14,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BTStepsSubsystem.h"
 #include "Service/DialogueDifficultyHandler.h"
 #include "Service/DialoguePointsHandler.h"
 
@@ -62,7 +61,6 @@ public:
 	const TSharedPtr<NDialoguePointsHandler>& GetPointsHandler(const AAIController* Owner) const;
 	const TSharedPtr<NDialogueDifficultyHandler>& GetDifficultyHandler(const AAIController* Owner) const;
 	UAbilitySystemComponent* GetPlayerAbs() const;
-	UBTStepsSubsystem& GetBTStepsSubsystem() const;
 	ACharacter* GetPlayerCharacter() const;
 private:
 	UPROPERTY(EditAnywhere)

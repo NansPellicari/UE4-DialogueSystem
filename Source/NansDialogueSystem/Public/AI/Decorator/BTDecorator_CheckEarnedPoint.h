@@ -57,7 +57,7 @@ class NANSDIALOGUESYSTEM_API UBTDecorator_CheckEarnedPoint : public UBTDecorator
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FPointCondition> EarnedPointsConditions;
 
-	// Be worried! Use this only if you don't want an \"first at last\" AND operator on StepConditions
+	// Be worried! Use this only if you don't want an \"first at last\" AND operator on DialogueConditions
 	UPROPERTY(EditAnywhere, Category = "Condition")
 	TArray<FNansConditionOperator> ConditionsOperators;
 

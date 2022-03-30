@@ -21,12 +21,12 @@
 #include "AIController.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialoguePointsHandler.h"
-#include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
 void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> ResponsePositions,
-	TArray<FNansConditionOperator> ConditionsOperators, TArray<FNDialogueHistorySearch>& Searches,
+	TArray<FNansConditionOperator> ConditionsOperators,
+	TArray<FNDialogueHistorySearch>& Searches,
 	TArray<FNansConditionOperator>& Operators)
 {
 	int32 Index = 0;
@@ -56,7 +56,7 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		int32 RealNewIdx = RealIdx + 1;
 
 		FString GroupName = FString("InternGrp") + FString::FromInt(RealIdx) + FString("&") +
-							FString::FromInt(RealIdx + 1);
+			FString::FromInt(RealIdx + 1);
 		NewOperators.Add(FNansConditionOperator());
 		NewOperators[OpIdx].Operand1 = UNansComparator::BuildKeyFromIndex(RealIdx);
 		NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 1);
@@ -77,7 +77,8 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 			NewOperators[OpIdx].Operand2 = UNansComparator::BuildKeyFromIndex(RealIdx + 2);
 			RealNewIdx++;
 			NewOperators[OpIdx].Operator = ENConditionOperator::OR;
-			NewOperators[OpIdx].OperatorWithPreviousCondition = ENConditionOperator::Save;
+			NewOperators[OpIdx].OperatorWithPreviousCondition =
+				ENConditionOperator::Save;
 			NewOperators[OpIdx].GroupName = GroupName + FString("OrInverse");
 		}
 
@@ -88,11 +89,11 @@ void FPointCondition::ToDialogueHistorySearch(const TArray<FPointCondition> Resp
 		{
 			FString StepOpTo = UNansComparator::BuildKeyFromIndex(Index);
 			CondOperator.Operand1 = CondOperator.Operand1 == StepOpTo
-										? NewOperators[OpIdx].GroupName // always get the last NewOperators
-										: CondOperator.Operand1;
+				? NewOperators[OpIdx].GroupName // always get the last NewOperators
+				: CondOperator.Operand1;
 			CondOperator.Operand2 = CondOperator.Operand2 == StepOpTo
-										? NewOperators[OpIdx].GroupName // always get the last NewOperators
-										: CondOperator.Operand2;
+				? NewOperators[OpIdx].GroupName // always get the last NewOperators
+				: CondOperator.Operand2;
 			if (IsFirst)
 			{
 				CondOperator.OperatorWithPreviousCondition = ENConditionOperator::Save;
@@ -108,7 +109,7 @@ UBTDecorator_CheckEarnedPoint::UBTDecorator_CheckEarnedPoint(const FObjectInitia
 	ObjectInitializer
 )
 {
-	NodeName = "Check: Earned points";
+	NodeName = "Earned points";
 }
 
 bool UBTDecorator_CheckEarnedPoint::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
@@ -152,7 +153,10 @@ FString UBTDecorator_CheckEarnedPoint::GetStaticDescription() const
 		);
 	}
 
-	if (ConditionsOperators.Num() <= 0) return ReturnDesc;
+	if (ConditionsOperators.Num() <= 0)
+	{
+		return ReturnDesc;
+	}
 
 	ReturnDesc += FString("\n\nConditions Operators:");
 	ReturnDesc += UNansComparator::OperatorsToString(ConditionsOperators);

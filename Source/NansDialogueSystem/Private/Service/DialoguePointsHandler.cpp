@@ -27,11 +27,10 @@
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
-NDialoguePointsHandler::NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& InStepsHandler,
-	UPlayerDialogueComponent* InDialogComp, const AAIController* InOwner, bool InbDebug)
+NDialoguePointsHandler::NDialoguePointsHandler(UPlayerDialogueComponent* InDialogComp, const AAIController* InOwner,
+	bool InbDebug)
 {
 	Owner = MakeWeakObjectPtr(InOwner);
-	StepsHandler = InStepsHandler;
 	DialogComp = MakeWeakObjectPtr(InDialogComp);
 	bDebug = InbDebug;
 	check(DialogComp.IsValid())
@@ -42,9 +41,8 @@ NDialoguePointsHandler::NDialoguePointsHandler(const TSharedPtr<NStepsHandler>& 
 
 	FDialogueSequence NewDialogueSequence;
 	NewDialogueSequence.Name = BTComp->GetCurrentTree()->GetFName();
-	// TODO use the new Protagonist name
 	NewDialogueSequence.Owner = Owner->GetPathName();
-	DialogComp->AddSequence(NewDialogueSequence);
+	DialogComp->AddSequence(MoveTemp(NewDialogueSequence));
 
 	// Activating Dialog Gameplay Activity
 	FGameplayEventData Payload;
@@ -64,11 +62,10 @@ NDialoguePointsHandler::~NDialoguePointsHandler()
 	DialogComp.Reset();
 }
 
-void NDialoguePointsHandler::AddPoints(FNPoint Point, int32 Position)
+void NDialoguePointsHandler::AddPoints(const FName DialogName, FNPoint Point, int32 Position) const
 {
 	verify(DialogComp.IsValid());
-	const FNStep Step = StepsHandler->GetCurrent();
-	DialogComp->AddPoints(Point, Position, Step);
+	DialogComp->AddPoints(Point, Position, DialogName);
 }
 
 int32 NDialoguePointsHandler::GetDialoguePoints(FNDialogueCategory Category) const

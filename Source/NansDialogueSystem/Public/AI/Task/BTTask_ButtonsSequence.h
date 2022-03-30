@@ -126,7 +126,10 @@ public:
 	FBTButtonSequenceResponse GetResponseForPoints(const int32 Points)
 	{
 		Default.Category = Category;
-		if (ResponsesForPoint.Num() <= 0) return Default;
+		if (ResponsesForPoint.Num() <= 0)
+		{
+			return Default;
+		}
 
 		FBTButtonSequenceResponse Response = Default;
 
@@ -235,6 +238,8 @@ public:
 	void OnEndDisplayResponse();
 
 protected:
+	UPROPERTY(EditInstanceOnly, Category = "Dialogue")
+	FName DialogName = NAME_None;
 	/**
 	 * This is just here to indicate this values for developers, it is set in the developer's settings
 	 * HUD need to be composed with widget named
@@ -255,7 +260,7 @@ protected:
 
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
-		EBTNodeResult::Type TaskResult) override;
+	                            EBTNodeResult::Type TaskResult) override;
 
 	UPROPERTY()
 	UBehaviorTreeComponent* OwnerComponent;

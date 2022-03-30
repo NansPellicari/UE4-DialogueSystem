@@ -25,7 +25,7 @@
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
 void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandle& EffectContextHandle,
-                                                     const FDialogueResult& Data)
+	const FDialogueResult& Data)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)
@@ -35,7 +35,7 @@ void UNDSFunctionLibrary::EffectContextAddPointsData(FGameplayEffectContextHandl
 }
 
 void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle& EffectContextHandle, FGameplayTag Tag,
-                                                    const FString& Data)
+	const FString& Data)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)
@@ -45,7 +45,7 @@ void UNDSFunctionLibrary::EffectContextAddExtraData(FGameplayEffectContextHandle
 }
 
 void UNDSFunctionLibrary::EffectContextAddExtraDataAsMap(FGameplayEffectContextHandle& EffectContextHandle,
-                                                         TMap<FGameplayTag, FString> NewData)
+	TMap<FGameplayTag, FString> NewData)
 {
 	FNDSGameplayEffectContext* EffectContext = static_cast<FNDSGameplayEffectContext*>(EffectContextHandle.Get());
 	if (EffectContext)
@@ -67,10 +67,11 @@ TMap<FGameplayTag, FString> UNDSFunctionLibrary::EffectContextGetExtraData(
 	return Data;
 }
 
+// TODO create a BTDecorator for that 
 bool UNDSFunctionLibrary::IsPlayerCanDialogue(UObject* WorldContextObject, int32 PlayerIndex)
 {
-	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(WorldContextObject->GetWorld(), PlayerIndex);
-	UNDSAbilitySystemComponent* ABS = Player->FindComponentByClass<UNDSAbilitySystemComponent>();
+	const ACharacter* Player = UGameplayStatics::GetPlayerCharacter(WorldContextObject->GetWorld(), PlayerIndex);
+	const UNDSAbilitySystemComponent* ABS = Player->FindComponentByClass<UNDSAbilitySystemComponent>();
 	return IsPlayerABSCanDialogue(ABS);
 }
 

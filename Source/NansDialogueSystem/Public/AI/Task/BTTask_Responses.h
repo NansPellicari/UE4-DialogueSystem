@@ -16,7 +16,6 @@
 #include "CoreMinimal.h"
 #include "BTDialogueTypes.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BehaviorTree/BTTaskNode.h"
 
 #include "BTTask_Responses.generated.h"
 
@@ -28,8 +27,6 @@ class UBTTask_Countdown;
 class NDialoguePointsHandler;
 
 /**
- * TODO create a mother class "UBTTask_WaitingForUser" which is connected to StepContext event "OnTimeElapsedForUser" which call
- * "OnTaskFinished"
  */
 UCLASS(Abstract)
 class NANSDIALOGUESYSTEM_API UBTTask_Responses : public UBTTaskNode
@@ -63,6 +60,9 @@ public:
 	void OnEndDisplayResponse();
 
 protected:
+	UPROPERTY(EditInstanceOnly, Category = "Dialogue")
+	FName DialogName = NAME_None;
+
 	UPROPERTY(EditInstanceOnly, Category = "Blackboard")
 	bool bShowDialogueDetails = true;
 

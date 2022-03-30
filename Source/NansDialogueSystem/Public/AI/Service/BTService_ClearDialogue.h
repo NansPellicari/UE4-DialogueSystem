@@ -29,7 +29,6 @@ class NANSDIALOGUESYSTEM_API UBTService_ClearDialogue : public UBTService
 public:
 	UBTService_ClearDialogue(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual FString GetStaticDescription() const override;
 
 #if WITH_EDITOR
 	virtual FName GetNodeIconName() const override;

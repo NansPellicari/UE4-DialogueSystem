@@ -1,5 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
+// ReSharper disable All
+
 namespace UnrealBuildTool.Rules
 {
 	public class NansDialogueSystem : ModuleRules
@@ -11,7 +13,7 @@ namespace UnrealBuildTool.Rules
 			PublicDependencyModuleNames.AddRange(
 				new[]
 				{
-					"Core"
+					"Core", "AIModule"
 				}
 			);
 
@@ -26,7 +28,6 @@ namespace UnrealBuildTool.Rules
 					"SlateCore",
 					"InputCore",
 					"DeveloperSettings",
-					"NansBehaviorSteps",
 					"GameplayTasks",
 					"GameplayAbilities",
 					"GameplayTags",

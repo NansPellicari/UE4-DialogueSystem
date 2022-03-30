@@ -16,12 +16,10 @@
 #include "AIController.h"
 #include "NDialogueSubsystem.h"
 #include "NDSFunctionLibrary.h"
-#include "Step.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Misc/NansComparator.h"
 #include "NansUE4Utilities/public/Misc/ErrorUtils.h"
 #include "Service/DialoguePointsHandler.h"
-#include "Setting/DialogueSystemSettings.h"
 
 #define LOCTEXT_NAMESPACE "DialogueSystem"
 
@@ -33,8 +31,7 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 	{
 		FNDialogueHistorySearch Search;
 
-		FNStep Step(RespPos.Step, RespPos.StepLabel);
-		Search.DialogueName.SetValue(Step.GetLabel().ToString());
+		Search.DialogueName.SetValue(RespPos.DialogueLabel.ToString());
 		Search.DialogueName.bLastOnly = !RespPos.bInEveryInstances;
 
 		Search.PropertyName = ENPropertyValue::SentencePosition;
@@ -49,7 +46,7 @@ void FResponsePositionCondition::ToDialogueHistorySearch(const TArray<FResponseP
 UBTDecorator_CheckResponsePosition::UBTDecorator_CheckResponsePosition(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	NodeName = "Check: Response position";
+	NodeName = "Response position";
 }
 
 bool UBTDecorator_CheckResponsePosition::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp,
@@ -85,16 +82,19 @@ FString UBTDecorator_CheckResponsePosition::GetStaticDescription() const
 		const FResponsePositionCondition Condition = ResponsePositionConditions[Index];
 
 		ReturnDesc += FString::Printf(
-			TEXT("\n%s (%s) Step [%s], response %s %d"),
+			TEXT("\n%s (%s) Dialogue [%s], response %s %d"),
 			*UNansComparator::BuildKeyFromIndex(Index),
 			Condition.bInEveryInstances ? TEXT("all") : TEXT("last only"),
-			*(!Condition.StepLabel.IsNone() ? Condition.StepLabel.ToString() : FString::FromInt(Condition.Step)),
+			*Condition.DialogueLabel.ToString(),
 			*UNansComparator::ComparatorToString(Condition.Operator),
 			Condition.Position
 		);
 	}
 
-	if (ConditionsOperators.Num() <= 0) return ReturnDesc;
+	if (ConditionsOperators.Num() <= 0)
+	{
+		return ReturnDesc;
+	}
 
 	ReturnDesc += FString("\n\nConditions Operators:");
 	ReturnDesc += UNansComparator::OperatorsToString(ConditionsOperators);
